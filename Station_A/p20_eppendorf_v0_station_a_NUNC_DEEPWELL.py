@@ -78,9 +78,12 @@ def run(ctx: protocol_api.ProtocolContext):
     for d in dests:
         p20.pick_up_tip()
         p20.transfer(
-            SAMPLE_VOLUME, cntrl_src_well.bottom(5), d.bottom(5), new_tip='never')
+            CONTROL_VOLUME, cntrl_src_well.bottom(5), d.bottom(5), new_tip='never')
         p20.aspirate(10, d.top())
         p20.drop_tip()
+
+    from opentrons.drivers.rpi_drivers import gpio
+    gpio.set_button_light(0,1,0) # RGB 0-1
 
     ctx.comment('Move deepwell plate (slot 5) to Station B for RNA \
 extraction.')
