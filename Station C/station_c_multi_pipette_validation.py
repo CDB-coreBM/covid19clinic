@@ -5,7 +5,7 @@ from opentrons import protocol_api
 metadata = {
     'protocolName': 'S2 Station C Version 2',
     'author': 'Aitor & JL',
-    'source': 'Custom Protocol Request',
+    'source': 'Custom Protocol',
     'apiLevel': '2.0'
 }
 
@@ -61,9 +61,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
-    dests = pcr_plate.wells()[:NUM_SAMPLES]
-    #dests2 = pcr_plate.wells()[int(NUM_SAMPLES/2):NUM_SAMPLES]
-    dest_fin= pcr_plate.wells()[:NUM_SAMPLES]
+    pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
+    #Divide destination wells in small groups for P300 pipette
+    dests = list(divide_destinations(pcr_wells, size_transfer))
     mmix = tuberack.wells()[0]
 
 '''
@@ -78,15 +78,16 @@ def run(ctx: protocol_api.ProtocolContext):
     # transfer mastermix with P300
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
-        p300.distribute(20, mmix, dests2, new_tip='never', disposal_volume=0)
-        #p300.blow_out(d.bottom(5))
+        for dest in dests:
+            p300.distribute(24.6, mmix, dest, new_tip='never')
+            p300.blow_out(mmix.top(-5))
         p300.drop_tip()
 
     # transfer 8 first samples to corresponding locations
     if TRANSFER_SAMPLES == True:
-        for s, d in zip(samples, dest_fin):
+        for s, d in zip(samples, pcr_wells):
             p20.pick_up_tip()
-            p20.transfer(5, s, d, new_tip='never')
+            p20.transfer(5.4, s, d, new_tip='never')
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
             p20.drop_tip()
