@@ -29,12 +29,12 @@ def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
     gpio.set_button_light(1,0,0)
     #Load labware
-    source_plate = ctx.load_labware(
+    pcr_plate = ctx.load_labware(
        'roche_96_wellplate_100ul', '1',
         'chilled RNA elution plate from station B')
 
     ink = ctx.load_labware(
-    'nalgene_1_reservoir_300000ul', '3', 'waste reservoir').wells()[0].top()
+    'nalgene_1_reservoir_300000ul', '3', 'waste reservoir').wells()[0].bottom(1)
 
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
