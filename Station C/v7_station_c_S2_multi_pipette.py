@@ -11,14 +11,15 @@ metadata = {
 
 """
 REAGENT SETUP:
-- slot 2 2ml tuberack:
-    - mastermixes: tube A1
+- slot 2 2ml screwcap in tuberack:
+    - mastermix: tube A1
+    - mastermix: tube A2
 """
 
 NUM_SAMPLES = 96
 TRANSFER_MMIX = True
 TRANSFER_SAMPLES = True
-size_transfer=6
+size_transfer=7
 volume_mmix=24.6
 volume_sample=5.4
 volume_screw=2000
