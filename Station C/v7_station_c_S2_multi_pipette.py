@@ -22,12 +22,23 @@ TRANSFER_SAMPLES = False
 size_transfer=7
 volume_mmix=24.6
 volume_sample=5.4
-volume_screw=2000
+volume_screw=1500
 
 def divide_destinations(l, n):
     # looping till length l
     for i in range(0, len(l), n):
         yield l[i:i + n]
+
+def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest):
+    pipette.aspirate((size_transfer*volume_mmix)+5, mmix)
+    pipette.touch_tip(speed=20)
+    for d in dest:
+        pipette.dispense(volume_mmix, d)
+    pipette.blow_out()
+    pipette.drop_tip()
+
+p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest],
+
 
 def run(ctx: protocol_api.ProtocolContext):
     #Set light color to red
@@ -66,10 +77,8 @@ def run(ctx: protocol_api.ProtocolContext):
         'waste reservoir nalgene')
 
     # pipettes
-    p20 = ctx.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)
-    p300 = ctx.load_instrument('p300_single_gen2', 'left', tip_racks=tips200)
-
-    p300 = ctx.load_instrument('p300_single_gen2', mount='left', tip_racks=tips200, trash=waste_pool)
+    p20 = ctx.load_instrument('p20_single_gen2', mount='right', tip_racks=tips20)
+    p300 = ctx.load_instrument('p300_single_gen2', mount='left', tip_racks=tips200)
 
 
     # setup up sample sources and destinations
@@ -87,12 +96,15 @@ def run(ctx: protocol_api.ProtocolContext):
         p300.pick_up_tip()
         for dest in dests:
             #We make sure there is enough volume in screwcap one or we switch
-            if volume_screw <= (volume_mmix*len(dest)+20+35): 
+            if volume_screw < (volume_mmix*len(dest)+20+35):
                 mmix = tuberack.wells()[4]
-            p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest], air_gap=5, new_tip='never')
-            p300.blow_out(mmix.top(-5))
+            p300.touch_tip(speed=20)
+            distribute_mmix(p300, volume_mmix, mmix, size_transfer, dest)
+            p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest],
+            air_gap=5, disposal_volume=5, new_tip='never')
+            #p300.blow_out(mmix.top(-5))
             volume_screw=volume_screw-(volume_mmix*len(dest)+20)
-        p300.drop_tip(ctx.fixed_trash) #Drop tip in fixed trash
+        p300.drop_tip()
 
     # transfer 8 first samples to corresponding locations
     if TRANSFER_SAMPLES == True:
@@ -101,7 +113,7 @@ def run(ctx: protocol_api.ProtocolContext):
             p20.transfer(volume_sample, s, d, new_tip='never')
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
-            p20.drop_tip()
+            p20.drop_tip(ctx.fixed_trash)
 
     #Set light color to green
     gpio.set_button_light(0,1,0)
