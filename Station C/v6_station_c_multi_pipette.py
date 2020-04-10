@@ -1,4 +1,5 @@
 from opentrons import protocol_api
+from opentrons.drivers.rpi_drivers import gpio
 
 
 # metadata
@@ -24,7 +25,7 @@ TRANSFER_SAMPLES = True
 
 
 def run(ctx: protocol_api.ProtocolContext):
-    from opentrons.drivers.rpi_drivers import gpio
+    #Change light color to red
     gpio.set_button_light(1,0,0)
 
     source_plate = ctx.load_labware(
@@ -71,4 +72,6 @@ def run(ctx: protocol_api.ProtocolContext):
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
             p20.drop_tip()
+
+    #Change light color to green
     gpio.set_button_light(0,1,0)
