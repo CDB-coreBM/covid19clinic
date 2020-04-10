@@ -23,7 +23,7 @@ REAGENT SETUP:
 
 """
 
-NUM_SAMPLES = 24
+NUM_SAMPLES = 96
 SAMPLE_VOLUME = 300
 CONTROL_VOLUME = 10
 
@@ -32,20 +32,19 @@ def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
     gpio.set_button_light(1,0,0) # RGB 0-1
     # load labware
-    source_racks = [
-        ctx.load_labware(
+    source_racks = [ctx.load_labware(
             'opentrons_24_tuberack_eppendorf_2ml_safelock_snapcap', slot,
-            'source tuberack ' + str(i+1))
-        for i, slot in enumerate(['1', '3','4','6'])
-    ]
-
-    control_src = ctx.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
-        'Bloque Aluminio 24 Eppendorf Well Plate 1500 µL')
+            'source tuberack with eppendorf' + str(i+1)) for i, slot in enumerate(['1','3','4','6'])
+        ]
+    tempdeck=ctx.load_module('tempdeck','7')
+    tempdeck.set_temperature(25)
+    control_src = tempdeck.load_labware(
+        'bloquealuminio_24_wellplate_1500ul',
+        'Bloque Aluminio 24 Well Plate 1500 µL')
 
     dest_plate = ctx.load_labware(
-        'abgenestorage_96_wellplate_1200ul', '5',
-        'ABGENE STORAGE 96 Well Plate 1200 µL')
+        'nunc_96_wellplate_2000ul', '5',
+        'NUNC STORAGE 96 Well Plate 2000 µL')
 
     tiprack = ctx.load_labware(
         'opentrons_96_filtertiprack_20ul', '11', '20µl tiprack')
@@ -79,6 +78,9 @@ def run(ctx: protocol_api.ProtocolContext):
     for d in dests:
         p20.pick_up_tip()
         p20.transfer(
-            SAMPLE_VOLUME, s.bottom(5), d.bottom(5), new_tip='never')
+            SAMPLE_VOLUME, cntrl_src_well.bottom(5), d.bottom(5), new_tip='never')
         p20.aspirate(10, d.top())
         p20.drop_tip()
+
+    ctx.comment('Move deepwell plate (slot 5) to Station B for RNA \
+extraction.')
