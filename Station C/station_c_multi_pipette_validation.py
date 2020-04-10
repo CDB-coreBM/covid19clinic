@@ -11,14 +11,11 @@ metadata = {
 
 """
 REAGENT SETUP:
-
-- slot 5 2ml tuberack:
+- slot 2 2ml tuberack:
     - mastermixes: tube A1
-    - positive control: tube B1
-    - negative control: tube B2
 """
 
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
 TRANSFER_MMIX = True
 TRANSFER_SAMPLES = True
 
@@ -26,21 +23,21 @@ TRANSFER_SAMPLES = True
 def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
     gpio.set_button_light(1,0,0)
-
+    #Load labware
     source_plate = ctx.load_labware(
        'roche_96_wellplate_100ul', '1',
         'chilled RNA elution plate from station B')
 
-    tempdeck = ctx.load_module('tempdeck', '4')
-
-    pcr_plate = tempdeck.load_labware('transparent_96_wellplate_250ul'
-         , 'PCR plate')
-
-    tempdeck.set_temperature(25) # Define temperature of module. Should be 4. 25 for testing purposes
-
     tuberack = ctx.load_labware(
         'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
         'Bloque Aluminio 24 Eppendorf Well Plate 1500 µL')
+
+    tempdeck = ctx.load_module('tempdeck', '4')
+    #Define temperature of module. Should be 4. 25 for testing purposes
+    tempdeck.set_temperature(25)
+    
+    pcr_plate = tempdeck.load_labware('transparent_96_wellplate_250ul'
+         , 'PCR plate')
 
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
@@ -52,18 +49,18 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in ['6']
     ]
 
-    # pipette
+    # pipettes
     p20 = ctx.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)
-
     p300 = ctx.load_instrument('p300_single_gen2', 'left', tip_racks=tips200)
 
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
-    dests = pcr_plate.wells()[:int(NUM_SAMPLES/2)]
-    dests2 = pcr_plate.wells()[int(NUM_SAMPLES/2):NUM_SAMPLES]
+    dests = pcr_plate.wells()[:NUM_SAMPLES]
+    #dests2 = pcr_plate.wells()[int(NUM_SAMPLES/2):NUM_SAMPLES]
     dest_fin= pcr_plate.wells()[:NUM_SAMPLES]
     mmix = tuberack.wells()[0]
 
+'''
     # transfer mastermix with P20
     if TRANSFER_MMIX == True:
         p20.pick_up_tip()
@@ -71,7 +68,7 @@ def run(ctx: protocol_api.ProtocolContext):
             p20.transfer(20, mmix, d, new_tip='never')
             p20.blow_out(d.bottom(5))
         p20.drop_tip()
-
+'''
     # transfer mastermix with P300
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
