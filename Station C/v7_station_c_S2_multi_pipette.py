@@ -86,12 +86,13 @@ def run(ctx: protocol_api.ProtocolContext):
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
         for dest in dests:
-            if volume_screw <= (volume_mmix*len(dest)+35):
+            #We make sure there is enough volume in screwcap one or we switch
+            if volume_screw <= (volume_mmix*len(dest)+20+35): 
                 mmix = tuberack.wells()[4]
             p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest], air_gap=5, new_tip='never')
             p300.blow_out(mmix.top(-5))
             volume_screw=volume_screw-(volume_mmix*len(dest)+20)
-        p300.drop_tip(ctx.fixed_trash)
+        p300.drop_tip(ctx.fixed_trash) #Drop tip in fixed trash
 
     # transfer 8 first samples to corresponding locations
     if TRANSFER_SAMPLES == True:
