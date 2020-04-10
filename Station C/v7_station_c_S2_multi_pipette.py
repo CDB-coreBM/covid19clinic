@@ -30,8 +30,10 @@ def divide_destinations(l, n):
         yield l[i:i + n]
 
 def run(ctx: protocol_api.ProtocolContext):
+    #Set light color to red
     gpio.set_button_light(1,0,0)
     global volume_screw
+
     #Load labware
     source_plate = ctx.load_labware(
        'roche_96_wellplate_100ul', '1',
@@ -42,12 +44,14 @@ def run(ctx: protocol_api.ProtocolContext):
         'Bloque Aluminio 24 Eppendorf Well Plate 1500 µL')
 
     tempdeck = ctx.load_module('tempdeck', '4')
+
     #Define temperature of module. Should be 4. 25 for testing purposes
     tempdeck.set_temperature(25)
 
     pcr_plate = tempdeck.load_labware('transparent_96_wellplate_250ul'
          , 'PCR plate')
 
+    #Load Tipracks
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
         for slot in ['5']
@@ -65,8 +69,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
     pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
+
     #Divide destination wells in small groups for P300 pipette
     dests = list(divide_destinations(pcr_wells, size_transfer))
+
     #Set mmix source to first screwcap
     mmix = tuberack.wells()[0]
 
@@ -90,4 +96,5 @@ def run(ctx: protocol_api.ProtocolContext):
             p20.aspirate(5, d.top(2))
             p20.drop_tip()
 
+    #Set light color to green
     gpio.set_button_light(0,1,0)
