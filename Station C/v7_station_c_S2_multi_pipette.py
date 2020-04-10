@@ -62,9 +62,15 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in ['6']
     ]
 
+    waste_pool = ctx.load_labware('nalgene_1_reservoir_300000ul', '11',
+        'waste reservoir nalgene')
+
     # pipettes
     p20 = ctx.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)
     p300 = ctx.load_instrument('p300_single_gen2', 'left', tip_racks=tips200)
+
+    p300 = ctx.load_instrument('p300_single_gen2', mount='left', tip_racks=tips200, trash=waste_pool)
+
 
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
@@ -85,7 +91,7 @@ def run(ctx: protocol_api.ProtocolContext):
             p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest], air_gap=5, new_tip='never')
             p300.blow_out(mmix.top(-5))
             volume_screw=volume_screw-(volume_mmix*len(dest)+20)
-        p300.drop_tip()
+        p300.drop_tip(ctx.fixed_trash)
 
     # transfer 8 first samples to corresponding locations
     if TRANSFER_SAMPLES == True:
