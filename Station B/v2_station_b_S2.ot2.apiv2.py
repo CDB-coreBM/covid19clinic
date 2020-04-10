@@ -22,6 +22,40 @@ REAGENT SETUP:
 
 NUM_SAMPLES = 30
 
+    def pick_up(pip):
+        nonlocal tip_track
+        if tip_track['counts'][pip] == tip_track['maxes'][pip]:
+            ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
+            resuming.')
+            pip.reset_tipracks()
+            tip_track['counts'][pip] = 0
+        tip_track['counts'][pip] += 1
+        pip.pick_up_tip()
+
+    def remove_supernatant(pip, vol):
+        if pip == p1000:
+            for i, s in enumerate(mag_samples_s):
+                side = -1 if i < 48 == 0 else 1
+                loc = s.bottom(0.5).move(Point(x=side*2))
+                pick_up(p1000)
+                p1000.move_to(s.center())
+                p1000.transfer(vol, loc, waste, new_tip='never', air_gap=100)
+                p1000.blow_out(waste)
+                p1000.drop_tip()
+
+        else:
+            m300.flow_rate.aspirate = 30
+            for i, m in enumerate(mag_samples_m):
+                side = -1 if i < 6 == 0 else 1
+                loc = m.bottom(0.5).move(Point(x=side*2))
+                if not m300.hw_pipette['has_tip']:
+                    pick_up(m300)
+                m300.move_to(m.center())
+                m300.transfer(vol, loc, waste, new_tip='never', air_gap=20)
+                m300.blow_out(waste)
+                m300.drop_tip()
+            m300.flow_rate.aspirate = 150
+
 
 def run(ctx: protocol_api.ProtocolContext):
 
@@ -62,57 +96,28 @@ def run(ctx: protocol_api.ProtocolContext):
         well for well in
         elution_plate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
 
-    beads = reagent_res.rows()[0][:2]
-    etoh = reagent_res.rows()[0][3:5]
-    water = reagent_res.rows()[0][-1]
+    beads = reagent_res.rows()[0][:2] # 1 row, 2 columnas (las primeras)
+    etoh = reagent_res.rows()[0][3:5] # 1 row, 2 columnas (de la 3 a la 5); hay una de espacio
+    water = reagent_res.rows()[0][-1] # 1 row, 1 columna (la última) llena de agua
 
     # pipettes
-    m300 = ctx.load_instrument('p300_multi', 'left', tip_racks=tips300)
-    p1000 = ctx.load_instrument('p1000_single', 'right', tip_racks=tips1000)
+    m300 = ctx.load_instrument('p300_multi', 'left', tip_racks=tips300) # Load multi pipette
+    p1000 = ctx.load_instrument('p1000_single', 'right', tip_racks=tips1000) # load P1000 pipette
+
+    ##### FLOW RATES #######
     m300.flow_rate.aspirate = 150
     m300.flow_rate.dispense = 300
     m300.flow_rate.blow_out = 300
     p1000.flow_rate.aspirate = 100
     p1000.flow_rate.dispense = 1000
 
+
     tip_track = {
         'counts': {m300: 0, p1000: 0},
         'maxes': {m300: len(tips300)*12, p1000: len(tips1000)*96}
     }
 
-    def pick_up(pip):
-        nonlocal tip_track
-        if tip_track['counts'][pip] == tip_track['maxes'][pip]:
-            ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-resuming.')
-            pip.reset_tipracks()
-            tip_track['counts'][pip] = 0
-        tip_track['counts'][pip] += 1
-        pip.pick_up_tip()
 
-    def remove_supernatant(pip, vol):
-        if pip == p1000:
-            for i, s in enumerate(mag_samples_s):
-                side = -1 if i < 48 == 0 else 1
-                loc = s.bottom(0.5).move(Point(x=side*2))
-                pick_up(p1000)
-                p1000.move_to(s.center())
-                p1000.transfer(vol, loc, waste, new_tip='never', air_gap=100)
-                p1000.blow_out(waste)
-                p1000.drop_tip()
-
-        else:
-            m300.flow_rate.aspirate = 30
-            for i, m in enumerate(mag_samples_m):
-                side = -1 if i < 6 == 0 else 1
-                loc = m.bottom(0.5).move(Point(x=side*2))
-                if not m300.hw_pipette['has_tip']:
-                    pick_up(m300)
-                m300.move_to(m.center())
-                m300.transfer(vol, loc, waste, new_tip='never', air_gap=20)
-                m300.blow_out(waste)
-                m300.drop_tip()
-            m300.flow_rate.aspirate = 150
 
     # premix, transfer, and mix magnetic beads with sample
     for i, m in enumerate(mag_samples_m):
