@@ -19,7 +19,9 @@ NUM_SAMPLES = 96
 TRANSFER_MMIX = True
 TRANSFER_SAMPLES = True
 size_transfer=6
-
+volume_mmix=24.6
+volume_sample=5.4
+volume_screw=2000
 
 def divide_destinations(l, n):
     # looping till length l
@@ -64,6 +66,7 @@ def run(ctx: protocol_api.ProtocolContext):
     pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
     #Divide destination wells in small groups for P300 pipette
     dests = list(divide_destinations(pcr_wells, size_transfer))
+    #Set mmix source to first screwcap
     mmix = tuberack.wells()[0]
 
 '''
@@ -79,15 +82,18 @@ def run(ctx: protocol_api.ProtocolContext):
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
         for dest in dests:
-            p300.distribute(24.6, mmix, dest, new_tip='never')
+            if volume_screw<=(volume_mmix*len(dest)+35):
+                mmix = tuberack.wells()[4]
+            p300.distribute(volume_mmix, mmix, dest.bottom(2), air_gap=5, new_tip='never')
             p300.blow_out(mmix.top(-5))
+            volume_screw=volume_screw-(volume_mmix*len(dest))
         p300.drop_tip()
 
     # transfer 8 first samples to corresponding locations
     if TRANSFER_SAMPLES == True:
         for s, d in zip(samples, pcr_wells):
             p20.pick_up_tip()
-            p20.transfer(5.4, s, d, new_tip='never')
+            p20.transfer(volume_sample, s, d, new_tip='never')
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
             p20.drop_tip()
