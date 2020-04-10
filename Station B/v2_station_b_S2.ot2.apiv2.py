@@ -19,7 +19,7 @@ REAGENT SETUP:
     - nuclease-free water: channel 12
 
 """
-
+mag_height=13 # 13mm de height para el NUNC
 NUM_SAMPLES = 30
 
     def pick_up(pip):
@@ -83,7 +83,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ]
 
     # reagents and samples
-    num_cols = math.ceil(NUM_SAMPLES/8)
+    num_cols = math.ceil(NUM_SAMPLES/8) # Columnas de trabajo
     mag_samples_m = [
         well for well in
         magplate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
@@ -112,6 +112,7 @@ def run(ctx: protocol_api.ProtocolContext):
     p1000.flow_rate.dispense = 1000
 
 
+    # ?
     tip_track = {
         'counts': {m300: 0, p1000: 0},
         'maxes': {m300: len(tips300)*12, p1000: len(tips1000)*96}
@@ -135,7 +136,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # incubate off and on magnet
     ctx.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
-    magdeck.engage()
+    magdeck.engage(height=mag_height)
     ctx.delay(minutes=5, msg='Incubating on magnet for 5 minutes.')
 
     # remove supernatant
