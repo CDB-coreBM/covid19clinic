@@ -18,7 +18,13 @@ REAGENT SETUP:
 NUM_SAMPLES = 96
 TRANSFER_MMIX = True
 TRANSFER_SAMPLES = True
+size_transfer=6
 
+
+def divide_destinations(l, n):
+    # looping till length l
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
@@ -35,7 +41,7 @@ def run(ctx: protocol_api.ProtocolContext):
     tempdeck = ctx.load_module('tempdeck', '4')
     #Define temperature of module. Should be 4. 25 for testing purposes
     tempdeck.set_temperature(25)
-    
+
     pcr_plate = tempdeck.load_labware('transparent_96_wellplate_250ul'
          , 'PCR plate')
 
