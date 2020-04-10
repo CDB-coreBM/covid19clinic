@@ -1,5 +1,5 @@
 from opentrons import protocol_api
-
+from opentrons.drivers.rpi_drivers import gpio
 
 # metadata
 metadata = {
@@ -29,8 +29,8 @@ def divide_destinations(l, n):
         yield l[i:i + n]
 
 def run(ctx: protocol_api.ProtocolContext):
-    from opentrons.drivers.rpi_drivers import gpio
     gpio.set_button_light(1,0,0)
+    global volume_screw
     #Load labware
     source_plate = ctx.load_labware(
        'roche_96_wellplate_100ul', '1',
@@ -69,22 +69,13 @@ def run(ctx: protocol_api.ProtocolContext):
     #Set mmix source to first screwcap
     mmix = tuberack.wells()[0]
 
-'''
-    # transfer mastermix with P20
-    if TRANSFER_MMIX == True:
-        p20.pick_up_tip()
-        for d in dests:
-            p20.transfer(20, mmix, d, new_tip='never')
-            p20.blow_out(d.bottom(5))
-        p20.drop_tip()
-'''
     # transfer mastermix with P300
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
         for dest in dests:
-            if volume_screw<=(volume_mmix*len(dest)+35):
+            if volume_screw <= (volume_mmix*len(dest)+35):
                 mmix = tuberack.wells()[4]
-            p300.distribute(volume_mmix, mmix, dest.bottom(2), air_gap=5, new_tip='never')
+            p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest], air_gap=5, new_tip='never')
             p300.blow_out(mmix.top(-5))
             volume_screw=volume_screw-(volume_mmix*len(dest))
         p300.drop_tip()
