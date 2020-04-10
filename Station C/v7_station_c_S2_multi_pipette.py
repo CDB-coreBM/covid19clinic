@@ -32,13 +32,16 @@ def divide_destinations(l, n):
 def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest):
     pipette.aspirate((size_transfer*volume_mmix)+5, mmix)
     pipette.touch_tip(speed=20)
+    pipette.move_to(mmix.top(z=5))
+    pipette.aspirate(5)
     for d in dest:
+        pipette.dispense(5, d.top())
         pipette.dispense(volume_mmix, d)
+        pipette.move_to(d.top(z=5))
+        pipette.aspirate(5)
+    pipette.dispense(5)
     pipette.blow_out()
     pipette.drop_tip()
-
-p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest],
-
 
 def run(ctx: protocol_api.ProtocolContext):
     #Set light color to red
@@ -100,13 +103,12 @@ def run(ctx: protocol_api.ProtocolContext):
                 mmix = tuberack.wells()[4]
             p300.touch_tip(speed=20)
             distribute_mmix(p300, volume_mmix, mmix, size_transfer, dest)
-            p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest],
-            air_gap=5, disposal_volume=5, new_tip='never')
+            #p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest],air_gap=5, disposal_volume=5, new_tip='never')
             #p300.blow_out(mmix.top(-5))
             volume_screw=volume_screw-(volume_mmix*len(dest)+20)
         p300.drop_tip()
 
-    # transfer 8 first samples to corresponding locations
+    # transfer samples to corresponding locations with p20
     if TRANSFER_SAMPLES == True:
         for s, d in zip(samples, pcr_wells):
             p20.pick_up_tip()
