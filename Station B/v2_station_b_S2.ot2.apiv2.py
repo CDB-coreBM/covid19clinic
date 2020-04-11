@@ -19,72 +19,14 @@ REAGENT SETUP:
     - nuclease-free water: channel 12
 
 """
-
+mag_height=13 # 13mm de height para el NUNC
 NUM_SAMPLES = 30
-
-
-def run(ctx: protocol_api.ProtocolContext):
-
-    # load labware and modules
-    tempdeck = ctx.load_module('tempdeck', '1')
-    elution_plate = tempdeck.load_labware(
-        'opentrons_96_aluminumblock_nest_wellplate_100ul',
-        'cooled elution plate')
-    reagent_res = ctx.load_labware('nunc_96_wellplate_2000ul', '2',
-                                   'reagent deepwell plate 1')
-    magdeck = ctx.load_module('magdeck', '4')
-    magplate = magdeck.load_labware(
-        'usascientific_96_wellplate_2.4ml_deep', '96-deepwell sample plate')
-    waste = ctx.load_labware(
-        'nest_1_reservoir_195ml', '7', 'waste reservoir').wells()[0].top()
-    tips300 = [
-        ctx.load_labware(
-            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['3', '8', '9', '10', '11']
-    ]
-    tips1000 = [
-        ctx.load_labware(
-            'opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-        for slot in ['5', '6']
-    ]
-
-    # reagents and samples
-    num_cols = math.ceil(NUM_SAMPLES/8)
-    mag_samples_m = [
-        well for well in
-        magplate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
-    mag_samples_s = [
-        well for col in [
-            c for set in [magplate.columns()[i::2] for i in range(2)]
-            for c in set]
-        for well in col][:NUM_SAMPLES]
-    elution_samples_m = [
-        well for well in
-        elution_plate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
-
-    beads = reagent_res.rows()[0][:2]
-    etoh = reagent_res.rows()[0][3:5]
-    water = reagent_res.rows()[0][-1]
-
-    # pipettes
-    m300 = ctx.load_instrument('p300_multi', 'left', tip_racks=tips300)
-    p1000 = ctx.load_instrument('p1000_single', 'right', tip_racks=tips1000)
-    m300.flow_rate.aspirate = 150
-    m300.flow_rate.dispense = 300
-    m300.flow_rate.blow_out = 300
-    p1000.flow_rate.aspirate = 100
-    p1000.flow_rate.dispense = 1000
-
-    tip_track = {
-        'counts': {m300: 0, p1000: 0},
-        'maxes': {m300: len(tips300)*12, p1000: len(tips1000)*96}
-    }
 
     def pick_up(pip):
         nonlocal tip_track
         if tip_track['counts'][pip] == tip_track['maxes'][pip]:
             ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-resuming.')
+            resuming.')
             pip.reset_tipracks()
             tip_track['counts'][pip] = 0
         tip_track['counts'][pip] += 1
@@ -114,6 +56,70 @@ resuming.')
                 m300.drop_tip()
             m300.flow_rate.aspirate = 150
 
+
+def run(ctx: protocol_api.ProtocolContext):
+
+    # load labware and modules
+    tempdeck = ctx.load_module('tempdeck', '1')
+    elution_plate = tempdeck.load_labware(
+        'opentrons_96_aluminumblock_nest_wellplate_100ul',
+        'cooled elution plate')
+    reagent_res = ctx.load_labware('nunc_96_wellplate_2000ul', '2',
+                                   'reagent deepwell plate 1')
+    magdeck = ctx.load_module('magdeck', '4')
+    magplate = magdeck.load_labware(
+        'usascientific_96_wellplate_2.4ml_deep', '96-deepwell sample plate')
+    waste = ctx.load_labware(
+        'nest_1_reservoir_195ml', '7', 'waste reservoir').wells()[0].top()
+    tips300 = [
+        ctx.load_labware(
+            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
+        for slot in ['3', '8', '9', '10', '11']
+    ]
+    tips1000 = [
+        ctx.load_labware(
+            'opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
+        for slot in ['5', '6']
+    ]
+
+    # reagents and samples
+    num_cols = math.ceil(NUM_SAMPLES/8) # Columnas de trabajo
+    mag_samples_m = [
+        well for well in
+        magplate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
+    mag_samples_s = [
+        well for col in [
+            c for set in [magplate.columns()[i::2] for i in range(2)]
+            for c in set]
+        for well in col][:NUM_SAMPLES]
+    elution_samples_m = [
+        well for well in
+        elution_plate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
+
+    beads = reagent_res.rows()[0][:2] # 1 row, 2 columnas (las primeras)
+    etoh = reagent_res.rows()[0][3:5] # 1 row, 2 columnas (de la 3 a la 5); hay una de espacio
+    water = reagent_res.rows()[0][-1] # 1 row, 1 columna (la última) llena de agua
+
+    # pipettes
+    m300 = ctx.load_instrument('p300_multi', 'left', tip_racks=tips300) # Load multi pipette
+    p1000 = ctx.load_instrument('p1000_single', 'right', tip_racks=tips1000) # load P1000 pipette
+
+    ##### FLOW RATES #######
+    m300.flow_rate.aspirate = 150
+    m300.flow_rate.dispense = 300
+    m300.flow_rate.blow_out = 300
+    p1000.flow_rate.aspirate = 100
+    p1000.flow_rate.dispense = 1000
+
+
+    # ?
+    tip_track = {
+        'counts': {m300: 0, p1000: 0},
+        'maxes': {m300: len(tips300)*12, p1000: len(tips1000)*96}
+    }
+
+
+
     # premix, transfer, and mix magnetic beads with sample
     for i, m in enumerate(mag_samples_m):
         pick_up(m300)
@@ -130,7 +136,7 @@ resuming.')
 
     # incubate off and on magnet
     ctx.delay(minutes=5, msg='Incubating off magnet for 5 minutes.')
-    magdeck.engage()
+    magdeck.engage(height=mag_height)
     ctx.delay(minutes=5, msg='Incubating on magnet for 5 minutes.')
 
     # remove supernatant
