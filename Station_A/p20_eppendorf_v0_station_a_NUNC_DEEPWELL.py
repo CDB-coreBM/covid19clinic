@@ -60,6 +60,8 @@ def fill_96_rack(dests, src,pipette):
 NUM_SAMPLES = 96
 SAMPLE_VOLUME = 300
 CONTROL_VOLUME = 10
+TRANSFER_SAMPLES_F = True
+TRANSFER_CONTROL_F =True
 
 
 def run(ctx: protocol_api.ProtocolContext):
@@ -107,19 +109,22 @@ def run(ctx: protocol_api.ProtocolContext):
     #    p1000.aspirate(100, d.top())
     #    p1000.drop_tip()
 
+    #### NOW MOVE THE SAMPLE TO DEEPEWELL RACK #############
     # Transfer with p1000 from source rack to each of the well quadrants
-    for i,source_rack in enumerate(source_racks):
-        fill_96_rack(q[i],source_rack,p1000)
+    if TRANSFER_SAMPLES_F == True:
+        for i,source_rack in enumerate(source_racks):
+            fill_96_rack(q[i],source_rack,p1000)
 
 
     #### NOW INTRODUCE THE CONTROL SRC #############
     # transfer with p20 from control source
-    for d in dests:
-        p20.pick_up_tip()
-        p20.transfer(
-            CONTROL_VOLUME, cntrl_src_well.bottom(5), d.bottom(5), new_tip='never')
-        p20.aspirate(10, d.top())
-        p20.drop_tip()
+    if TRANSFER_CONTROL_F == True:
+        for d in dests:
+            p20.pick_up_tip()
+            p20.transfer(
+                CONTROL_VOLUME, cntrl_src_well.bottom(5), d.bottom(5), new_tip='never')
+            p20.aspirate(10, d.top())
+            p20.drop_tip()
 
     from opentrons.drivers.rpi_drivers import gpio
     gpio.set_button_light(0,1,0) # RGB [0:1]
