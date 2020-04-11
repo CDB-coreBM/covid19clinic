@@ -34,6 +34,7 @@ def divide_destinations(l, n):
         yield l[i:i + n]
 
 def distribute_custom(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal):
+    #Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
     pipette.aspirate((size_transfer*volume_mmix)+extra_dispensal, mmix.bottom(pickup_height))
     pipette.touch_tip(speed=20, v_offset=-5)
     pipette.move_to(mmix.top(z=5))

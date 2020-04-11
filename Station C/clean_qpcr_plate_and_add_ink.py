@@ -33,9 +33,9 @@ def divide_destinations(l, n):
 
 def distribute_custom(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal):
     #Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
-    pipette.aspirate((size_transfer*volume_mmix)+extra_dispensal, mmix.bottom(pickup_height))
+    pipette.aspirate((size_transfer*volume_mmix)+extra_dispensal, mmix.wells()[0].bottom(1))
     pipette.touch_tip(speed=20, v_offset=-5)
-    pipette.move_to(mmix.top(z=5))
+    pipette.move_to(mmix.wells()[0].top(z=5))
     pipette.aspirate(5)
     for d in dest:
         pipette.dispense(5, d.top())
@@ -104,7 +104,7 @@ def run(ctx: protocol_api.ProtocolContext):
         p300.pick_up_tip()
         for dest in dests:
             #Distribute the mmix in different wells
-            distribute_custom(p300, volume_ink, ink, size_transfer, dest, waste_pool, 1, extra_dispensal)
+            distribute_custom(p300, volume_ink, ink_reservoir, size_transfer, dest, ink_remaining, 1, extra_dispensal)
         p300.drop_tip()
 
     gpio.set_button_light(0,1,0)
