@@ -16,7 +16,8 @@ REAGENT SETUP:
 """
 
 NUM_SAMPLES = 96
-TRANSFER_MMIX = True
+CLEAN_QPCR_PLATE = True
+TRANSFER_INK = True
 size_transfer=6
 
 
@@ -33,6 +34,10 @@ def run(ctx: protocol_api.ProtocolContext):
        'roche_96_wellplate_100ul', '1',
         'chilled RNA elution plate from station B')
 
+    water = ctx.load_labware(
+        'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
+        'Bloque Aluminio 24 Eppendorf Well Plate 1500 µL').wells()[0].bottom(1)
+
     ink = ctx.load_labware(
     'nalgene_1_reservoir_300000ul', '3', 'waste reservoir').wells()[0].bottom(1)
 
@@ -47,11 +52,20 @@ def run(ctx: protocol_api.ProtocolContext):
     # setup up sample sources and destinations
     pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
 
-    # transfer mastermix with P20
-    if TRANSFER_MMIX == True:
+    # Clean well with P20
+    if CLEAN_QPCR_PLATE == True:
         p20.pick_up_tip()
         for d in pcr_wells:
-            p20.transfer(30, ink, d, new_tip='never')
+            p20.transfer(20, water, d, mix_after=(2,20), new_tip='never')
+            p20.transfer(20, d, ink)
+            p20.blow_out(ink.top(-5))
+        p20.drop_tip()
+
+    # transfer ink "sample" with P20
+    if TRANSFER_INK == True:
+        p20.pick_up_tip()
+        for d in pcr_wells:
+            p20.transfer(10, ink, d, new_tip='never')
             p20.blow_out(d.bottom(5))
         p20.drop_tip()
 
