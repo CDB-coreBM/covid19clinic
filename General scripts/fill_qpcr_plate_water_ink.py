@@ -17,7 +17,7 @@ REAGENT SETUP:
 
 NUM_SAMPLES = 96
 CLEAN_QPCR_PLATE = True
-TRANSFER_MMIX = True
+TRANSFER_INK = True
 size_transfer=6
 
 
@@ -56,16 +56,16 @@ def run(ctx: protocol_api.ProtocolContext):
     if CLEAN_QPCR_PLATE == True:
         p20.pick_up_tip()
         for d in pcr_wells:
-            p20.transfer(30, water, d, mix_after=(2,30), new_tip='never')
-            p20.transfer(30, d, ink)
+            p20.transfer(20, water, d, mix_after=(2,20), new_tip='never')
+            p20.transfer(20, d, ink)
             p20.blow_out(ink.top(-5))
         p20.drop_tip()
 
-    # transfer mastermix with P20
-    if TRANSFER_MMIX == True:
+    # transfer ink "sample" with P20
+    if TRANSFER_INK == True:
         p20.pick_up_tip()
         for d in pcr_wells:
-            p20.transfer(30, ink, d, new_tip='never')
+            p20.transfer(10, ink, d, new_tip='never')
             p20.blow_out(d.bottom(5))
         p20.drop_tip()
 
