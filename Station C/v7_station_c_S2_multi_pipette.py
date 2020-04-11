@@ -29,7 +29,7 @@ def divide_destinations(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest):
+def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool):
     pipette.aspirate((size_transfer*volume_mmix)+5, mmix)
     pipette.touch_tip(speed=20)
     pipette.move_to(mmix.top(z=5))
@@ -40,8 +40,7 @@ def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest):
         pipette.move_to(d.top(z=5))
         pipette.aspirate(5)
     pipette.dispense(5)
-    pipette.blow_out()
-    pipette.drop_tip()
+    pipette.blow_out(waste_pool.wells()[0].bottom(5))
 
 def run(ctx: protocol_api.ProtocolContext):
     #Set light color to red
@@ -101,8 +100,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #We make sure there is enough volume in screwcap one or we switch
             if volume_screw < (volume_mmix*len(dest)+20+35):
                 mmix = tuberack.wells()[4]
-            p300.touch_tip(speed=20)
-            distribute_mmix(p300, volume_mmix, mmix, size_transfer, dest)
+            distribute_mmix(p300, volume_mmix, mmix, size_transfer, dest, waste_pool)
             #p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest],air_gap=5, disposal_volume=5, new_tip='never')
             #p300.blow_out(mmix.top(-5))
             volume_screw=volume_screw-(volume_mmix*len(dest)+20)
