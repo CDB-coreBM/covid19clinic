@@ -25,7 +25,8 @@ TRANSFER_SAMPLES = False
 size_transfer=7 #Number of wells the distribute function will fill
 volume_mmix=24.6 #Volume of transfered master mix
 volume_sample=5.4 #Volume of the sample
-volume_screw=1500 #Total volume of screwcap
+volume_screw_one=1500 #Total volume of first screwcap
+volume_screw_two=1500 #Total volume of second screwcap
 extra_dispensal=5 #Extra volume for master mix in each distribute transfer
 
 def divide_destinations(l, n):
@@ -33,9 +34,9 @@ def divide_destinations(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def distribute_custom(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal):
+def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_height, extra_dispensal):
     #Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
-    pipette.aspirate((size_transfer*volume_mmix)+extra_dispensal, mmix.bottom(pickup_height))
+    pipette.aspirate((len(dest)*volume_mmix)+extra_dispensal, mmix.bottom(pickup_height))
     pipette.touch_tip(speed=20, v_offset=-5)
     pipette.move_to(mmix.top(z=5))
     pipette.aspirate(5)
@@ -45,7 +46,11 @@ def distribute_custom(pipette, volume_mmix, mmix, size_transfer, dest, waste_poo
         pipette.move_to(d.top(z=5))
         pipette.aspirate(5)
     pipette.dispense(5)
-    pipette.blow_out(waste_pool.wells()[0].bottom(5))
+    try:
+        pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height+3))
+    except:
+        pipette.blow_out(waste_pool.bottom(pickup_height+3))
+    return (len(dest)*volume_mmix)
 
 def run(ctx: protocol_api.ProtocolContext):
     #Set light color to red
@@ -102,19 +107,25 @@ def run(ctx: protocol_api.ProtocolContext):
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
         pickup_height=(volume_screw/53.45)
+        used_vol=[]
         for dest in dests:
             #We make sure there is enough volume in screwcap one or we switch
+            volume_screw = volume_screw_one
             if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35):
+                unused_volume1=volume_screw
                 mmix = tuberack.wells()[4]
-                volume_screw=1500 #New tube is full now
+                volume_screw=volume_screw_two #New tube is full now
                 pickup_height=(volume_screw/53.45)
             #Distribute the mmix in different wells
-            distribute_custom(p300, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal)
+            used_vol_temp=distribute_custom(p300, volume_mmix, mmix, dest, mmix, pickup_height, extra_dispensal)
+            used_vol.append(used_vol_temp)
             #Update volume left in screwcap
             volume_screw=volume_screw-(volume_mmix*len(dest)+extra_dispensal)
+
             #Update pickup_height according to volume left
             pickup_height=(volume_screw/53.45)
         p300.drop_tip()
+        unused_volume2=volume_screw
 
     # transfer samples to corresponding locations with p20
     if TRANSFER_SAMPLES == True:
@@ -127,3 +138,13 @@ def run(ctx: protocol_api.ProtocolContext):
 
     #Set light color to green
     gpio.set_button_light(0,1,0)
+
+    #Print the values of master mix used and remaining theoretical volume
+    import numpy as np
+    total_used_vol=np.sum(used_vol)
+    total_needed_volume=total_used_vol+unused_volume1+unused_volume2+extra_dispensal*len(dests)
+    ctx.comment('Total used volume is: ' +str(total_used_vol)+'\u03BCl.')
+    ctx.comment('Volume remaining in first tube is:' +format(int(unused_volume1))+'\u03BCl.')
+    ctx.comment('Volume remaining in second tube is:' +format(int(unused_volume2))+'\u03BCl.')
+    ctx.comment('Needed volume is '+format(int(total_needed_volume))+'\u03BCl')
+    ctx.comment('Used volumes per run are: '+ str(used_vol) + '\u03BCl.')

@@ -17,10 +17,11 @@ REAGENT SETUP:
 
 NUM_SAMPLES = 96
 CLEAN_QPCR_PLATE = False
-TRANSFER_INK = True
+TRANSFER_INK = False
+TRANSFER_WATER = True
 
 #Tune variables
-size_transfer=7 #Number of wells the distribute function will fill
+size_transfer=5 #Number of wells the distribute function will fill
 volume_ink=20 #Volume of transfered master mix
 volume_sample=5.4 #Volume of the sample
 volume_screw=1500 #Total volume of screwcap
@@ -34,9 +35,9 @@ def divide_destinations(l, n):
 def distribute_custom(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal):
     #Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
     pipette.aspirate((size_transfer*volume_mmix)+extra_dispensal, mmix.wells()[0].bottom(1))
-    pipette.touch_tip(speed=20, v_offset=-5)
+    #pipette.touch_tip(speed=20, v_offset=-5)
     pipette.move_to(mmix.wells()[0].top(z=5))
-    pipette.aspirate(5)
+    pipette.aspirate(5) #air gap
     for d in dest:
         pipette.dispense(5, d.top())
         pipette.dispense(volume_mmix, d)
@@ -72,7 +73,6 @@ def run(ctx: protocol_api.ProtocolContext):
 
 
     # pipettes
-    p20 = ctx.load_instrument('p20_single_gen2', 'right', tip_racks=tips20)
     p300 = ctx.load_instrument('p300_single_gen2', mount='left', tip_racks=tips200)
 
     # setup up sample sources and destinations
@@ -80,7 +80,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ink_remaining=ink_reservoir.wells()[0].top(-5)
     ink=ink_reservoir.wells()[0].bottom(1)
     water1 = water.wells()[0].bottom(1)
-    water2 = water.wells()[1].bottom(1)
+    water2 = water.wells()[4].bottom(1)
+
+    #Divide destination wells in small groups for P300 pipette
+    dests = list(divide_destinations(pcr_wells, size_transfer))
 
     # Clean well with P300
     if CLEAN_QPCR_PLATE == True:
@@ -90,21 +93,27 @@ def run(ctx: protocol_api.ProtocolContext):
         for d in pcr_wells:
             if i==48:
                 water_src=water2
-            p300.transfer(volume_ink, water_src, d, mix_after=(1,volume_ink), new_tip='never')
-            p300.transfer(volume_ink, d, ink, new_tip='never')
+            p300.transfer(volume_ink*1.5, water_src, d, mix_after=(3,volume_ink), air_gap=5, new_tip='never')
+            #pipette.aspirate(5) #air gap
+            p300.transfer(volume_ink*1.6, d, ink, new_tip='never')
             p300.blow_out(ink_remaining)
             i+=1
         p300.drop_tip()
 
-    #Divide destination wells in small groups for P300 pipette
-    dests = list(divide_destinations(pcr_wells, size_transfer))
 
     #transfer ink "sample" with P300
     if TRANSFER_INK == True:
         p300.pick_up_tip()
         for dest in dests:
             #Distribute the mmix in different wells
-            distribute_custom(p300, volume_ink, ink_reservoir, size_transfer, dest, ink_remaining, 1, extra_dispensal)
+            distribute_custom(p300, volume_sample, ink_reservoir, size_transfer, dest, ink_reservoir, 1, extra_dispensal)
         p300.drop_tip()
 
+    #transfer water "sample" with P300
+    if TRANSFER_WATER == True:
+        p300.pick_up_tip()
+        for dest in dests:
+            #Distribute the mmix in different wells
+            distribute_custom(p300, volume_sample, water1, size_transfer, dest, ink_reservoir, 1, extra_dispensal)
+        p300.drop_tip()
     gpio.set_button_light(0,1,0)
