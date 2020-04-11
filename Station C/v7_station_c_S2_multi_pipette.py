@@ -1,5 +1,6 @@
 from opentrons import protocol_api
 from opentrons.drivers.rpi_drivers import gpio
+import numpy as np
 
 # metadata
 metadata = {
@@ -19,7 +20,7 @@ REAGENT SETUP:
 #Initial variables
 NUM_SAMPLES = 96
 TRANSFER_MMIX = True
-TRANSFER_SAMPLES = False
+TRANSFER_SAMPLES = True
 
 #Tune variables
 size_transfer=7 #Number of wells the distribute function will fill
@@ -28,11 +29,18 @@ volume_sample=5.4 #Volume of the sample
 volume_screw_one=1500 #Total volume of first screwcap
 volume_screw_two=1500 #Total volume of second screwcap
 extra_dispensal=5 #Extra volume for master mix in each distribute transfer
+diameter_screwcap=8.25
+
+#Calculated variables
+area_section_screwcap=(np.pi*diameter_screwcap**2)/4
 
 def divide_destinations(l, n):
     # Divide the list of destinations in size n lists.
     for i in range(0, len(l), n):
         yield l[i:i + n]
+
+def check_door():
+    return gpio.read_window_switches()
 
 def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_height, extra_dispensal):
     #Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
@@ -53,9 +61,15 @@ def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_heigh
     return (len(dest)*volume_mmix)
 
 def run(ctx: protocol_api.ProtocolContext):
-    #Set light color to red
-    gpio.set_button_light(1,0,0)
     global volume_screw
+
+    #Check if door is opened
+    if check_door() == True:
+        #Set light color to purple
+        gpio.set_button_light(0.5,0,0.5)
+    else:
+        #Set light color to red
+        gpio.set_button_light(1,0,0)
 
     #Load labware
     source_plate = ctx.load_labware(
@@ -106,16 +120,16 @@ def run(ctx: protocol_api.ProtocolContext):
     # transfer mastermix with P300
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
-        pickup_height=(volume_screw/53.45)
+        pickup_height=(volume_screw/area_section_screwcap)
         used_vol=[]
+        volume_screw = volume_screw_one
         for dest in dests:
             #We make sure there is enough volume in screwcap one or we switch
-            volume_screw = volume_screw_one
             if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35):
                 unused_volume1=volume_screw
                 mmix = tuberack.wells()[4]
                 volume_screw=volume_screw_two #New tube is full now
-                pickup_height=(volume_screw/53.45)
+                pickup_height=(volume_screw/area_section_screwcap)
             #Distribute the mmix in different wells
             used_vol_temp=distribute_custom(p300, volume_mmix, mmix, dest, mmix, pickup_height, extra_dispensal)
             used_vol.append(used_vol_temp)
@@ -123,7 +137,7 @@ def run(ctx: protocol_api.ProtocolContext):
             volume_screw=volume_screw-(volume_mmix*len(dest)+extra_dispensal)
 
             #Update pickup_height according to volume left
-            pickup_height=(volume_screw/53.45)
+            pickup_height=(volume_screw/area_section_screwcap)
         p300.drop_tip()
         unused_volume2=volume_screw
 
@@ -134,13 +148,12 @@ def run(ctx: protocol_api.ProtocolContext):
             p20.transfer(volume_sample, s, d, new_tip='never')
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
-            p20.drop_tip(ctx.fixed_trash)
+            p20.drop_tip()
 
     #Set light color to green
     gpio.set_button_light(0,1,0)
 
     #Print the values of master mix used and remaining theoretical volume
-    import numpy as np
     total_used_vol=np.sum(used_vol)
     total_needed_volume=total_used_vol+unused_volume1+unused_volume2+extra_dispensal*len(dests)
     ctx.comment('Total used volume is: ' +str(total_used_vol)+'\u03BCl.')
