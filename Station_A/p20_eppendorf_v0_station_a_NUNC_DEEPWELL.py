@@ -1,9 +1,13 @@
 from opentrons import protocol_api
+import time
+
+#Statements
+
 
 # metadata
 metadata = {
     'protocolName': 'S2 Station A Version 1',
-    'author': 'Nick <protocols@opentrons.com>',
+    'author': 'Aitor & JL <Hospital Clinic Barcelona>',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.0'
 }
@@ -48,6 +52,19 @@ def quadrants(r):
             quadrant4=quadrant4+r[col][4:]
     return [quadrant1,quadrant2,quadrant3,quadrant4]
 
+# Distribute control liquid in deepwell
+def distribute_custom(pipette, dispense_volume, source, size_transfer, destination, pickup_height, extra_dispensal):
+    pipette.aspirate((size_transfer*dispense_volume)+extra_dispensal, source.bottom(pickup_height))
+    #pipette.move_to(source.top(z=0))
+    pipette.touch_tip(speed=20, v_offset=-3,radius=1.05)
+    #pipette.aspirate(5) # aspirate some air
+    pipette.dispense(dispense_volume, destination.bottom(2))
+    pipette.move_to(destination.top(z=-8))
+    pipette.blow_out()
+    #pipette.move_to(destination.top(z=-8))
+    pipette.touch_tip(speed=20,radius=1.05)
+
+# Function to fill the 96 well rack in quadrants
 def fill_96_rack(dests, src,pipette):
     for s, d in zip(src.wells(), dests):
         pipette.pick_up_tip()
@@ -57,26 +74,35 @@ def fill_96_rack(dests, src,pipette):
         pipette.drop_tip()
 
 
+
 NUM_SAMPLES = 96
 SAMPLE_VOLUME = 300
 CONTROL_VOLUME = 10
 TRANSFER_SAMPLES_F = True
-TRANSFER_CONTROL_F =True
-
+# TRANSFER_CONTROL_F = False # deactivated
+TRANSFER_CONTROL_F_custom = False
+volume_epp = 1500
+extra_dispensal = 0
+size_transfer = 1
+cross_section_area = 63.61
 
 def run(ctx: protocol_api.ProtocolContext):
+    global volume_epp
     from opentrons.drivers.rpi_drivers import gpio
-    gpio.set_button_light(1,0,0) # RGB 0-1
+    gpio.set_rail_lights(True) # set lights on
+    gpio.set_button_light(1,0,0) # RGB [0:1]
     # load labware
     source_racks = [ctx.load_labware(
             'opentrons_24_tuberack_eppendorf_2ml_safelock_snapcap', slot,
             'source tuberack with eppendorf' + str(i+1)) for i, slot in enumerate(['4','6','3','1'])
         ]
-    tempdeck=ctx.load_module('tempdeck','7')
-    tempdeck.set_temperature(25)
-    control_src = tempdeck.load_labware(
-        'bloquealuminio_24_eppendorf_wellplate_1500ul',
-        'Bloque Aluminio 24 Well Plate 1500 µL')
+    if TRANSFER_CONTROL_F_custom==True:
+        tempdeck=ctx.load_module('tempdeck','7')
+        tempdeck.set_temperature(25)
+        control_src = tempdeck.load_labware(
+            'bloquealuminio_24_eppendorf_wellplate_1500ul',
+            'Bloque Aluminio 24 Well Plate 1500 µL')
+        cntrl_src_well=control_src.wells()[0]
 
     dest_plate = ctx.load_labware(
         'nunc_96_wellplate_2000ul', '5',
@@ -99,7 +125,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # setup samples and destinations
     sources = [well for rack in source_racks for well in rack.wells()][:NUM_SAMPLES]
     dests = [well for col in dest_plate.columns()[0::2] for well in col] + [well for col in dest_plate.columns()[1::2] for well in col]
-    cntrl_src_well=control_src.wells()[0]
+
 
     # transfer with p20 from control source
     #for s, d in zip(sources, dests):
@@ -116,18 +142,39 @@ def run(ctx: protocol_api.ProtocolContext):
             fill_96_rack(q[i],source_rack,p1000)
 
 
-    #### NOW INTRODUCE THE CONTROL SRC #############
-    # transfer with p20 from control source
-    if TRANSFER_CONTROL_F == True:
-        for d in dests:
+    #### NOW INTRODUCE THE CONTROL SRC ############## deprecated
+    # transfer with p20 from control source with the original function from opentrons
+
+    #if TRANSFER_CONTROL_F == True:
+    #    for d in dests:
+    #        p20.pick_up_tip()
+    #        p20.transfer(
+    #            CONTROL_VOLUME, cntrl_src_well.bottom(5), d.bottom(5), new_tip='never')
+    #        p20.aspirate(10, d.top())
+    #        p20.drop_tip()
+##########################################################################
+    #### NOW DISTRIBUTE THE CONTROL SRC #############
+    # transfer with p20 from control source with the CUSTOM functions
+    if TRANSFER_CONTROL_F_custom == True:
+        pickup_height=(volume_epp/cross_section_area)
+        for dest in dests:
             p20.pick_up_tip()
-            p20.transfer(
-                CONTROL_VOLUME, cntrl_src_well.bottom(5), d.bottom(5), new_tip='never')
-            p20.aspirate(10, d.top())
+            #    #Distribute the mmix in different wells
+            distribute_custom(p20, CONTROL_VOLUME, cntrl_src_well, size_transfer, dest, pickup_height-1, extra_dispensal)
+                #Update volume left in screwcap
+            volume_epp=volume_epp-(CONTROL_VOLUME*size_transfer+extra_dispensal)
+                #Update pickup_height according to volume left
+            pickup_height=(volume_epp/cross_section_area)
             p20.drop_tip()
 
-    from opentrons.drivers.rpi_drivers import gpio
-    gpio.set_button_light(0,1,0) # RGB [0:1]
+##########################################################################
 
+    for i in range(8):
+        #gpio.set_rail_lights(False)
+        gpio.set_button_light(1,0,0)
+        time.sleep(0.3)
+        #gpio.set_rail_lights(True)
+        gpio.set_button_light(0,0,1)
+        time.sleep(0.3)
     ctx.comment('Move deepwell plate (slot 5) to Station B for RNA \
 extraction.')
