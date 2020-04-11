@@ -38,8 +38,8 @@ def run(ctx: protocol_api.ProtocolContext):
         'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
         'Bloque Aluminio 24 Eppendorf Well Plate 1500 µL').wells()[0].bottom(1)
 
-    ink = ctx.load_labware(
-    'nalgene_1_reservoir_300000ul', '3', 'waste reservoir').wells()[0].bottom(1)
+    ink_reservoir = ctx.load_labware(
+    'nalgene_1_reservoir_300000ul', '3', 'waste reservoir')
 
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
@@ -51,14 +51,15 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # setup up sample sources and destinations
     pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
-
+    ink_remaining=ink_reservoir.wells()[0].top(-5)
+    ink=ink_reservoir.wells()[0].bottom(1)
     # Clean well with P20
     if CLEAN_QPCR_PLATE == True:
         p20.pick_up_tip()
         for d in pcr_wells:
             p20.transfer(20, water, d, mix_after=(2,20), new_tip='never')
-            p20.transfer(20, d, ink)
-            p20.blow_out(ink.top(-5))
+            p20.transfer(20, d, ink, new_tip='never')
+            p20.blow_out(ink_remaining)
         p20.drop_tip()
 
     # transfer ink "sample" with P20
