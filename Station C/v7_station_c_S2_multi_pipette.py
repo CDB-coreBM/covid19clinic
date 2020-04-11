@@ -3,12 +3,12 @@ from opentrons.drivers.rpi_drivers import gpio
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station C Version 2',
-    'author': 'Aitor & JL',
+    'protocolName': 'S2 Station C Version 7',
+    'author': 'Aitor & JL (jlvillanueva@clinic.cat)',
     'source': 'Custom Protocol',
     'apiLevel': '2.0'
 }
-a=5
+
 """
 REAGENT SETUP:
 - slot 2 2ml screwcap in tuberack:
@@ -16,21 +16,24 @@ REAGENT SETUP:
     - mastermix: tube A2
 """
 
+#Initial variables
 NUM_SAMPLES = 96
 TRANSFER_MMIX = True
 TRANSFER_SAMPLES = False
-size_transfer=7
-volume_mmix=24.6
-volume_sample=5.4
-volume_screw=1500
-extra_dispensal=5
+
+#Tune variables
+size_transfer=7 #Number of wells the distribute function will fill
+volume_mmix=24.6 #Volume of transfered master mix
+volume_sample=5.4 #Volume of the sample
+volume_screw=1500 #Total volume of screwcap
+extra_dispensal=5 #Extra volume for master mix in each distribute transfer
 
 def divide_destinations(l, n):
-    # looping till length l
+    # Divide the list of destinations in size n lists.
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal):
+def distribute_custom(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal):
     pipette.aspirate((size_transfer*volume_mmix)+extra_dispensal, mmix.bottom(pickup_height))
     pipette.touch_tip(speed=20, v_offset=-5)
     pipette.move_to(mmix.top(z=5))
@@ -105,7 +108,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 volume_screw=1500 #New tube is full now
                 pickup_height=(volume_screw/53.45)
             #Distribute the mmix in different wells
-            distribute_mmix(p300, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal)
+            distribute_custom(p300, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal)
             #Update volume left in screwcap
             volume_screw=volume_screw-(volume_mmix*len(dest)+extra_dispensal)
             #Update pickup_height according to volume left
