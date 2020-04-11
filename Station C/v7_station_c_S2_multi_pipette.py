@@ -23,15 +23,16 @@ size_transfer=7
 volume_mmix=24.6
 volume_sample=5.4
 volume_screw=1500
+extra_dispensal=5
 
 def divide_destinations(l, n):
     # looping till length l
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool):
-    pipette.aspirate((size_transfer*volume_mmix)+5, mmix)
-    pipette.touch_tip(speed=20)
+def distribute_mmix(pipette, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal):
+    pipette.aspirate((size_transfer*volume_mmix)+extra_dispensal, mmix.bottom(pickup_height))
+    pipette.touch_tip(speed=20, v_offset=-5)
     pipette.move_to(mmix.top(z=5))
     pipette.aspirate(5)
     for d in dest:
@@ -96,14 +97,19 @@ def run(ctx: protocol_api.ProtocolContext):
     # transfer mastermix with P300
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
+        pickup_height=(volume_screw/53.45)
         for dest in dests:
             #We make sure there is enough volume in screwcap one or we switch
-            if volume_screw < (volume_mmix*len(dest)+20+35):
+            if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35):
                 mmix = tuberack.wells()[4]
-            distribute_mmix(p300, volume_mmix, mmix, size_transfer, dest, waste_pool)
-            #p300.distribute(volume_mmix, mmix, [d.bottom(2) for d in dest],air_gap=5, disposal_volume=5, new_tip='never')
-            #p300.blow_out(mmix.top(-5))
-            volume_screw=volume_screw-(volume_mmix*len(dest)+20)
+                volume_screw=1500 #New tube is full now
+                pickup_height=(volume_screw/53.45)
+            #Distribute the mmix in different wells
+            distribute_mmix(p300, volume_mmix, mmix, size_transfer, dest, waste_pool, pickup_height, extra_dispensal)
+            #Update volume left in screwcap
+            volume_screw=volume_screw-(volume_mmix*len(dest)+extra_dispensal)
+            #Update pickup_height according to volume left
+            pickup_height=(volume_screw/53.45)
         p300.drop_tip()
 
     # transfer samples to corresponding locations with p20
