@@ -22,39 +22,41 @@ REAGENT SETUP:
 mag_height=13 # 13mm de height para el NUNC
 NUM_SAMPLES = 30
 
-    def pick_up(pip):
-        nonlocal tip_track
-        if tip_track['counts'][pip] == tip_track['maxes'][pip]:
-            ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-            resuming.')
-            pip.reset_tipracks()
-            tip_track['counts'][pip] = 0
-        tip_track['counts'][pip] += 1
-        pip.pick_up_tip()
+    # Prompt user to change the tiprack
+def pick_up(pip):
+    nonlocal tip_track
+    if tip_track['counts'][pip] == tip_track['maxes'][pip]:
+        ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
+        resuming.')
+        pip.reset_tipracks()
+        tip_track['counts'][pip] = 0
+    tip_track['counts'][pip] += 1
+    pip.pick_up_tip()
 
-    def remove_supernatant(pip, vol):
-        if pip == p1000:
-            for i, s in enumerate(mag_samples_s):
-                side = -1 if i < 48 == 0 else 1
-                loc = s.bottom(0.5).move(Point(x=side*2))
-                pick_up(p1000)
-                p1000.move_to(s.center())
-                p1000.transfer(vol, loc, waste, new_tip='never', air_gap=100)
-                p1000.blow_out(waste)
-                p1000.drop_tip()
 
-        else:
-            m300.flow_rate.aspirate = 30
-            for i, m in enumerate(mag_samples_m):
-                side = -1 if i < 6 == 0 else 1
-                loc = m.bottom(0.5).move(Point(x=side*2))
-                if not m300.hw_pipette['has_tip']:
-                    pick_up(m300)
-                m300.move_to(m.center())
-                m300.transfer(vol, loc, waste, new_tip='never', air_gap=20)
-                m300.blow_out(waste)
-                m300.drop_tip()
-            m300.flow_rate.aspirate = 150
+def remove_supernatant(pip, vol):
+    if pip == p1000:
+        for i, s in enumerate(mag_samples_s):
+            side = -1 if i < 48 == 0 else 1
+            loc = s.bottom(0.5).move(Point(x=side*2))
+            pick_up(p1000)
+            p1000.move_to(s.center())
+            p1000.transfer(vol, loc, waste, new_tip='never', air_gap=100)
+            p1000.blow_out(waste)
+            p1000.drop_tip()
+
+    else:
+        m300.flow_rate.aspirate = 30
+        for i, m in enumerate(mag_samples_m):
+            side = -1 if i < 6 == 0 else 1
+            loc = m.bottom(0.5).move(Point(x=side*2))
+            if not m300.hw_pipette['has_tip']:
+                pick_up(m300)
+            m300.move_to(m.center())
+            m300.transfer(vol, loc, waste, new_tip='never', air_gap=20)
+            m300.blow_out(waste)
+            m300.drop_tip()
+        m300.flow_rate.aspirate = 150
 
 
 def run(ctx: protocol_api.ProtocolContext):
@@ -62,24 +64,24 @@ def run(ctx: protocol_api.ProtocolContext):
     # load labware and modules
     tempdeck = ctx.load_module('tempdeck', '1')
     elution_plate = tempdeck.load_labware(
-        'opentrons_96_aluminumblock_nest_wellplate_100ul',
+        'nunc_96_wellplate_2000ul','3'
         'cooled elution plate')
-    reagent_res = ctx.load_labware('nunc_96_wellplate_2000ul', '2',
+    reagent_res = ctx.load_labware('nest_12_reservoir_15ml', '2',
                                    'reagent deepwell plate 1')
-    magdeck = ctx.load_module('magdeck', '4')
+    magdeck = ctx.load_module('magdeck', '6')
     magplate = magdeck.load_labware(
-        'usascientific_96_wellplate_2.4ml_deep', '96-deepwell sample plate')
+        'nunc_96_wellplate_2000ul', '96-deepwell sample plate')
     waste = ctx.load_labware(
-        'nest_1_reservoir_195ml', '7', 'waste reservoir').wells()[0].top()
+        'nalgene_1_reservoir_300000ul', '9', 'waste reservoir').wells()[0].top()
     tips300 = [
         ctx.load_labware(
-            'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['3', '8', '9', '10', '11']
+            'opentrons_96_tiprack_200ul', slot, '200µl filter tiprack')
+        for slot in [ '5', '8', '11']
     ]
     tips1000 = [
         ctx.load_labware(
             'opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-        for slot in ['5', '6']
+        for slot in ['1','4','7', '10']
     ]
 
     # reagents and samples
