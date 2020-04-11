@@ -23,7 +23,7 @@ TRANSFER_WATER = True
 #Tune variables
 size_transfer=5 #Number of wells the distribute function will fill
 volume_ink=20 #Volume of transfered master mix
-volume_sample=5.4 #Volume of the sample
+volume_sample=20 #Volume of the sample
 volume_screw=1500 #Total volume of screwcap
 extra_dispensal=5 #Extra volume for master mix in each distribute transfer
 
@@ -46,9 +46,16 @@ def distribute_custom(pipette, volume_mmix, mmix, size_transfer, dest, waste_poo
     pipette.dispense(5)
     pipette.blow_out(waste_pool.wells()[0].bottom(5))
 
+def check_door():
+    return gpio.read_window_switches()
+
 def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
-    gpio.set_button_light(1,0,0)
+
+    if check_door() == True:
+        gpio.set_button_light(0.5,0,0.5)
+    else:
+        gpio.set_button_light(1,0,0)
     #Load labware
     pcr_plate = ctx.load_labware(
        'roche_96_wellplate_100ul', '1',
@@ -114,6 +121,6 @@ def run(ctx: protocol_api.ProtocolContext):
         p300.pick_up_tip()
         for dest in dests:
             #Distribute the mmix in different wells
-            distribute_custom(p300, volume_sample, water1, size_transfer, dest, ink_reservoir, 1, extra_dispensal)
+            distribute_custom(p300, volume_sample, water    , size_transfer, dest, ink_reservoir, 1, extra_dispensal)
         p300.drop_tip()
     gpio.set_button_light(0,1,0)
