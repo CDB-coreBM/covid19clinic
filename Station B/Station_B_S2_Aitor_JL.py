@@ -92,11 +92,11 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # reagents and samples
     num_cols = math.ceil(NUM_SAMPLES/8) # Columnas de trabajo
-    mag_samples_m = [
-        well for well in
+    mag_samples_m = [ # pipeta multiple
+        well for well in # even columns + odd columns
         magplate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
-    mag_samples_s = [
-        well for col in [
+    mag_samples_s = [ # pipeta simple
+        well for col in [ # even columns + odd columns and transform to wells
             c for set in [magplate.columns()[i::2] for i in range(2)]
             for c in set]
         for well in col][:NUM_SAMPLES]
@@ -165,7 +165,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ###############################################################################
 
     # WASH 2 TIMES
-########
+    ########
     # 70% EtOH washes
     for wash in range(2):
         # transfer EtOH
