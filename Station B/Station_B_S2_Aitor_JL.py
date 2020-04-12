@@ -19,12 +19,10 @@ REAGENT SETUP:
     - nuclease-free water: channel 12
 
 """
-mag_height=13 # 13mm de height para el NUNC
+mag_height=13 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 30
 
-    # Prompt user to change the tiprack
-
-
+# Prompt user to change the tiprack
 
 def run(ctx: protocol_api.ProtocolContext):
 

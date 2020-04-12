@@ -99,8 +99,8 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in ['6']
     ]
 
-    waste_pool = ctx.load_labware('nalgene_1_reservoir_300000ul', '11',
-        'waste reservoir nalgene')
+    #waste_pool = ctx.load_labware('nalgene_1_reservoir_300000ul', '11',
+        #'waste reservoir nalgene')
 
     # pipettes
     p20 = ctx.load_instrument('p20_single_gen2', mount='right', tip_racks=tips20)
