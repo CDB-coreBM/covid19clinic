@@ -26,12 +26,12 @@ TRANSFER_SAMPLES = False
 size_transfer=7 #Number of wells the distribute function will fill
 volume_mmix=24.6 #Volume of transfered master mix
 volume_sample=5.4 #Volume of the sample
-volume_screw_one=1500 #Total volume of first screwcap
+volume_screw_one=217 #Total volume of first screwcap
 volume_screw_two=1500 #Total volume of second screwcap
 extra_dispensal=5 #Extra volume for master mix in each distribute transfer
-diameter_screwcap=8.25
+diameter_screwcap=8.25 #Diameter of the screwcap
 temperature=25 #Temperature of temp module
-volume_cone=50
+volume_cone=50 #Volume in ul that fit in the screwcap cone
 
 
 #Calculated variables
@@ -135,7 +135,7 @@ def run(ctx: protocol_api.ProtocolContext):
         volume_screw = volume_screw_one
         for dest in dests:
             #We make sure there is enough volume in screwcap one or we switch
-            if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35)):
+            if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35):
                 unused_volume1 = volume_screw
                 mmix = tuberack.wells()[4]
                 volume_screw = volume_screw_two #New tube is full now
