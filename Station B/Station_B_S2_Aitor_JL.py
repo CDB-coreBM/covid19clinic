@@ -19,27 +19,31 @@ REAGENT SETUP:
     - nuclease-free water: channel 12
 
 """
-mag_height=13 # 13mm de height para el NUNC
+mag_height=13 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 30
 
-    # Prompt user to change the tiprack
-
-
+# Prompt user to change the tiprack
 
 def run(ctx: protocol_api.ProtocolContext):
 
     # load labware and modules
+    reagent_res = ctx.load_labware('nest_12_reservoir_15ml', '2',
+                                       'reagent deepwell plate 1')
+
     tempdeck = ctx.load_module('tempdeck', '3')
+
     elution_plate = tempdeck.load_labware(
         'transparent_96_wellplate_250ul',
         'cooled elution plate')
-    reagent_res = ctx.load_labware('nest_12_reservoir_15ml', '2',
-                                   'reagent deepwell plate 1')
+
     magdeck = ctx.load_module('magdeck', '6')
     magplate = magdeck.load_labware(
         'nunc_96_wellplate_2000ul', '96-deepwell sample plate')
+
     waste = ctx.load_labware(
         'nalgene_1_reservoir_300000ul', '9', 'waste reservoir').wells()[0].top()
+
+    # Load tip_racks
     tips300 = [
         ctx.load_labware(
             'opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
@@ -50,6 +54,7 @@ def run(ctx: protocol_api.ProtocolContext):
             'opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
         for slot in ['1','4','7', '10']
     ]
+
     def pick_up(pip):
         nonlocal tip_track
         if tip_track['counts'][pip] == tip_track['maxes'][pip]:
@@ -59,7 +64,6 @@ def run(ctx: protocol_api.ProtocolContext):
             tip_track['counts'][pip] = 0
         tip_track['counts'][pip] += 1
         pip.pick_up_tip()
-
 
     def remove_supernatant(pip, vol):
         if pip == p1000:
