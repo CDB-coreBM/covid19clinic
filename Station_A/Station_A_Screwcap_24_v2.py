@@ -1,5 +1,6 @@
 from opentrons import protocol_api
 import time
+import math
 
 #Statements
 
@@ -67,26 +68,41 @@ def distribute_custom(pipette, dispense_volume, source, size_transfer, destinati
     pipette.touch_tip(speed=20,radius=1.05)
 
 # Function to fill the 96 well rack in quadrants
-def fill_96_rack(dests, src,pipette,bool):
-    for s, d in zip(src.wells(), dests):
+def fill_96_rack(cont,dests, src,pipette,bool,SAMPLE_VOLUME,CONTROL_VOLUME):
+
+    if cont==1:
+        a=src
+    else:
+        a=src.wells()
+    for s, d in zip(a, dests):
         pipette.pick_up_tip()
-        pipette.transfer(SAMPLE_VOLUME, s.bottom(5), d.bottom(5), new_tip='never',air_gap=5)
+        pipette.aspirate(SAMPLE_VOLUME,s.bottom(1) )
+        pipette.touch_tip(speed=20, v_offset=-5)
+        pipette.move_to(s.top(z=5))
+        pipette.aspirate(5)
+        pipette.dispense(SAMPLE_VOLUME+5, d)
         if bool == True:
-            pipette.mix(1, 350, d)
-            pipette.move_to(d.top(z=5))
+            pipette.mix(1, SAMPLE_VOLUME+CONTROL_VOLUME+10, d)
+            pipette.move_to(d.top(z=-5))
             pipette.blow_out()
-        pipette.aspirate(100, d.top(5))
-        pipette.drop_tip()
+
+        pipette.move_to(d.top(z=-5))
+        pipette.dispense(5)
+        pipette.aspirate(10)
+        pipette.touch_tip(speed=20, v_offset=-5)
+
+        #pipette.transfer(SAMPLE_VOLUME, s.bottom(1), d.bottom(1), new_tip='never',air_gap=5,touch_tip=True)
+        pipette.drop_tip(home_after=False)
 
 
 ##########################################################################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 5
 SAMPLE_VOLUME = 300
 CONTROL_VOLUME = 10
 TRANSFER_SAMPLES_F = True
 # TRANSFER_CONTROL_F = False # deactivated
 TRANSFER_CONTROL_F_custom = False
-mix_bool=True
+mix_bool=False
 volume_epp = 1500
 extra_dispensal = 0
 size_transfer = 1
@@ -99,10 +115,18 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_rail_lights(True) # set lights on
     gpio.set_button_light(1,0,0) # RGB [0:1]
     # load labware
+    if NUM_SAMPLES<96:
+        rack_num=math.ceil(NUM_SAMPLES/24)
+        ctx.comment('Used source racks are '+str(rack_num))
+        samples_last_rack=NUM_SAMPLES-rack_num*24
+
+
     source_racks = [ctx.load_labware(
-            'opentrons_24_tuberack_eppendorf_2ml_safelock_snapcap', slot,
-            'source tuberack with eppendorf' + str(i+1)) for i, slot in enumerate(['4','6','3','1'])
+            'opentrons_24_tuberack_generic_2ml_screwcap', slot,
+            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['4','6','3','1'][:rack_num])
         ]
+
+# source_racks[-1].wells()=source_racks[-1].wells()[:samples_last_rack]
 ##########################################################################
     if TRANSFER_CONTROL_F_custom==True:
         tempdeck=ctx.load_module('tempdeck','7')
@@ -111,6 +135,7 @@ def run(ctx: protocol_api.ProtocolContext):
             'bloquealuminio_24_eppendorf_wellplate_1500ul',
             'Bloque Aluminio 24 Well Plate 1500 µL')
         cntrl_src_well=control_src.wells()[0]
+        p20 = ctx.load_instrument('p20_single_gen2', 'right', tip_racks=[tiprack])
 ##########################################################################
     dest_plate = ctx.load_labware(
         'nunc_96_wellplate_2000ul', '5',
@@ -118,6 +143,7 @@ def run(ctx: protocol_api.ProtocolContext):
     #create quadrants for destination plate
     cols=dest_plate.columns()
     q=quadrants(cols)
+    q=q[:rack_num]
 
 # Load tipracks
 ##############
@@ -127,12 +153,11 @@ def run(ctx: protocol_api.ProtocolContext):
         'opentrons_96_filtertiprack_1000ul', '10', '1000µl tiprack')
 
     # Load pipettes
-    p20 = ctx.load_instrument(
-        'p20_single_gen2', 'right', tip_racks=[tiprack])
+
     p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=[tips1000])
 
     # setup samples and destinations
-    sources = [well for rack in source_racks for well in rack.wells()][:NUM_SAMPLES]
+    #sources = [well for rack in source_racks for well in rack.wells()][:NUM_SAMPLES]
     dests = [well for col in dest_plate.columns()[0::2] for well in col] + [well for col in dest_plate.columns()[1::2] for well in col]
 ##########################################################################
 
@@ -162,7 +187,13 @@ def run(ctx: protocol_api.ProtocolContext):
     # Transfer with p1000 from source rack to each of the well quadrants
     if TRANSFER_SAMPLES_F == True:
         for i,source_rack in enumerate(source_racks):
-            fill_96_rack(q[i],source_rack,p1000,mix_bool)
+            if i==len(source_racks)-1:
+                source_rack=source_racks[-1].wells()[:samples_last_rack]
+                control=1
+                fill_96_rack(control,q[i],source_rack,p1000,mix_bool,SAMPLE_VOLUME,CONTROL_VOLUME)
+            else:
+                control=1
+                fill_96_rack(control,q[i],source_rack,p1000,mix_bool,SAMPLE_VOLUME,CONTROL_VOLUME)
 ##########################################################################
 
     #### NOW INTRODUCE THE CONTROL SRC ############## deprecated
@@ -180,10 +211,10 @@ def run(ctx: protocol_api.ProtocolContext):
 ##########################################################################
 
     for i in range(8):
-        #gpio.set_rail_lights(False)
+        gpio.set_rail_lights(False)
         gpio.set_button_light(1,0,0)
         time.sleep(0.3)
-        #gpio.set_rail_lights(True)
+        gpio.set_rail_lights(True)
         gpio.set_button_light(0,0,1)
         time.sleep(0.3)
     ctx.comment('Move deepwell plate (slot 5) to Station B for RNA \
