@@ -73,10 +73,10 @@ def fill_96_rack(dests, src,pipette,bool):
         pipette.transfer(SAMPLE_VOLUME, s.bottom(5), d.bottom(5), new_tip='never',air_gap=5)
         if bool == True:
             pipette.mix(1, 350, d)
-            pipette.move_to(d.top(z=5))
+            pipette.move_to(d.top(z=-5))
             pipette.blow_out()
         pipette.aspirate(100, d.top(5))
-        pipette.drop_tip()
+        pipette.drop_tip(home_after=False)
 
 
 ##########################################################################
@@ -86,7 +86,7 @@ CONTROL_VOLUME = 10
 TRANSFER_SAMPLES_F = True
 # TRANSFER_CONTROL_F = False # deactivated
 TRANSFER_CONTROL_F_custom = False
-mix_bool=True
+mix_bool=False
 volume_epp = 1500
 extra_dispensal = 0
 size_transfer = 1
