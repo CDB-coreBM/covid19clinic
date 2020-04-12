@@ -18,9 +18,9 @@ REAGENT SETUP:
 """
 
 #Initial variables
-NUM_SAMPLES = 96
+NUM_SAMPLES = 7
 TRANSFER_MMIX = True
-TRANSFER_SAMPLES = True
+TRANSFER_SAMPLES = False
 
 #Tune variables
 size_transfer=7 #Number of wells the distribute function will fill
@@ -30,9 +30,14 @@ volume_screw_one=1500 #Total volume of first screwcap
 volume_screw_two=1500 #Total volume of second screwcap
 extra_dispensal=5 #Extra volume for master mix in each distribute transfer
 diameter_screwcap=8.25
+temperature=25 #Temperature of temp module
+volume_cone=50
+
 
 #Calculated variables
 area_section_screwcap=(np.pi*diameter_screwcap**2)/4
+h_cone=(volume_cone*3/area_section_screwcap)
+
 
 def divide_destinations(l, n):
     # Divide the list of destinations in size n lists.
@@ -61,7 +66,12 @@ def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_heigh
     return (len(dest)*volume_mmix)
 
 def run(ctx: protocol_api.ProtocolContext):
+    global volume_screw_one
+    global volume_screw_two
     global volume_screw
+    volume_screw = volume_screw_one
+    unused_volume1=0
+    unused_volume2=0
 
     #Check if door is opened
     if check_door() == True:
@@ -83,7 +93,7 @@ def run(ctx: protocol_api.ProtocolContext):
     tempdeck = ctx.load_module('tempdeck', '4')
 
     #Define temperature of module. Should be 4. 25 for testing purposes
-    tempdeck.set_temperature(25)
+    tempdeck.set_temperature(temperature)
 
     pcr_plate = tempdeck.load_labware('transparent_96_wellplate_250ul'
          , 'PCR plate')
@@ -99,8 +109,8 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in ['6']
     ]
 
-    waste_pool = ctx.load_labware('nalgene_1_reservoir_300000ul', '11',
-        'waste reservoir nalgene')
+    #waste_pool = ctx.load_labware('nalgene_1_reservoir_300000ul', '11',
+        #'waste reservoir nalgene')
 
     # pipettes
     p20 = ctx.load_instrument('p20_single_gen2', mount='right', tip_racks=tips20)
@@ -120,24 +130,25 @@ def run(ctx: protocol_api.ProtocolContext):
     # transfer mastermix with P300
     if TRANSFER_MMIX == True:
         p300.pick_up_tip()
-        pickup_height=(volume_screw/area_section_screwcap)
+        pickup_height=((volume_screw-volume_cone)/area_section_screwcap-h_cone)
         used_vol=[]
         volume_screw = volume_screw_one
         for dest in dests:
             #We make sure there is enough volume in screwcap one or we switch
-            if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35):
-                unused_volume1=volume_screw
+            if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35)):
+                unused_volume1 = volume_screw
                 mmix = tuberack.wells()[4]
-                volume_screw=volume_screw_two #New tube is full now
-                pickup_height=(volume_screw/area_section_screwcap)
+                volume_screw = volume_screw_two #New tube is full now
+                pickup_height=((volume_screw-volume_cone)/area_section_screwcap-h_cone)
             #Distribute the mmix in different wells
-            used_vol_temp=distribute_custom(p300, volume_mmix, mmix, dest, mmix, pickup_height, extra_dispensal)
+            used_vol_temp = distribute_custom(p300, volume_mmix, mmix, dest, mmix, pickup_height, extra_dispensal)
             used_vol.append(used_vol_temp)
             #Update volume left in screwcap
-            volume_screw=volume_screw-(volume_mmix*len(dest)+extra_dispensal)
+            volume_screw = volume_screw-(volume_mmix*len(dest)+extra_dispensal)
 
             #Update pickup_height according to volume left
-            pickup_height=(volume_screw/area_section_screwcap)
+            pickup_height=((volume_screw-volume_cone)/area_section_screwcap-h_cone)
+
         p300.drop_tip()
         unused_volume2=volume_screw
 
