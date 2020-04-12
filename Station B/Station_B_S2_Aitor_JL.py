@@ -19,6 +19,7 @@ REAGENT SETUP:
     - nuclease-free water: channel 12
 
 """
+
 mag_height=13 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 30
 
@@ -103,9 +104,9 @@ def run(ctx: protocol_api.ProtocolContext):
         well for well in
         elution_plate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
 
-    beads = reagent_res.rows()[0][:2] # 1 row, 2 columnas (las primeras)
-    etoh = reagent_res.rows()[0][3:5] # 1 row, 2 columnas (de la 3 a la 5); hay una de espacio
-    water = reagent_res.rows()[0][-1] # 1 row, 1 columna (la última) llena de agua
+    beads = reagent_res.rows()[0][:2] # 1 row, 2 columns (first ones)
+    etoh = reagent_res.rows()[0][3:5] # 1 row, 2 columns (from 3 to 5); there's a space
+    water = reagent_res.rows()[0][-1] # 1 row, 1 column (last ones) full of water
 
     # pipettes
     m300 = ctx.load_instrument('p300_multi_gen2', 'right', tip_racks=tips300) # Load multi pipette
@@ -118,13 +119,11 @@ def run(ctx: protocol_api.ProtocolContext):
     p1000.flow_rate.aspirate = 100
     p1000.flow_rate.dispense = 1000
 
-
     #### used tip counter and set maximum tips available
     tip_track = {
         'counts': {m300: 0, p1000: 0},
         'maxes': {m300: len(tips300)*12, p1000: len(tips1000)*96}
     }
-
 
 ###############################################################################
     # premix, transfer, and mix magnetic beads with sample
@@ -145,8 +144,8 @@ def run(ctx: protocol_api.ProtocolContext):
         m300.blow_out(m.top(-2))
         m300.aspirate(20, m.top(-2))
         m300.drop_tip()
-###############################################################################
 
+###############################################################################
 # STEP 3 INCUBATE WITHOUT MAGNET
 ########
     # incubate off and on magnet
@@ -182,7 +181,8 @@ def run(ctx: protocol_api.ProtocolContext):
             m300.dispense(30, m.center())
             m300.dispense(200, loc)
             m300.drop_tip()
-            ####################################################################
+
+        ####################################################################
         # STEP 7 WAIT FOR 30s-1' [STEP 10]
         ########
         ctx.delay(seconds=30, msg='Incubating for 30 seconds.')
