@@ -27,17 +27,16 @@ size_transfer=7 #Number of wells the distribute function will fill
 volume_mmix=24.6 #Volume of transfered master mix
 volume_sample=5.4 #Volume of the sample
 volume_screw_one=1500 #Total volume of first screwcap
-volume_screw_two=1500 #Total volume of second screwcap
+volume_screw_two=1100 #Total volume of second screwcap
 extra_dispensal=5 #Extra volume for master mix in each distribute transfer
-diameter_screwcap=8.25
+diameter_screwcap=8.25 #Diameter of the screwcap
 temperature=25 #Temperature of temp module
-volume_cone=50
+volume_cone=50 #Volume in ul that fit in the screwcap cone
 
 
 #Calculated variables
 area_section_screwcap=(np.pi*diameter_screwcap**2)/4
 h_cone=(volume_cone*3/area_section_screwcap)
-
 
 def divide_destinations(l, n):
     # Divide the list of destinations in size n lists.
@@ -58,7 +57,6 @@ def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_heigh
         pipette.dispense(volume_mmix, d)
         pipette.move_to(d.top(z=5))
         pipette.aspirate(5)
-    pipette.dispense(5)
     try:
         pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height+3))
     except:
@@ -70,8 +68,8 @@ def run(ctx: protocol_api.ProtocolContext):
     global volume_screw_two
     global volume_screw
     volume_screw = volume_screw_one
-    unused_volume1=0
-    unused_volume2=0
+    unused_volume_one=0
+    unused_volume_two=0
 
     #Check if door is opened
     if check_door() == True:
@@ -135,8 +133,8 @@ def run(ctx: protocol_api.ProtocolContext):
         volume_screw = volume_screw_one
         for dest in dests:
             #We make sure there is enough volume in screwcap one or we switch
-            if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35)):
-                unused_volume1 = volume_screw
+            if volume_screw < (volume_mmix*len(dest)+extra_dispensal+35):
+                unused_volume_one = volume_screw
                 mmix = tuberack.wells()[4]
                 volume_screw = volume_screw_two #New tube is full now
                 pickup_height=((volume_screw-volume_cone)/area_section_screwcap-h_cone)
@@ -150,7 +148,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pickup_height=((volume_screw-volume_cone)/area_section_screwcap-h_cone)
 
         p300.drop_tip()
-        unused_volume2=volume_screw
+        unused_volume_two=volume_screw
 
     # transfer samples to corresponding locations with p20
     if TRANSFER_SAMPLES == True:
@@ -166,9 +164,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     #Print the values of master mix used and remaining theoretical volume
     total_used_vol=np.sum(used_vol)
-    total_needed_volume=total_used_vol+unused_volume1+unused_volume2+extra_dispensal*len(dests)
+    total_needed_volume=total_used_vol+unused_volume_one+unused_volume_two+extra_dispensal*len(dests)
     ctx.comment('Total used volume is: ' +str(total_used_vol)+'\u03BCl.')
-    ctx.comment('Volume remaining in first tube is:' +format(int(unused_volume1))+'\u03BCl.')
-    ctx.comment('Volume remaining in second tube is:' +format(int(unused_volume2))+'\u03BCl.')
+    ctx.comment('Volume remaining in first tube is:' +format(int(unused_volume_one))+'\u03BCl.')
+    ctx.comment('Volume remaining in second tube is:' +format(int(unused_volume_two))+'\u03BCl.')
     ctx.comment('Needed volume is '+format(int(total_needed_volume))+'\u03BCl')
     ctx.comment('Used volumes per run are: '+ str(used_vol) + '\u03BCl.')
