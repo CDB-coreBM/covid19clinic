@@ -42,7 +42,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ######## Elution plate - comes from A
     magdeck = ctx.load_module('magdeck', '6')
-    magplate = magdeck.load_labware(
+    deepwell_plate = magdeck.load_labware(
         'nunc_96_wellplate_2000ul', '96-deepwell sample plate')
 
 ####################################
@@ -85,74 +85,65 @@ def run(ctx: protocol_api.ProtocolContext):
             side=1
         return side
 
+    old_bool=0 # column selector position; intialize to required number
+
+    def calc_height(vol_ini, cross_section_area,sample_vol,n_tips,extra_vol,vol_next,old_bool):
+        if vol_ini<(sample_vol*n_tips+extra_vol):
+            vol_f=(vol_nextsample_vol*n_tips+extra_vol)
+            height=vol_f/cross_section_area
+            bool=1+old_bool
+        else:
+            height=(vol_ini-sample_vol*n_tips+extra_vol)/cross_section_area
+            bool=0+old_bool
+        return bool,height,vol_f
+
+
+
+
+
     def move_vol_multi(pipet,flow_rate_aspirate,flow_rate_dispense,
-    air_gap_vol, vol, x_offset, z_offset, speed,source,column,dest,new_tip,
-    aspiration_height,blow_height,drop):
+    air_gap_vol, vol, x_offset, z_offset, source,column,dest,
+    aspiration_height,blow_height,drop,home):
+        if not pipet.hw_pipette['has_tip']:
+            pick_up(pipet)
         pipet.default_speed=400
         source=source.bottom(z_offset).move(Point(x=x_offset*find_side(column)))
         pipet.move_to(source)
         pipet.flow_rate.aspirate(flow_rate_aspirate)
         pipet.aspirate(vol)
-        pipet.default_speed=20
-        pipet.move_to(s.top(z=aspiration_height))
-        pipet.flow_rate.aspirate=50
-        pipet.aspirate(air_gap_volume)
+        if air_gap !=0:
+            pipet.default_speed=20
+            pipet.move_to(s.top(z=aspiration_height))
+            pipet.flow_rate.aspirate=50
+            pipet.aspirate(air_gap_volume)
         pipet.default_speed=400
         pipet.flow_rate.dispense(flow_rate_dispense)
         pipet.dispense(SAMPLE_VOLUME+air_gap_volume, d)
         pipette.move_to(d.top(z=blow_height))
         pipette.dispense(5)
-        pipette.flow_rate.aspirate=50
-        pipet.move_to(s.top(z=aspiration_height))
-        pipette.aspirate(air_gap_volume)
+        if air_gap != 0:
+            pipette.flow_rate.aspirate=50
+            pipet.move_to(s.top(z=aspiration_height))
+            pipette.aspirate(air_gap_volume)
         #pipette.touch_tip(speed=20,v_offset=-5)
         pipette.default_speed=400
         pipette.flow_rate.aspirate =500
         #pipette.transfer(SAMPLE_VOLUME, s.bottom(1), d.bottom(1), new_tip='never',air_gap=5,touch_tip=True)
-        if drop==True:
+        if drop ==True & home == False:
             pipette.drop_tip(home_after=False)
+            pick_up(pipet)
+        elif drop==True & home == True:
+            pipette.drop_tip()
+            pick_up(pipet)
 
-
-    def remove_supernatant(pip, vol):
-        if pip == p1000:
-            for i, s in enumerate(mag_samples_s):
-                side = -1 if i < 48 == 0 else 1
-                loc = s.bottom(0.5).move(Point(x=side*2))
-                pick_up(p1000)
-                p1000.move_to(s.center())
-                p1000.transfer(vol, loc, waste, new_tip='never', air_gap=100)
-                p1000.blow_out(waste)
-                p1000.drop_tip()
-
-        else:
-            m300.flow_rate.aspirate = 30
-            for i, m in enumerate(mag_samples_m):
-                side = -1 if i < 6 == 0 else 1
-                loc = m.bottom(0.5).move(Point(x=side*2))
-                if not m300.hw_pipette['has_tip']:
-                    pick_up(m300)
-                m300.move_to(m.center())
-                m300.transfer(vol, loc, waste, new_tip='never', air_gap=20)
-                m300.blow_out(waste)
-                m300.drop_tip()
-            m300.flow_rate.aspirate = 150
-
+###############################################################################
     # reagents and samples
     num_cols = math.ceil(NUM_SAMPLES/8) # Columnas de trabajo
-    mag_samples_m = [ # pipeta multiple
-        well for well in # even columns + odd columns
-        magplate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
-    mag_samples_s = [ # pipeta simple
-        well for col in [ # even columns + odd columns and transform to wells
-            c for set in [magplate.columns()[i::2] for i in range(2)]
-            for c in set]
-        for well in col][:NUM_SAMPLES]
-    elution_samples_m = [
-        well for well in
-        elution_plate.rows()[0][0::2] + magplate.rows()[0][1::2]][:num_cols]
+    work_destinations=deepwell_plate.rows()[0][:num_cols]
+    final_destinations=elution_plate.rows()[0][:num_cols]
 
-    beads = reagent_res.rows()[0][:2] # 1 row, 2 columns (first ones)
-    etoh = reagent_res.rows()[0][3:5] # 1 row, 2 columns (from 3 to 5); there's a space
+    beads = reagent_res.rows()[0][:3] # 1 row, 2 columns (first ones)
+    etoh = reagent_res.rows()[0][3:6] # 1 row, 2 columns (from 3 to 5); there's a space
     water = reagent_res.rows()[0][-1] # 1 row, 1 column (last ones) full of water
 
     # pipettes
@@ -173,25 +164,48 @@ def run(ctx: protocol_api.ProtocolContext):
     }
 
 ###############################################################################
-    # premix, transfer, and mix magnetic beads with sample
-    for i, m in enumerate(mag_samples_m):
-        # STEP 1 MIX BEADS WITH ISOPROPANOL
-        ########
-        pick_up(m300)
-        if i == 0 or i == 6:
+        # premix, transfer, and mix magnetic beads with sample
+    #PREMIX
+    flow_rate_aspirate=150
+    flow_rate_dispense=300
+    mix_vol=180
+    mix_number=20
+    beads_transfer_vol=200
+    old_bool=0
+    vol_ini=15000 # volume of magnetic beads
+    air_gap_vol=0
+    x_offset=0
+    z_offset=4
+    column=0
+    aspiration_height=0
+    blow_height=20
+    drop=False
+    home=False
 
-            for _ in range(20):
-                m300.aspirate(200, beads[i//6].bottom(3))
-                m300.dispense(200, beads[i//6].bottom(20))
-        # STEP 2 TRANSFER BEADS AND ISOPROPANOL TO DEEPWELL PLATE
-        ########
-        for _ in range(2):
-            m300.transfer(310/2, beads[i//8], m.top(), new_tip='never')
-        m300.mix(10, 200, m)
-        m300.blow_out(m.top(-2))
-        m300.aspirate(20, m.top(-2))
-        m300.drop_tip()
+    for i in range(mix_number):
+        move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
+        air_gap_vol, mix_vol, x_offset, z_offset, beads[0],column,beads[0],
+        aspiration_height,blow_height,drop,home)
 
+# STEP 2 TRANSFER BEADS AND ISOPROPANOL TO DEEPWELL PLATE
+########
+    for i in range(num_cols):
+        [change_col,pickup_height,vol_final]=calc_height(vol_ini, cross_section_area,
+        sample_vol,n_tips,extra_vol,vol_next,old_bool)
+
+        if change_col!=old_bool: #if beads column changes, remix
+            for i in range(mix_number):
+                move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
+                air_gap_vol=0, mix_vol, x_offset=0, z_offset=4, beads[change_col],column=0,beads[change_col],
+                aspiration_height=0,blow_height=20,drop=False,home=False)
+
+        move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
+        air_gap_vol=10, beads_transfer_vol, x_offset=0, z_offset=pickup_height,
+        beads[change_col],column=i,work_destinations[i],
+        aspiration_height=-5,blow_height=20,drop=True,home=False)
+
+        vol_ini=vol_final
+        old_bool=change_col
 ###############################################################################
 # STEP 3 INCUBATE WITHOUT MAGNET
 ########
@@ -207,27 +221,51 @@ def run(ctx: protocol_api.ProtocolContext):
 
 # STEP 5 REMOVE SUPERNATANT
 ########
+    vol_ini=650
+    D_deepwell=6.9
+    cross_section_area=math.pi*D_deepwell**2/4
     # remove supernatant
-    remove_supernatant(p1000, 620)
-###############################################################################
+    supernatant_vol=[160,160,160,140]
+    for i in range(num_cols):
+        for supernatant_remove_vol in supernatant_vol:
 
+            [change_col,pickup_height,vol_final]=calc_height(vol_ini, cross_section_area,
+            sample_vol,n_tips,extra_vol,vol_next,old_bool)
+
+            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
+            air_gap_vol=15, supernatant_remove_vol, x_offset=2, z_offset=pickup_height,
+            work_destinations[i],column=i ,waste,
+            aspiration_height=-5,blow_height=20,drop=False,home=False)
+
+            vol_ini=vol_final
+            old_bool=change_col
+        pick_up(m300)
+
+###############################################################################
+    ethanol_wash_vol=[100,100]
+    old_bool=0
+    vol_ini=15000
+    wash_times=2
     # WASH 2 TIMES
     ########
     # 70% EtOH washes
-    for wash in range(2):
+    for i in range(num_cols):
+
         # transfer EtOH
         # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
         ########
-        for m in mag_samples_m:
-            side = -1 if i < 48 == 0 else 1
-            loc = m.bottom(0.5).move(Point(x=side*2))
-            pick_up(m300)
-            m300.aspirate(200, etoh[wash])
-            m300.aspirate(30, etoh[wash].top())
-            m300.move_to(m.center())
-            m300.dispense(30, m.center())
-            m300.dispense(200, loc)
-            m300.drop_tip()
+        for wash in range(wash_times):
+            [change_col,pickup_height,vol_final]=calc_height(vol_ini, cross_section_area,
+            sample_vol,n_tips,extra_vol,vol_next,old_bool)
+
+            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
+            air_gap_vol=10, ethanol_wash_vol, x_offset=0, z_offset=pickup_height,
+            etoh[change_col],column=i,work_destinations[i],
+            aspiration_height=-5,blow_height=20,drop=True,home=False)
+
+            vol_ini=vol_final
+            old_bool=change_col
+        pick_up(m300)
 
         ####################################################################
         # STEP 7 WAIT FOR 30s-1' [STEP 10]
@@ -237,7 +275,28 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # STEP 8 REMOVE SUPERNATANT [STEP 11]
         ########
-        remove_supernatant(m300, 210)
+
+    vol_ini=650
+    old_bool=0
+    D_deepwell=6.9
+    cross_section_area=math.pi*D_deepwell**2/4
+        # remove supernatant
+    supernatant_vol=[110,100]
+    for i in range(num_cols):
+        for supernatant_remove_vol in supernatant_vol:
+
+            [change_col,pickup_height,vol_final]=calc_height(vol_ini, cross_section_area,
+            sample_vol,n_tips,extra_vol,vol_next,old_bool)
+
+            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
+            air_gap_vol=15, supernatant_remove_vol, x_offset=2, z_offset=pickup_height,
+            work_destinations[i],column=i ,waste,
+            aspiration_height=-5,blow_height=20,drop=False,home=False)
+
+            vol_ini=vol_final
+            old_bool=change_col
+        pick_up(m300)
+
         ####################################################################
 
 
@@ -249,15 +308,32 @@ def run(ctx: protocol_api.ProtocolContext):
 
 # STEP 13 ADD LTA & WATER
 ########
-    # transfer and mix water
-    for m in mag_samples_m:
+    # transfer and mix WATER###############################################################################
+    ethanol_wash_vol=[50]
+    old_bool=0
+    vol_ini=15000
+    water_times=1
+    # WASH 2 TIMES
+    ########
+    # 70% EtOH washes
+    for i in range(num_cols):
+
+        # transfer EtOH
+        # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
+        ########
+        for water_add in range(water_times):
+            [change_col,pickup_height,vol_final]=calc_height(vol_ini, cross_section_area,
+            sample_vol,n_tips,extra_vol,vol_next,old_bool)
+
+            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
+            air_gap_vol=10, water_add, x_offset=2, z_offset=pickup_height,
+            water[change_col],column=i,work_destinations[i],
+            aspiration_height=-5,blow_height=20,drop=True,home=False)
+
+            vol_ini=vol_final
+            old_bool=change_col
+
         pick_up(m300)
-        side = 1 if i < 6 == 0 else -1
-        loc = m.bottom(0.5).move(Point(x=side*2))
-        m300.transfer(50, water, m.center(), new_tip='never')
-        m300.mix(10, 30, loc)
-        m300.blow_out(m.top(-2))
-        m300.drop_tip()
 ###############################################################################
 
 # STEP 14 WAIT 1-2' WITHOUT MAGNET
@@ -274,13 +350,13 @@ def run(ctx: protocol_api.ProtocolContext):
 # STEP 16 TRANSFER TO ELUTION PLATE
 ########
     # transfer elution to clean plate
-    m300.flow_rate.aspirate = 30
-    for s, d in zip(mag_samples_m, elution_samples_m):
-        pick_up(m300)
-        side = -1 if i < 6 == 0 else 1
-        loc = s.bottom(0.5).move(Point(x=side*2))
-        m300.transfer(45, loc, d, new_tip='never')
-        m300.blow_out(d.top(-2))
-        m300.drop_tip()
-    m300.flow_rate.aspirate = 150
+    for i in range(num_cols):
+        # transfer EtOH
+        # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
+        ########
+        move_vol_multi(m300,flow_rate_aspirate=30,flow_rate_dispense=50,
+        air_gap_vol=10, water_add, x_offset=2, z_offset=0.5,
+        work_destinations[i],column=i,final_destinations[i],
+        aspiration_height=-5,blow_height=20,drop=True,home=True)
+
 ###############################################################################
