@@ -18,7 +18,7 @@ REAGENT SETUP:
 """
 
 #Initial variables
-NUM_SAMPLES = 7
+NUM_SAMPLES = 96
 TRANSFER_MMIX = True
 TRANSFER_SAMPLES = False
 
@@ -51,12 +51,12 @@ def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_heigh
     pipette.aspirate((len(dest)*volume_mmix)+extra_dispensal, mmix.bottom(pickup_height))
     pipette.touch_tip(speed=20, v_offset=-5)
     pipette.move_to(mmix.top(z=5))
-    pipette.aspirate(5)
+    pipette.aspirate(5) #air gap
     for d in dest:
         pipette.dispense(5, d.top())
         pipette.dispense(volume_mmix, d)
         pipette.move_to(d.top(z=5))
-        pipette.aspirate(5)
+        pipette.aspirate(5) #air gap
     try:
         pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height+3))
     except:
