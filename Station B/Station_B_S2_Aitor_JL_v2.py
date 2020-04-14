@@ -9,19 +9,17 @@ from timeit import default_timer as timer
 # metadata
 metadata = {
     'protocolName': 'S2 Station B Version 2',
-    'author': 'Aitor Gastaminza & Jose Luis Villanueva <Hospital Clinic Barcelona>',
+    'author': 'Aitor Gastaminza & José Luis Villanueva <Hospital Clinic Barcelona>',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.0'
 }
 
-mag_height=12 # Height needed for NUNC deepwell in magnetic deck
+mag_height = 12 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 16
 temperature = 25
-D_deepwell=6.9 # Deepwell diameter
-multi_well_rack_area=7*71 #Cross section of the 12 well reservoir
-deepwell_cross_section_area=math.pi*D_deepwell**2/4 # deepwell cilinder cross secion area
-
-
+D_deepwell = 6.9 # Deepwell diameter
+multi_well_rack_area = 7*71 #Cross section of the 12 well reservoir
+deepwell_cross_section_area = math.pi*D_deepwell**2/4 # deepwell cilinder cross secion area
 
 def run(ctx: protocol_api.ProtocolContext):
 
@@ -81,13 +79,13 @@ def run(ctx: protocol_api.ProtocolContext):
             height=vol_f/cross_section_area
             bool=1+old_bool # column selector position; intialize to required number
             if height<0:
-                height=0
+                height=0.1
         else:
             height=(vol_ini-sample_vol*n_tips+extra_vol)/cross_section_area
             bool=0+old_bool
             vol_f=vol_ini-sample_vol*n_tips+extra_vol
             if height<0:
-                height=0
+                height=0.1
         return bool,height,vol_f
     ##########
     def reset_reservoir(Ref_vol):
@@ -114,9 +112,10 @@ def run(ctx: protocol_api.ProtocolContext):
         pipet.default_speed=400
         pipet.flow_rate.dispense=flow_rate_dispense
         pipet.move_to(dest.top())
-        pipet.dispense(vol+air_gap_vol, dest) #dispense all
-        pipet.move_to(dest.top(z=blow_height)) # IF BLOW HEIGHT IS TOO BIG, IT GIVES AN ERROR
-        pipet.dispense(5) # Blow out
+        pipet.dispense(vol+air_gap_vol+20, dest.top(z=-1)) #dispense all
+        #pipet.move_to(dest.top(z=blow_height)) # IF BLOW HEIGHT IS TOO BIG, IT GIVES AN ERROR
+        #pipet.dispense(20)
+        pipet.blow_out() # Blow out
         if air_gap_vol != 0:
             pipet.flow_rate.aspirate=50
             pipet.move_to(dest.top(z=aspiration_height))
@@ -135,16 +134,16 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ###############################################################################
     # reagents and samples
-    num_cols = math.ceil(NUM_SAMPLES/8) # Columnas de trabajo
+    num_cols = math.ceil(NUM_SAMPLES/8) # Columns we are working on
     ctx.comment('Actual used columns: '+str(num_cols))
-    work_destinations=deepwell_plate.rows()[0][:num_cols]
-    final_destinations=elution_plate.rows()[0][:num_cols]
+    work_destinations = deepwell_plate.rows()[0][:num_cols]
+    final_destinations = elution_plate.rows()[0][:num_cols]
 
-    beads = reagent_res.rows()[0][:4] # 1 row, 2 columns (first ones)
-    isoprop = reagent_res.rows()[0][5:6] # 1 row, 2 columns (from 3 to 5); there's a space
-    etoh = reagent_res.rows()[0][7:11] # 1 row, 2 columns (from 3 to 5); there's a space
-    water = reagent_res.rows()[0][-1] # 1 row, 1 column (last ones) full of water
-    Ref_vol=10000 # volume of each well in the reservoir
+    beads = reagent_res.rows()[0][:4] # 1 row, 4 columns (first ones)
+    isoprop = reagent_res.rows()[0][4:6] # 1 row, 2 columns (from 5 to 6)
+    etoh = reagent_res.rows()[0][6:10] # 1 row, 2 columns (from 7 to 10)
+    water = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
+    Ref_vol = 4960 # volume of each well in the reservoir
 
     # pipettes
     m300 = ctx.load_instrument('p300_multi_gen2', 'right', tip_racks=tips300) # Load multi pipette
@@ -194,11 +193,11 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment(' ')
 #Transfer parameters
     beads_transfer_vol=[155,155]
+    Ref_vol = 4960
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_t=10
     aspiration_height_t=-5
     drop_t=True
-
     for i in range(num_cols):
         for transfer_vol in beads_transfer_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, multi_well_rack_area,
@@ -231,7 +230,7 @@ def run(ctx: protocol_api.ProtocolContext):
         # mix beads with sample
         for _ in range(4):
             move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
-            air_gap_vol_t, 190, 0, 0.5,work_destinations[i],i,work_destinations[i],
+            0, 190, 0, 0.5,work_destinations[i],i,work_destinations[i],
             aspiration_height_t,blow_height,False,False,ctx)
 
         m300.drop_tip(home_after=False)
@@ -268,7 +267,6 @@ def run(ctx: protocol_api.ProtocolContext):
     x_offset_rs=2
     [vol_ini,old_bool,vol_next]=reset_reservoir(np.sum(supernatant_vol))
 
-
     for i in range(num_cols):
         for supernatant_remove_vol in supernatant_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, deepwell_cross_section_area,
@@ -293,6 +291,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment(' ')
     ctx.comment('Wash with ethanol')
     ctx.comment(' ')
+    Ref_vol = 2400
     isoprop_wash_vol=[150]
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_isoprop=10
@@ -362,6 +361,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment(' ')
     ctx.comment('Wash with ethanol')
     ctx.comment(' ')
+    Ref_vol = 6400
     ethanol_wash_vol=[100,100]
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_eth=10
@@ -431,6 +431,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment(' ')
     ctx.comment('Wash with ethanol for the second time')
     ctx.comment(' ')
+    Ref_vol = 4960/2
     ethanol_wash_vol=[100,100]
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_eth=10
@@ -512,6 +513,7 @@ def run(ctx: protocol_api.ProtocolContext):
     magdeck.disengage()
 ###############################################################################
     water_wash_vol=[50]
+    Ref_vol = 800
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_water=10
     change_col=0

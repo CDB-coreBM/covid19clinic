@@ -20,8 +20,8 @@ REAGENT SETUP:
 
 """
 
-NUM_SAMPLES = 16
-transfer_volume = 150
+#NUM_SAMPLES = 16
+transfer_volume = 310
 
 def run(ctx: protocol_api.ProtocolContext):
 
@@ -42,12 +42,14 @@ def run(ctx: protocol_api.ProtocolContext):
 
     water = reagent_res.wells('A1')
     isopropanol = reagent_res.wells('A4')
+    ethanol = reagent_res.wells('A6')
+    beads = reagent_res.wells('A7')
 
     m300.pick_up_tip()
-    m300.transfer(transfer_volume, isopropanol, deepwell.wells()[0].top(), new_tip='never', air_gap=10)
-    m300.touch_tip(speed=20, v_offset=-5)
+    m300.transfer(transfer_volume, beads, deepwell.wells()[0].top(), new_tip='never', air_gap=10)
+    m300.touch_tip(speed=20, v_offset=-5,radius=1.05)
     m300.blow_out(deepwell.wells()[0].top())
-    m300.transfer(transfer_volume, isopropanol, deepwell.wells()[8].top(), new_tip='never', air_gap=10)
-    m300.touch_tip(speed=20, v_offset=-5)
+    m300.transfer(transfer_volume, beads, deepwell.wells()[8].top(), new_tip='never', air_gap=10)
+    m300.touch_tip(speed=20, v_offset=-5,radius=1.05)
     m300.blow_out(deepwell.wells()[8].top())
     m300.drop_tip()
