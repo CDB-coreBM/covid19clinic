@@ -284,8 +284,7 @@ def run(ctx: protocol_api.ProtocolContext):
         vol_ini=np.sum(supernatant_vol)
         old_bool=0
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
+
 ###############################################################################
     # STEP 6* Washing 1 ISOPROP
     ctx.comment(' ')
@@ -295,6 +294,7 @@ def run(ctx: protocol_api.ProtocolContext):
     isoprop_wash_vol=[150]
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_isoprop=10
+
     # WASH 2 TIMES
     ########
     # isoprop washes
@@ -302,6 +302,8 @@ def run(ctx: protocol_api.ProtocolContext):
         # transfer isoprop
         # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
         ########
+        pick_up(m300)
+        used_tips=used_tips+8
         for wash_volume in isoprop_wash_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, multi_well_rack_area,
             wash_volume,8,extra_vol,vol_next,old_bool)
@@ -309,14 +311,14 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Change column: '+str(change_col))
             ctx.comment('Pickup height is '+str(pickup_height))
             ctx.pause()
-            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense, air_gap_vol_isoprop,wash_volume, 0, pickup_height, isoprop[change_col], i, work_destinations[i],-5, blow_height, False, False, ctx)
+            #Pickup height modified to 0.1 and x_offset to 2
+            move_vol_multi(m300, flow_rate_aspirate, flow_rate_dispense, air_gap_vol_isoprop,wash_volume, 2, 0.1, isoprop[change_col], i, work_destinations[i], -5, blow_height, False, False, ctx)
 
             vol_ini=vol_final
             old_bool=change_col
 
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
+
 ###############################################################################
     # STEP 7* WAIT FOR 30s-1'
     ########
@@ -334,7 +336,10 @@ def run(ctx: protocol_api.ProtocolContext):
     air_gap_vol_rs=15
     x_offset_rs=2
 
+
     for i in range(num_cols):
+        pick_up(m300)
+        used_tips=used_tips+8
         for supernatant_remove_vol in supernatant_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, deepwell_cross_section_area,
             supernatant_remove_vol,1,extra_vol,vol_next,old_bool)
@@ -352,8 +357,7 @@ def run(ctx: protocol_api.ProtocolContext):
         vol_ini=np.sum(supernatant_vol)
         old_bool=0
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
+
 
 
 ###############################################################################
@@ -365,6 +369,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ethanol_wash_vol=[100,100]
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_eth=10
+
     # WASH 2 TIMES
     ########
     # 70% EtOH washes
@@ -372,6 +377,8 @@ def run(ctx: protocol_api.ProtocolContext):
         # transfer EtOH
         # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
         ########
+        pick_up(m300)
+        used_tips=used_tips+8
         for wash_volume in ethanol_wash_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, multi_well_rack_area,
             wash_volume,8,extra_vol,vol_next,old_bool)
@@ -385,8 +392,7 @@ def run(ctx: protocol_api.ProtocolContext):
             old_bool=change_col
 
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
+
 ###############################################################################
     # STEP 7 WAIT FOR 30s-1'
     ########
@@ -405,6 +411,8 @@ def run(ctx: protocol_api.ProtocolContext):
     x_offset_rs=2
 
     for i in range(num_cols):
+        pick_up(m300)
+        used_tips=used_tips+8
         for supernatant_remove_vol in supernatant_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, deepwell_cross_section_area,
             supernatant_remove_vol,1,extra_vol,vol_next,old_bool)
@@ -423,8 +431,7 @@ def run(ctx: protocol_api.ProtocolContext):
         vol_ini=np.sum(supernatant_vol)
         old_bool=0
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
+
 
 ###############################################################################
     # STEP 9 Washing 2
@@ -435,6 +442,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ethanol_wash_vol=[100,100]
     [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
     air_gap_vol_eth=10
+
     # WASH 2 TIMES
     ########
     # 70% EtOH washes
@@ -442,6 +450,8 @@ def run(ctx: protocol_api.ProtocolContext):
         # transfer EtOH
         # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
         ########
+        pick_up(m300)
+        used_tips=used_tips+8
         for wash_volume in ethanol_wash_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, multi_well_rack_area,
             wash_volume,8,extra_vol,vol_next,old_bool)
@@ -455,8 +465,7 @@ def run(ctx: protocol_api.ProtocolContext):
             old_bool=change_col
 
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
+
 ###############################################################################
     # STEP 10 WAIT FOR 30s-1'
     ########
@@ -476,6 +485,8 @@ def run(ctx: protocol_api.ProtocolContext):
     x_offset_rs=2
 
     for i in range(num_cols):
+        pick_up(m300)
+        used_tips=used_tips+8
         for supernatant_remove_vol in supernatant_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, deepwell_cross_section_area,
             supernatant_remove_vol,1,extra_vol,vol_next,old_bool)
@@ -495,8 +506,6 @@ def run(ctx: protocol_api.ProtocolContext):
         vol_ini=np.sum(supernatant_vol)
         old_bool=0
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
 
 # STEP 12 DRY
 ########
@@ -520,7 +529,8 @@ def run(ctx: protocol_api.ProtocolContext):
     # WASH 2 TIMES
     ########
     # Water and LTA washes
-
+    pick_up(m300)
+    used_tips=used_tips+8
     for i in range(num_cols):
         # transfer EtOH
         # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
@@ -547,8 +557,7 @@ def run(ctx: protocol_api.ProtocolContext):
             aspiration_height_t,blow_height,False,False,ctx)
 
         m300.drop_tip(home_after=True)
-        pick_up(m300)
-        used_tips=used_tips+8
+
 
 
 # STEP 14 WAIT 1-2' WITHOUT MAGNET
@@ -573,6 +582,8 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment(' ')
     pickup_height=0.5
     pick_tips=True
+    pick_up(m300)
+    used_tips=used_tips+8
     try:
         flow_rate_aspirate_elution_t=30
         flow_rate_dispense_elution_t=50
