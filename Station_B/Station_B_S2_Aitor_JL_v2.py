@@ -214,9 +214,9 @@ def run(ctx: protocol_api.ProtocolContext):
                 pick_up(m300)
                 ctx.comment(' ')
                 ctx.comment('Mixing beads new column ')
-                for i in range(mix_number):
+                for j in range(mix_number):
                     move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
-                    air_gap_vol, mix_vol, x_offset, z_offset, beads[change_col],0,beads[change_col],
+                    air_gap_vol, mix_vol, x_offset*find_side(j), z_offset, beads[change_col],0,beads[change_col],
                     aspiration_height,blow_height,False,False,ctx)
 
             ctx.pause()
