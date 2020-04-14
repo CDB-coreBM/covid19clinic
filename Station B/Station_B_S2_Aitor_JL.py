@@ -20,8 +20,12 @@ REAGENT SETUP:
 
 """
 
-mag_height=13 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 30
+mag_height = 13 # Height needed for NUNC deepwell in magnetic deck
+NUM_SAMPLES = 8
+mix_volume_reservoir = 120
+mix_volume_deepwell = 150
+
+#Add ethanol + beads in 3 wells (depends on model of 12well reservoir)
 
 # Prompt user to change the tiprack
 
@@ -134,13 +138,13 @@ def run(ctx: protocol_api.ProtocolContext):
         if i == 0 or i == 6:
 
             for _ in range(20):
-                m300.aspirate(200, beads[i//6].bottom(3))
-                m300.dispense(200, beads[i//6].bottom(20))
+                m300.aspirate(mix_volume_reservoir, beads[i//6].bottom(3))
+                m300.dispense(mix_volume_reservoir, beads[i//6].bottom(20))
         # STEP 2 TRANSFER BEADS AND ISOPROPANOL TO DEEPWELL PLATE
         ########
         for _ in range(2):
             m300.transfer(310/2, beads[i//8], m.top(), new_tip='never')
-        m300.mix(10, 200, m)
+        m300.mix(10, mix_volume_deepwell, m)
         m300.blow_out(m.top(-2))
         m300.aspirate(20, m.top(-2))
         m300.drop_tip()
