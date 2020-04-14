@@ -7,7 +7,7 @@ import numpy as np
 # metadata
 metadata = {
     'protocolName': 'S2 Station B Version 2',
-    'author': 'Nick <protocols@opentrons.com>',
+    'author': 'Aitor Gastaminza & Jose Luis Villanueva <Hospital Clinic Barcelona>',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.0'
 }
