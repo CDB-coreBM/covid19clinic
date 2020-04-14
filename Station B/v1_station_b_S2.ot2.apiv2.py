@@ -119,7 +119,8 @@ def run(ctx: protocol_api.ProtocolContext):
         m300.transfer(20, beads, m, new_tip='never')
         m300.mix(10, 200, m)
         m300.blow_out(m.top(-2))
-        m300.drop_tip()"""
+        m300.drop_tip()
+    """
 
     # incubate on magnet
     magdeck.engage(height=1)

@@ -9,10 +9,11 @@ from timeit import default_timer as timer
 # metadata
 metadata = {
     'protocolName': 'S2 Station B Version 2',
-    'author': 'Aitor Gastaminza & José Luis Villanueva <Hospital Clinic Barcelona>',
-    'source': 'Custom Protocol Request',
+    'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
+    'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0'
 }
+
 
 mag_height = 12 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 16
@@ -44,16 +45,19 @@ def run(ctx: protocol_api.ProtocolContext):
     magdeck = ctx.load_module('magdeck', '6')
     deepwell_plate = magdeck.load_labware('nunc_96_wellplate_2000ul', '96-deepwell sample plate')
     magdeck.disengage()
+
 ####################################
     ######## Waste reservoir
     waste_reservoir = ctx.load_labware('nalgene_1_reservoir_300000ul', '9', 'waste reservoir')
     waste=waste_reservoir.wells()[0] # referenced as reservoir
+
 ####################################
     ######### Load tip_racks
     tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
         for slot in ['5', '8', '11','1','4','7']]
     tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
         for slot in ['10']]
+
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
     def pick_up(pip):
@@ -81,11 +85,11 @@ def run(ctx: protocol_api.ProtocolContext):
             if height<0:
                 height=0.1
         else:
-            height=(vol_ini-sample_vol*n_tips+extra_vol)/cross_section_area
-            bool=0+old_bool
-            vol_f=vol_ini-sample_vol*n_tips+extra_vol
-            if height<0:
-                height=0.1
+            height = (vol_ini-sample_vol*n_tips+extra_vol)/cross_section_area
+            bool = 0 + old_bool
+            vol_f = vol_ini-sample_vol*n_tips+extra_vol
+            if height < 0:
+                height = 0.1
         return bool,height,vol_f
     ##########
     def reset_reservoir(Ref_vol):
@@ -94,8 +98,8 @@ def run(ctx: protocol_api.ProtocolContext):
         vol_next=Ref_vol
         return vol_ini,old_bool,vol_next
 
-    def move_vol_multi(pipet,flow_rate_aspirate,flow_rate_dispense,air_gap_vol, vol, x_offset, z_offset, source,column,dest,
-    aspiration_height,blow_height,drop,home,protocol):
+    def move_vol_multi(pipet, flow_rate_aspirate, flow_rate_dispense, air_gap_vol, vol, x_offset, z_offset, source, column, dest,
+    aspiration_height, blow_height, drop, home, protocol):
         # SOURCE
         pipet.default_speed=400
         s=source.bottom(z_offset).move(Point(x=x_offset*find_side(column)))
@@ -275,7 +279,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Change column: '+str(change_col))
             ctx.comment('Pickup height is '+str(pickup_height))
             ctx.pause()
-            move_vol_multi(m300, flow_rate_aspirate, flow_rate_dispense,air_gap_vol_rs, supernatant_remove_vol, x_offset_rs, pickup_height,work_destinations[i], i, waste, aspiration_height_t, blow_height, False, False,ctx)
+            move_vol_multi(m300, flow_rate_aspirate, flow_rate_dispense,air_gap_vol_rs, supernatant_remove_vol, x_offset_rs, pickup_height,work_destinations[i], i, waste, aspiration_height_t, blow_height, False, False, ctx)
 
             vol_ini=vol_final
             old_bool=change_col
