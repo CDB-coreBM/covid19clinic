@@ -141,8 +141,8 @@ def run(ctx: protocol_api.ProtocolContext):
     final_destinations=elution_plate.rows()[0][:num_cols]
 
     beads = reagent_res.rows()[0][:4] # 1 row, 2 columns (first ones)
-    etoh = reagent_res.rows()[0][5:9] # 1 row, 2 columns (from 3 to 5); there's a space
-    isoprop = reagent_res.rows()[0][10:12] # 1 row, 2 columns (from 3 to 5); there's a space
+    isoprop = reagent_res.rows()[0][5:6] # 1 row, 2 columns (from 3 to 5); there's a space
+    etoh = reagent_res.rows()[0][7:11] # 1 row, 2 columns (from 3 to 5); there's a space
     water = reagent_res.rows()[0][-1] # 1 row, 1 column (last ones) full of water
     Ref_vol=10000 # volume of each well in the reservoir
 
