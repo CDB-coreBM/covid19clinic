@@ -128,9 +128,10 @@ def run(ctx: protocol_api.ProtocolContext):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
         '''
+        pipet.move_to(location)
         for _ in range(rounds):
-            pipet.aspirate(vol, location, rate = reagent.flow_rate_aspirate)
-            pipet.dispense(vol, location, rate = reagent.flow_rate_dispense)
+            pipet.aspirate(vol, rate = reagent.flow_rate_aspirate)
+            pipet.dispense(vol, rate = reagent.flow_rate_dispense)
         if blow_out == True:
             pipet.blow_out(location.top(z = -2)) # Blow out
 
