@@ -240,7 +240,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in beads_transfer_vol:
             #Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol)
+            [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol*8)
             if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
                 ctx.comment('Mixing new reservoir column: ' + str(Beads.col))
                 custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
@@ -329,7 +329,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in isoprop_wash_vol:
             #Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol)
+            [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Isopropanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
@@ -393,7 +393,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in ethanol_wash_vol:
             #Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol)
+            [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
@@ -457,7 +457,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in ethanol_wash_vol:
             #Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol)
+            [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
@@ -529,7 +529,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in water_wash_vol:
             #Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Water, multi_well_rack_area, transfer_vol)
+            [pickup_height, change_col] = calc_height(Water, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Water.col))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
