@@ -140,24 +140,24 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.move_to(dest.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
 
-        ##########
-        # pick up tip and if there is none left, prompt user for a new rack
-        def pick_up(pip):
-            nonlocal tip_track
-            if tip_track['counts'][pip] == tip_track['maxes'][pip]:
-                ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-                resuming.')
-                pip.reset_tipracks()
-                tip_track['counts'][pip] = 0
-            tip_track['counts'][pip] += 1
-            pip.pick_up_tip()
-        ##########
-        def find_side(col):
-            if col%2==0:
-                side=-1 # left
-            else:
-                side=1
-            return side
+    ##########
+    # pick up tip and if there is none left, prompt user for a new rack
+    def pick_up(pip):
+        nonlocal tip_track
+        if tip_track['counts'][pip] == tip_track['maxes'][pip]:
+            ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
+            resuming.')
+            pip.reset_tipracks()
+            tip_track['counts'][pip] = 0
+        tip_track['counts'][pip] += 1
+        pip.pick_up_tip()
+    ##########
+    def find_side(col):
+        if col%2==0:
+            side=-1 # left
+        else:
+            side=1
+        return side
 
 ####################################
     # load labware and modules
@@ -218,4 +218,9 @@ def run(ctx: protocol_api.ProtocolContext):
 ### PREMIX
     if not m300.hw_pipette['has_tip']:
         pick_up(m300)
-    custom_mix(m300, Beads, Beads.reagent_reservoir, vol = 180, rounds = 20, blow_out = True)
+        ctx.comment(' ')
+        ctx.comment('Tip picked up')
+    ctx.comment(' ')
+    ctx.comment('Mixing '+Beads.name)
+    ctx.comment(' ')
+    custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
