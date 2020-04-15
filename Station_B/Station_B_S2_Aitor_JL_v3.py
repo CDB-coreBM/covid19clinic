@@ -195,46 +195,30 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ###############################################################################
     #Declare which reagents are in each reservoir as well as deepwell and elution plate
-    beads = reagent_res.rows()[0][:Beads.num_wells] # 1 row, 4 columns (first ones)
-    isoprop = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)] # 1 row, 2 columns (from 5 to 6)
-    etoh = reagent_res.rows()[0][6:Ethanol.num_wells] # 1 row, 2 columns (from 7 to 10)
-    water = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
+    Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells] # 1 row, 4 columns (first ones)
+    Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)] # 1 row, 2 columns (from 5 to 6)
+    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:Ethanol.num_wells] # 1 row, 2 columns (from 7 to 10)
+    Water.reagent_reservoir = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
     final_destinations = elution_plate.rows()[0][:Elution.num_wells]
 
-    # pipettes
+    # pipettes. P1000 currently deactivated
     m300 = ctx.load_instrument('p300_multi_gen2', 'right', tip_racks=tips300) # Load multi pipette
-    p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=tips1000) # load P1000 pipette
-
-
+    #p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=tips1000) # load P1000 pipette
 
     #### used tip counter and set maximum tips available
     tip_track = {
-        'counts': {m300: 0, p1000: 0},
-        'maxes': {m300: len(tips300)*12, p1000: len(tips1000)*96}
+        'counts': {m300: 0},
+        #, p1000: 0},
+        'maxes': {m300: len(tips300)*12}#, p1000: len(tips1000)*96}
     }
-    used_tips=8
 
 ###############################################################################
-        # premix, transfer, and mix magnetic beads with sample
-    #PREMIX parameters
-    flow_rate_aspirate=150
-    flow_rate_dispense=300
-    mix_vol=180
-    mix_number=10
-    air_gap_vol=0
-    x_offset=0
-    z_offset=4
-    column=0
-    aspiration_height=-2
-    blow_height=-5
-    drop=False
-    home=False
-    extra_vol=0
 
 ### PREMIX
     if not m300.hw_pipette['has_tip']:
         pick_up(m300)
+    custom_mix(m300, Beads, Beads.reagent_reservoir, vol = 180, rounds = 20, blow_out = True)
     for i in range(mix_number):
         move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
         air_gap_vol, mix_vol, x_offset, z_offset, beads[0],column,beads[0],

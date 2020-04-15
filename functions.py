@@ -1,14 +1,15 @@
-opentrons_simulate /Users/covid19warriors/Documents/covid19clinic/Station\ B/Station_B_S2_Aitor_JL_v1.py -L /Users/covid19warriors/Desktop/labware2
+#How to activate simulator
+#opentrons_simulate /Users/covid19warriors/Documents/covid19clinic/Station\ B/Station_B_S2_Aitor_JL_v1.py -L /Users/covid19warriors/Desktop/labware2
 
 
 class Reagent:
-    def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
-    reagent_reservoir, num_wells, h_cono, v_fondo, tip_recycling = 'none'):
+    def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse, reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling = 'none'):
         self.name = name
         self.flow_rate_aspirate = flow_rate_aspirate
         self.flow_rate_dispense = flow_rate_dispense
         self.rinse = bool(rinse)
-        self.reagent_reservoir = reagent_reservoir
+        self.reagent_reservoir_volume = reagent_reservoir_volume
+        self.reagent_reservoir = 'none'
         self.num_wells = num_wells
         self.col = 0
         self.vol_well = 0
@@ -16,14 +17,14 @@ class Reagent:
         self.v_cono = v_fondo
         self.tip_recycling = tip_recycling
     def vol_well_original(self):
-        return self.reagent_reservoir/self.num_wells
+        return self.reagent_reservoir_volume/self.num_wells
 
 #Reagents and their characteristics
 Ethanol = Reagent(name = 'Ethanol',
                 flow_rate_aspirate = 0.5,
                 flow_rate_dispense = 1,
                 rinse = True,
-                reagent_reservoir = 12000,
+                reagent_reservoir_volume = 12000,
                 num_wells = 4, #num_Wells max is 4
                 h_cono = 1.95,
                 v_fondo = 1.95*7*71/2, #Prismatic
@@ -33,7 +34,7 @@ Beads = Reagent(name = 'Magnetic beads',
                 flow_rate_aspirate = 0.5,
                 flow_rate_dispense = 1,
                 rinse = True,
-                reagent_reservoir = 12000,
+                reagent_reservoir_volume = 12000,
                 num_wells = 4,
                 h_cono = 1.95,
                 v_fondo = 1.95*7*71/2, #Prismatic
@@ -43,7 +44,7 @@ Isopropanol = Reagent(name = 'Isopropanol',
                 flow_rate_aspirate = 0.5,
                 flow_rate_dispense = 1,
                 rinse = True,
-                reagent_reservoir = 5000,
+                reagent_reservoir_volume = 5000,
                 num_wells = 2, #num_Wells max is 2
                 h_cono = 1.95,
                 v_fondo = 1.95*7*71/2, #Prismatic
@@ -53,7 +54,7 @@ Water = Reagent(name = 'Water',
                 flow_rate_aspirate = 1,
                 flow_rate_dispense = 1,
                 rinse = False,
-                reagent_reservoir = 6000,
+                reagent_reservoir_volume = 6000,
                 num_wells = 1, #num_Wells max is 1
                 h_cono = 1.95,
                 v_fondo = 1.95*7*71/2) #Prismatic
@@ -62,7 +63,7 @@ Elution = Reagent(name = 'Elution',
                 flow_rate_aspirate = 0.25,
                 flow_rate_dispense = 1,
                 rinse = False,
-                reagent_reservoir = 800,
+                reagent_reservoir_volume = 800,
                 num_wells = num_cols, #num_cols comes from available columns
                 h_cono = 4,
                 v_fondo = 4*math.pi*4**3/3) #Sphere
