@@ -16,7 +16,7 @@ metadata = {
 
 
 mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 16
+NUM_SAMPLES = 8
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
 multi_well_rack_area = 8*71 #Cross section of the 12 well reservoir
@@ -31,8 +31,8 @@ def run(ctx: protocol_api.ProtocolContext):
             1:{'Execute': True, 'description': 'Mix beads'},#
             2:{'Execute': True, 'description': 'Transfer beads'},#
             3:{'Execute': False, 'description': 'Wait with magnet OFF'},#
-            4:{'Execute': False, 'description': 'Wait with magnet ON'},#
-            5:{'Execute': False, 'description': 'Remove supernatant'},#
+            4:{'Execute': True, 'description': 'Wait with magnet ON'},#
+            5:{'Execute': True, 'description': 'Remove supernatant'},#
             6:{'Execute': False, 'description': 'Add Isopropanol'},#
             7:{'Execute': False, 'description': 'Wait for 30s'},#
             8:{'Execute': False, 'description': 'Remove isopropanol'},#
@@ -79,18 +79,8 @@ def run(ctx: protocol_api.ProtocolContext):
                     tip_recycling = 'A1')
 
     Beads = Reagent(name = 'Magnetic beads',
-                    flow_rate_aspirate = 0.75,
-                    flow_rate_dispense = 1,
-                    rinse = True,
-                    reagent_reservoir_volume = 32860,
-                    num_wells = 4,
-                    h_cono = 1.95,
-                    v_fondo = 1.95*8*71/2, #Prismatic
-                    tip_recycling = 'A2')
-
-    BeadsMix = Reagent(name = 'Magnetic beads when mixing',
                     flow_rate_aspirate = 1,
-                    flow_rate_dispense = 1,
+                    flow_rate_dispense = 1.5,
                     rinse = True,
                     reagent_reservoir_volume = 32860,
                     num_wells = 4,
@@ -129,7 +119,6 @@ def run(ctx: protocol_api.ProtocolContext):
 
     Ethanol.vol_well=Ethanol.vol_well_original()
     Beads.vol_well=Beads.vol_well_original()
-    BeadsMix.vol_well=BeadsMix.vol_well_original()
     Isopropanol.vol_well=Isopropanol.vol_well_original()
     Water.vol_well=Water.vol_well_original()
     Elution.vol_well=350
@@ -140,10 +129,11 @@ def run(ctx: protocol_api.ProtocolContext):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
         '''
-        pipet.move_to(location)
+        pipet.aspirate(1, location = location.bottom(z = 3), rate = reagent.flow_rate_aspirate)
         for _ in range(rounds):
-            pipet.aspirate(vol, rate = reagent.flow_rate_aspirate)
-            pipet.dispense(vol, rate = reagent.flow_rate_dispense)
+            pipet.aspirate(vol, location = location.bottom(z = 3), rate = reagent.flow_rate_aspirate)
+            pipet.dispense(vol, location = location.bottom(z = 3), rate = reagent.flow_rate_dispense)
+        pipet.dispense(1, location = location.bottom(z = 3), rate = reagent.flow_rate_dispense)
         if blow_out == True:
             pipet.blow_out(location.top(z = -2)) # Blow out
 
@@ -186,8 +176,8 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
         # GO TO DESTINATION
         #pipet.move_to(dest.top())
-        pipet.dispense(vol + air_gap_vol, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
-        pipet.blow_out(dest.top(z = -1)) # Blow out
+        pipet.dispense(vol + air_gap_vol + 10, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
+        #pipet.blow_out(dest.top(z = -1)) # Blow out
         if air_gap_vol != 0:
             pipet.move_to(dest.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
@@ -266,9 +256,10 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ###############################################################################
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
     ### PREMIX BEADS
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         if not m300.hw_pipette['has_tip']:
             pick_up(m300) #These tips are reused in the first transfer of beads
             ctx.comment(' ')
@@ -284,9 +275,10 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment(' ')
 
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
     #Transfer parameters
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         beads_transfer_vol=[155, 155] #Two rounds of 155
         x_offset = 0
         air_gap_vol = 15
@@ -312,7 +304,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(' ')
             ctx.comment('Mixing sample with beads ')
 
-            ctx.pause()
+
             # mix beads with sample
             custom_mix(m300, Beads, location = work_destinations[i], vol = 180,
             rounds = 4, blow_out = True)
@@ -326,8 +318,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 3 INCUBATE WITHOUT MAGNET
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         # incubate off and on magnet
         magdeck.disengage()
         ctx.comment(' ')
@@ -338,8 +331,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 4 INCUBATE WITH MAGNET
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         magdeck.engage(height=mag_height)
         ctx.comment(' ')
         ctx.delay(seconds=120, msg='Incubating ON magnet for 5 minutes.')
@@ -348,9 +342,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 5 REMOVE SUPERNATANT
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         # remove supernatant -> height calculation can be omitted and referred to bottom!
         supernatant_vol = [160, 160, 160, 160]
@@ -369,18 +364,19 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
                 dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-            m300.touch_tip(speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
+            m300.move_to(location = work_destinations[i].top(z=-2))
+            m300.touch_tip(speed = 20, radius = 1.05)
 
-            ctx.pause()
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
     ###############################################################################
         # STEP 6* Washing 1 Isopropanol
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         isoprop_wash_vol = [150]
         air_gap_vol_isoprop = 15
@@ -403,7 +399,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_isoprop, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
 
-            ctx.pause()
+
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
@@ -411,9 +407,10 @@ def run(ctx: protocol_api.ProtocolContext):
         # STEP 7* WAIT FOR 30s-1'
         ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         ctx.comment(' ')
         ctx.delay(seconds=30, msg='Wait for 30 seconds.')
@@ -422,9 +419,10 @@ def run(ctx: protocol_api.ProtocolContext):
         # STEP 8* REMOVE ISOPROP (supernatant)
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         supernatant_vol=[150]
         air_gap_vol_rs=15
@@ -444,7 +442,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 pickup_height = pickup_height, rinse = False)
             m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
-            ctx.pause()
+
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
@@ -453,9 +451,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
         # STEP 9 Washing 1
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         ethanol_wash_vol = [100, 100]
         air_gap_vol_eth = 15
@@ -477,7 +476,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
 
-            ctx.pause()
+
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
@@ -485,9 +484,10 @@ def run(ctx: protocol_api.ProtocolContext):
         # STEP 10 WAIT FOR 30s-1'
         ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         ctx.comment(' ')
         ctx.delay(seconds=30, msg='Wait for 30 seconds.')
@@ -497,9 +497,10 @@ def run(ctx: protocol_api.ProtocolContext):
         # STEP 11 REMOVE SUPERNATANT
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         supernatant_vol=[100, 100]
         air_gap_vol_rs=15
@@ -519,7 +520,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 pickup_height = pickup_height, rinse = False)
             m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
-            ctx.pause()
+
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
@@ -527,9 +528,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
         # STEP 12 Washing 2
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         ethanol_wash_vol = [100, 100]
         air_gap_vol_eth = 15
@@ -551,7 +553,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
 
-            ctx.pause()
+
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
@@ -559,9 +561,10 @@ def run(ctx: protocol_api.ProtocolContext):
         # STEP 13 WAIT FOR 30s-1'
         ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         ctx.delay(seconds=30, msg='Incubating for 30 seconds.')
         ctx.comment(' ')
@@ -570,9 +573,10 @@ def run(ctx: protocol_api.ProtocolContext):
         # STEP 14 REMOVE SUPERNATANT AGAIN
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         supernatant_vol = [100, 100, 40]
         air_gap_vol_rs = 15
@@ -592,7 +596,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 pickup_height = pickup_height, rinse = False)
             m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
-            ctx.pause()
+
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
         m300.reset_tipracks()
@@ -601,9 +605,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 15 DRY
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         end = timer()
         delta = end - start
@@ -620,9 +625,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 16 DRY
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         #Water elution
         water_wash_vol = [50]
@@ -642,7 +648,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_water, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
 
-            ctx.pause()
+
 
             ctx.comment(' ')
             ctx.comment('Mixing sample with Water and LTA')
@@ -656,9 +662,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 17 WAIT 1-2' WITHOUT MAGNET
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         ctx.comment(' ')
         ctx.delay(minutes=0, msg='Incubating OFF magnet for 2 minutes.')
@@ -668,9 +675,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 18 WAIT 5' WITH MAGNET
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         magdeck.engage(height=mag_height)
         ctx.comment(' ')
         ctx.delay(minutes=2, msg='Incubating on magnet for 5 minutes.')
@@ -680,9 +688,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # STEP 19 TRANSFER TO ELUTION PLATE
     ########
     STEP += 1
-    if STEPS[STEP]['Execute']=='True':
+    if STEPS[STEP]['Execute']==True:
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment('###############################################')
         ctx.comment(' ')
         elution_vol=[45]
         air_gap_vol_rs=15
@@ -702,7 +711,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 pickup_height = pickup_height, rinse = False)
             #m300.touch_tip(location= final_destinations[i].top(z=-2), speed = 20, radius = 1.05)
 
-            ctx.pause()
+
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
