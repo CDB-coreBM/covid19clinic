@@ -214,8 +214,7 @@ def run(ctx: protocol_api.ProtocolContext):
     }
 
 ###############################################################################
-
-### PREMIX
+### PREMIX BEADS
     if not m300.hw_pipette['has_tip']:
         pick_up(m300)
         ctx.comment(' ')
@@ -223,4 +222,30 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment(' ')
     ctx.comment('Mixing '+Beads.name)
     ctx.comment(' ')
+    #Mixing
     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
+    ctx.comment('Finished premixing!')
+    ctx.comment('Now, reagents will be transferred to deepwell plate.')
+    ctx.comment(' ')
+
+#Transfer parameters
+    beads_transfer_vol=[155, 155] #Two rounds of 155
+    x_offset = 0
+    air_gap_vol = 10
+    for i in range(num_cols):
+        x_offset = find_side(i) * x_offset
+        for transfer_vol in beads_transfer_vol:
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol)
+            if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
+                ctx.comment('Mixing new reservoir column: '+str(Beads.col))
+                custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
+            ctx.comment('Aspirate from reservoir column: '+str(Beads.col))
+            ctx.comment('Pickup height is '+str(pickup_height))
+            ctx.pause()
+
+            move_vol_multi(m300, reagent = Beads, source = Beads.reagent_reservoir[Beads.col],
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = True)
+
+    
