@@ -145,13 +145,13 @@ def run(ctx: protocol_api.ProtocolContext):
             custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset))
-        pipet.move_to(s) # go to source
+        #pipet.move_to(s) # go to source
         pipet.aspirate(vol, s) # aspirate liquid
         if air_gap_vol !=0: #If there is air_gap_vol, switch pipette to slow speed
             pipet.move_to(source.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
         # GO TO DESTINATION
-        pipet.move_to(dest.top())
+        #pipet.move_to(dest.top())
         pipet.dispense(vol + air_gap_vol, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
         pipet.blow_out(dest.top(z = -1)) # Blow out
         if air_gap_vol != 0:
@@ -251,10 +251,11 @@ def run(ctx: protocol_api.ProtocolContext):
     beads_transfer_vol=[155, 155] #Two rounds of 155
     x_offset = 0
     air_gap_vol = 15
+    rinse = True
     for i in range(num_cols):
         if not m300.hw_pipette['has_tip']:
             pick_up(m300)
-        for transfer_vol in beads_transfer_vol:
+        for j,transfer_vol in enumerate(beads_transfer_vol):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol*8)
             if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
@@ -263,11 +264,11 @@ def run(ctx: protocol_api.ProtocolContext):
                 vol = 180, rounds = 10, blow_out = True)
             ctx.comment('Aspirate from reservoir column: ' + str(Beads.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            ctx.pause()
-
+            if j!=0:
+                rinse = False
             move_vol_multi(m300, reagent = Beads, source = Beads.reagent_reservoir[Beads.col],
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
-            pickup_height = pickup_height, rinse = True)
+            pickup_height = pickup_height, rinse = rinse)
 
         ctx.comment(' ')
         ctx.comment('Mixing sample with beads ')
