@@ -66,6 +66,16 @@ def run(ctx: protocol_api.ProtocolContext):
                     v_fondo = 1.95*8*71/2, #Prismatic
                     tip_recycling = 'A2')
 
+    BeadsMix = Reagent(name = 'Magnetic beads when mixing',
+                    flow_rate_aspirate = 1,
+                    flow_rate_dispense = 1,
+                    rinse = True,
+                    reagent_reservoir_volume = 32860,
+                    num_wells = 4,
+                    h_cono = 1.95,
+                    v_fondo = 1.95*8*71/2, #Prismatic
+                    tip_recycling = 'A2')
+
     Isopropanol = Reagent(name = 'Isopropanol',
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
@@ -97,6 +107,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     Ethanol.vol_well=Ethanol.vol_well_original()
     Beads.vol_well=Beads.vol_well_original()
+    BeadsMix.vol_well=BeadsMix.vol_well_original()
     Isopropanol.vol_well=Isopropanol.vol_well_original()
     Water.vol_well=Water.vol_well_original()
     Elution.vol_well=350
