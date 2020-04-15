@@ -112,13 +112,15 @@ def run(ctx: protocol_api.ProtocolContext):
             reagent.col = reagent.col + 1 # column selector position; intialize to required number
             if height < 0:
                 height = 0.1
+            col_change = True
         else:
             height=(reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.col = 0 + reagent.col
             reagent.vol_well = reagent.vol_well - aspirate_volume
             if height < 0:
                 height = 0.1
-        return height
+            col_change = False
+        return height, col_change
 
     def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
     pickup_height, rinse):
