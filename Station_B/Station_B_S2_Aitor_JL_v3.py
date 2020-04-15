@@ -343,27 +343,6 @@ def run(ctx: protocol_api.ProtocolContext):
     m300.drop_tip(home_after = True)
     tip_track['counts'][m300] += 8
 
-    for i in range(num_cols):
-        # transfer isoprop
-        # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
-        ########
-        pick_up(m300)
-        used_tips=used_tips+8
-        for wash_volume in isoprop_wash_vol:
-            [change_col,pickup_height,vol_final]=calc_height(vol_ini, multi_well_rack_area,
-            wash_volume,8,extra_vol,vol_next,old_bool)
-
-            ctx.comment('Change column: '+str(change_col))
-            ctx.comment('Pickup height is '+str(pickup_height))
-            ctx.pause()
-            #Pickup height modified to 0.1 and x_offset to 2
-            move_vol_multi(m300, flow_rate_aspirate, flow_rate_dispense, air_gap_vol_isoprop,wash_volume, 2, 0.1, isoprop[change_col], i, work_destinations[i], -5, blow_height, False, False, ctx)
-
-            vol_ini=vol_final
-            old_bool=change_col
-
-        m300.drop_tip(home_after=True)
-
 ###############################################################################
     # STEP 7* WAIT FOR 30s-1'
     ########
@@ -376,32 +355,25 @@ def run(ctx: protocol_api.ProtocolContext):
     supernatant_vol=[150]
     air_gap_vol_rs=15
     x_offset_rs=2
-    [vol_ini,old_bool,vol_next]=reset_reservoir(np.sum(supernatant_vol))
-        # remove supernatant
-    air_gap_vol_rs=15
-    x_offset_rs=2
-
 
     for i in range(num_cols):
-        pick_up(m300)
-        used_tips=used_tips+8
-        for supernatant_remove_vol in supernatant_vol:
-            [change_col,pickup_height,vol_final]=calc_height(vol_ini, deepwell_cross_section_area,
-            supernatant_remove_vol,1,extra_vol,vol_next,old_bool)
-
-
-            ctx.comment('Change column: '+str(change_col))
-            ctx.comment('Pickup height is '+str(pickup_height))
+        x_offset = find_side(i) * x_offset_rs
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in supernatant_vol:
+            #Pickup_height is fixed here
+            pickup_height = 0.1
+            ctx.comment('Aspirate from deep well column: ' + str(i+1))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
+            move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
+            dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = False)
+        m300.touch_tip(location= work_destinations[i].top(z=-2), speed = 20, radius = 1.05)
 
-            move_vol_multi(m300, flow_rate_aspirate, flow_rate_dispense,air_gap_vol_rs, supernatant_remove_vol, x_offset_rs, pickup_height,work_destinations[i], i, waste, aspiration_height_t, blow_height, False, False,ctx)
-
-            vol_ini=vol_final
-            vol_next=vol_ini
-            old_bool=change_col
-        vol_ini=np.sum(supernatant_vol)
-        old_bool=0
-        m300.drop_tip(home_after=True)
+        ctx.pause()
+        m300.drop_tip(home_after = True)
+        tip_track['counts'][m300] += 8
 
 
 
@@ -410,33 +382,30 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment(' ')
     ctx.comment('Wash with ethanol')
     ctx.comment(' ')
-    Ref_vol = 6400
-    ethanol_wash_vol=[100,100]
-    [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
-    air_gap_vol_eth=10
+    ethanol_wash_vol = [100, 100]
+    air_gap_vol_eth = 10
 
     # WASH 2 TIMES
     ########
     # 70% EtOH washes
     for i in range(num_cols):
-        # transfer EtOH
-        # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
-        ########
-        pick_up(m300)
-        used_tips=used_tips+8
-        for wash_volume in ethanol_wash_vol:
-            [change_col,pickup_height,vol_final]=calc_height(vol_ini, multi_well_rack_area,
-            wash_volume,8,extra_vol,vol_next,old_bool)
-
-            ctx.comment('Change column: '+str(change_col))
-            ctx.comment('Pickup height is '+str(pickup_height))
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in ethanol_wash_vol:
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol)
+            ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
-            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense, air_gap_vol_eth,wash_volume, 0, pickup_height, etoh[change_col], i, work_destinations[i],-5, blow_height, False, False, ctx)
+            if i!=0:
+                rinse = False
+            move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = rinse)
 
-            vol_ini=vol_final
-            old_bool=change_col
-
-        m300.drop_tip(home_after=True)
+        ctx.pause()
+    m300.drop_tip(home_after = True)
+    tip_track['counts'][m300] += 8
 
 ###############################################################################
     # STEP 7 WAIT FOR 30s-1'
