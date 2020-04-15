@@ -123,7 +123,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(str('After change: '+str(reagent.col)))
             reagent.vol_well=reagent.vol_well_original()
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area + reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
             ctx.comment(' ')
@@ -131,7 +131,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 height = 0.1
             col_change = True
         else:
-            height=(reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area + reagent.h_cono
+            height=(reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             if height < 0:
                 height = 0.1
@@ -206,9 +206,9 @@ def run(ctx: protocol_api.ProtocolContext):
 ####################################
     ######### Load tip_racks
     tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-        for slot in ['5', '8', '11','1','4','7']]
-    tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-        for slot in ['10']]
+        for slot in ['5', '8', '11','1','4','7','10']]
+    #tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
+    #    for slot in ['10']]
 
 ###############################################################################
     #Declare which reagents are in each reservoir as well as deepwell and elution plate
@@ -226,7 +226,7 @@ def run(ctx: protocol_api.ProtocolContext):
     #### used tip counter and set maximum tips available
     tip_track = {
         'counts': {m300: 0},
-        'maxes': {m300: 672}
+        'maxes': {m300: 10000}
         }
         #, p1000: len(tips1000)*96}
 
@@ -343,12 +343,12 @@ def run(ctx: protocol_api.ProtocolContext):
     for i in range(num_cols):
         if not m300.hw_pipette['has_tip']:
             pick_up(m300)
-        for transfer_vol in isoprop_wash_vol:
+        for j,transfer_vol in enumerate(isoprop_wash_vol):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Isopropanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            if i!=0:
+            if j!=0:
                 rinse = False
             move_vol_multi(m300, reagent = Isopropanol, source = Isopropanol.reagent_reservoir[Isopropanol.col],
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_isoprop, x_offset = x_offset,
@@ -405,12 +405,12 @@ def run(ctx: protocol_api.ProtocolContext):
     for i in range(num_cols):
         if not m300.hw_pipette['has_tip']:
             pick_up(m300)
-        for transfer_vol in ethanol_wash_vol:
+        for j,transfer_vol in enumerate(ethanol_wash_vol):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            if i != 0:
+            if j!=0:
                 rinse = False
             move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
@@ -467,12 +467,12 @@ def run(ctx: protocol_api.ProtocolContext):
     for i in range(num_cols):
         if not m300.hw_pipette['has_tip']:
             pick_up(m300)
-        for transfer_vol in ethanol_wash_vol:
+        for j,transfer_vol in enumerate(ethanol_wash_vol):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            if i!=0:
+            if j!=0:
                 rinse = False
             move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
@@ -513,6 +513,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.pause()
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
+    m300.reset_tipracks()
 
 
 # STEP 12 DRY
@@ -589,7 +590,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in elution_vol:
             #Pickup_height is fixed here
-            pickup_height = 0.5
+            pickup_height = 0.2
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
