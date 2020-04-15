@@ -1,4 +1,4 @@
-import math
+miximport math
 from opentrons.types import Point
 from opentrons import protocol_api
 import time
@@ -16,27 +16,29 @@ metadata = {
 
 STEP = 0
 STEPS={1:{'Execute': False, 'description': 'Mix beads'},#
-        2:{'Execute': False, 'description': 'Mix beads'},#
-        3:{'Execute': False, 'description': 'Mix beads'},#
-        4:{'Execute': False, 'description': 'Mix beads'},#
-        5:{'Execute': False, 'description': 'Mix beads'},#
-        6:{'Execute': False, 'description': 'Mix beads'},#
-        7:{'Execute': False, 'description': 'Mix beads'},#
-        8:{'Execute': False, 'description': 'Mix beads'},#
-        9:{'Execute': False, 'description': 'Mix beads'},#
-        10:{'Execute': False, 'description': 'Mix beads'},#
-        11:{'Execute': False, 'description': 'Mix beads'},#
-        12:{'Execute': False, 'description': 'Mix beads'},#
-        13:{'Execute': False, 'description': 'Mix beads'},#
-        14:{'Execute': False, 'description': 'Mix beads'},#
-        15:{'Execute': False, 'description': 'Mix beads'},#
-        16:{'Execute': False, 'description': 'Mix beads'},#
-        17:{'Execute': False, 'description': 'Mix beads'}
+        2:{'Execute': False, 'description': 'Transfer beads'},#
+        3:{'Execute': False, 'description': 'Wait with magnet OFF'},#
+        4:{'Execute': False, 'description': 'Wait with magnet ON'},#
+        5:{'Execute': False, 'description': 'Remove supernatant'},#
+        6:{'Execute': False, 'description': 'Add Isopropanol'},#
+        7:{'Execute': False, 'description': 'Wait for 30s'},#
+        8:{'Execute': False, 'description': 'Remove isopropanol'},#
+        9:{'Execute': False, 'description': 'Wash with ethanol'},#
+        10:{'Execute': False, 'description': 'Wait for 30s'},#
+        11:{'Execute': False, 'description': 'Remove supernatant'},#
+        12:{'Execute': False, 'description': 'Wash with ethanol'},#
+        13:{'Execute': False, 'description': 'Wait 30s'},#
+        14:{'Execute': False, 'description': 'Remove supernatant'},#
+        15:{'Execute': False, 'description': 'Allow to dry'},#
+        16:{'Execute': False, 'description': 'Add water and LTA'},#
+        17:{'Execute': False, 'description': 'Wait with magnet OFF'},
+        18:{'Execute': False, 'description': 'Wait with magnet ON'},
+        19:{'Execute': False, 'description': 'Transfer to final elution plate'},
         }
 
 
 
-mag_height = 12 # Height needed for NUNC deepwell in magnetic deck
+mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 16
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
@@ -616,7 +618,13 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
         magdeck.disengage()
     ###############################################################################
-
+    # STEP 15 DRY
+    ########
+    STEP += 1
+    if STEPS[STEP]['Execute']=='True':
+        ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
         #Water elution
         water_wash_vol = [50]
         air_gap_vol_water = 10
@@ -651,6 +659,9 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
+        ctx.comment(' ')
         ctx.delay(minutes=0, msg='Incubating OFF magnet for 2 minutes.')
         ctx.comment(' ')
     ###############################################################################
@@ -659,6 +670,8 @@ def run(ctx: protocol_api.ProtocolContext):
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
+        ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         magdeck.engage(height=mag_height)
         ctx.comment(' ')
         ctx.delay(minutes=2, msg='Incubating on magnet for 5 minutes.')
@@ -670,7 +683,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
-        ctx.comment('TRANSFER TO FINAL ELUTION PLATE')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment(' ')
         elution_vol=[45]
         air_gap_vol_rs=15
