@@ -25,8 +25,8 @@ Ethanol = Reagent(name = 'Ethanol',
                 rinse = True,
                 reagent_reservoir = 12000,
                 num_wells = 4, #num_Wells max is 4
-                h_cono = 2,
-                v_fondo = 50,
+                h_cono = 1.95,
+                v_fondo = 1.95*7*71/2,
                 tip_recycling = 'A1')
 
 Beads = Reagent(name = 'Magnetic beads',
@@ -35,8 +35,8 @@ Beads = Reagent(name = 'Magnetic beads',
                 rinse = True,
                 reagent_reservoir = 12000,
                 num_wells = 4,
-                h_cono = ,
-                v_fondo = ,
+                h_cono = 1.95,
+                v_fondo = 1.95*7*71/2,
                 tip_recycling = 'A2')
 
 Isopropanol = Reagent(name = 'Isopropanol',
@@ -45,8 +45,8 @@ Isopropanol = Reagent(name = 'Isopropanol',
                 rinse = True,
                 reagent_reservoir = 5000,
                 num_wells = 2, #num_Wells max is 2
-                h_cono = ,
-                v_fondo = ,
+                h_cono = 1.95,
+                v_fondo = 1.95*7*71/2,
                 tip_recycling = 'A3')
 
 Water = Reagent(name = 'Water',
@@ -55,8 +55,8 @@ Water = Reagent(name = 'Water',
                 rinse = False,
                 reagent_reservoir = 6000,
                 num_wells = 1, #num_Wells max is 1
-                h_cono = ,
-                v_fondo = )
+                h_cono = 1.95,
+                v_fondo = 1.95*7*71/2)
 
 Elution = Reagent(name = 'Elution',
                 flow_rate_aspirate = 0.25,
@@ -64,8 +64,8 @@ Elution = Reagent(name = 'Elution',
                 rinse = False,
                 reagent_reservoir = 800,
                 num_wells = num_cols, #num_cols comes from available columns
-                h_cono = ,
-                v_fondo = )
+                h_cono = 4,
+                v_fondo = 4*math.pi*4**3/3)
 
 [custom_mix(p,r,s,vol) for _ in range(5)]
 
