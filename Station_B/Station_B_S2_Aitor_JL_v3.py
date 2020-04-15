@@ -15,7 +15,8 @@ metadata = {
 }
 
 STEP = 0
-STEPS={1:{'Execute': False, 'description': 'Mix beads'},#
+STEPS={
+        1:{'Execute': False, 'description': 'Mix beads'},#
         2:{'Execute': False, 'description': 'Transfer beads'},#
         3:{'Execute': False, 'description': 'Wait with magnet OFF'},#
         4:{'Execute': False, 'description': 'Wait with magnet ON'},#
@@ -35,8 +36,6 @@ STEPS={1:{'Execute': False, 'description': 'Mix beads'},#
         18:{'Execute': False, 'description': 'Wait with magnet ON'},
         19:{'Execute': False, 'description': 'Transfer to final elution plate'},
         }
-
-
 
 mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 16
@@ -452,7 +451,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
 
     ###############################################################################
-        # STEP 8 Washing 1
+        # STEP 9 Washing 1
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
@@ -483,7 +482,7 @@ def run(ctx: protocol_api.ProtocolContext):
         tip_track['counts'][m300] += 8
 
     ###############################################################################
-        # STEP 9 WAIT FOR 30s-1'
+        # STEP 10 WAIT FOR 30s-1'
         ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -495,7 +494,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment(' ')
 
         ####################################################################
-        # STEP 10 REMOVE SUPERNATANT
+        # STEP 11 REMOVE SUPERNATANT
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -526,7 +525,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
 
     ###############################################################################
-        # STEP 11 Washing 2
+        # STEP 12 Washing 2
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
@@ -557,7 +556,7 @@ def run(ctx: protocol_api.ProtocolContext):
         tip_track['counts'][m300] += 8
 
     ###############################################################################
-        # STEP 12 WAIT FOR 30s-1'
+        # STEP 13 WAIT FOR 30s-1'
         ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -568,7 +567,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment(' ')
         start = timer()
         ####################################################################
-        # STEP 13 REMOVE SUPERNATANT AGAIN
+        # STEP 14 REMOVE SUPERNATANT AGAIN
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -599,7 +598,7 @@ def run(ctx: protocol_api.ProtocolContext):
         m300.reset_tipracks()
 
 
-    # STEP 14 DRY
+    # STEP 15 DRY
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -618,7 +617,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
         magdeck.disengage()
     ###############################################################################
-    # STEP 15 DRY
+    # STEP 16 DRY
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -654,7 +653,7 @@ def run(ctx: protocol_api.ProtocolContext):
             tip_track['counts'][m300] += 8
 
 
-    # STEP 15 WAIT 1-2' WITHOUT MAGNET
+    # STEP 17 WAIT 1-2' WITHOUT MAGNET
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -666,7 +665,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment(' ')
     ###############################################################################
 
-    # STEP 16 WAIT 5' WITH MAGNET
+    # STEP 18 WAIT 5' WITH MAGNET
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
@@ -678,7 +677,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment(' ')
     ###############################################################################
 
-    # STEP 17 TRANSFER TO ELUTION PLATE
+    # STEP 19 TRANSFER TO ELUTION PLATE
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
