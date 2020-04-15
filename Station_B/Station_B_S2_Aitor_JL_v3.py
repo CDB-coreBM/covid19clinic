@@ -241,7 +241,8 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Mixing '+Beads.name)
     ctx.comment(' ')
     #Mixing
-    custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 10, blow_out = True)
+    custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180,
+    rounds = 10, blow_out = True)
     ctx.comment('Finished premixing!')
     ctx.comment('Now, reagents will be transferred to deepwell plate.')
     ctx.comment(' ')
@@ -317,7 +318,6 @@ def run(ctx: protocol_api.ProtocolContext):
             pickup_height = 0.5
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
-            ctx.pause()
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
@@ -379,7 +379,6 @@ def run(ctx: protocol_api.ProtocolContext):
             pickup_height = 0.1
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
-            ctx.pause()
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
@@ -592,7 +591,6 @@ def run(ctx: protocol_api.ProtocolContext):
             pickup_height = 0.5
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
-            ctx.pause()
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = final_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_rs, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
