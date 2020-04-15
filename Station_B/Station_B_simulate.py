@@ -16,10 +16,10 @@ metadata = {
 
 
 mag_height = 12 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 96
+NUM_SAMPLES = 24
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
-multi_well_rack_area = 7*71 #Cross section of the 12 well reservoir
+multi_well_rack_area = 8*71 #Cross section of the 12 well reservoir
 deepwell_cross_section_area = math.pi*D_deepwell**2/4 # deepwell cilinder cross secion area
 
 num_cols = math.ceil(NUM_SAMPLES/8) # Columns we are working on
@@ -50,30 +50,30 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir_volume = 12000,
+                    reagent_reservoir_volume = 11000*4,
                     num_wells = 4, #num_Wells max is 4
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2, #Prismatic
+                    v_fondo = 1.95*8*71/2, #Prismatic
                     tip_recycling = 'A1')
 
     Beads = Reagent(name = 'Magnetic beads',
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir_volume = 12000,
+                    reagent_reservoir_volume = 11000*4,
                     num_wells = 4,
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2, #Prismatic
+                    v_fondo = 1.95*8*71/2, #Prismatic
                     tip_recycling = 'A2')
 
     Isopropanol = Reagent(name = 'Isopropanol',
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir_volume = 5000,
+                    reagent_reservoir_volume = 11000*2,
                     num_wells = 2, #num_Wells max is 2
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2, #Prismatic
+                    v_fondo = 1.95*8*71/2, #Prismatic
                     tip_recycling = 'A3')
 
     Water = Reagent(name = 'Water',
@@ -83,7 +83,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume = 6000,
                     num_wells = 1, #num_Wells max is 1
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2) #Prismatic
+                    v_fondo = 1.95*8*71/2) #Prismatic
 
     Elution = Reagent(name = 'Elution',
                     flow_rate_aspirate = 0.25,
@@ -117,15 +117,21 @@ def run(ctx: protocol_api.ProtocolContext):
         nonlocal ctx
         ctx.comment(str(reagent.vol_well)+'<'+str(aspirate_volume))
         if reagent.vol_well < aspirate_volume:
-            reagent.vol_well = reagent.vol_well_original() - aspirate_volume
-            height = (reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
+            ctx.comment('Previous to change: '+str(reagent.col))
+
             reagent.col = reagent.col + 1 # column selector position; intialize to required number
+
+            ctx.comment(str('After change: '+str(reagent.col)))
+            ctx.comment('Original volume:' + str(reagent.vol_well_original()))
+            reagent.vol_well=reagent.vol_well_original()
+            ctx.comment('New volume:' + str(reagent.vol_well))
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area - reagent.h_cono
+            reagent.vol_well = rreagent.vol_well - aspirate_volume
             if height < 0:
                 height = 0.1
             col_change = True
         else:
-            height=(reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
-            reagent.col = 0 + reagent.col
+            height=(reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             if height < 0:
                 height = 0.1
@@ -209,6 +215,7 @@ def run(ctx: protocol_api.ProtocolContext):
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells] # 1 row, 4 columns (first ones)
     Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)] # 1 row, 2 columns (from 5 to 6)
     Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6+Ethanol.num_wells)] # 1 row, 2 columns (from 7 to 10)
+    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6 + Ethanol.num_wells)] # 1 row, 2 columns (from 7 to 10)
     Water.reagent_reservoir = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
     final_destinations = elution_plate.rows()[0][:Elution.num_wells]
@@ -406,7 +413,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
-            if i!=0:
+            if i != 0:
                 rinse = False
             move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
