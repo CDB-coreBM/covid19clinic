@@ -267,6 +267,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
     ### PREMIX BEADS
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         if not m300.hw_pipette['has_tip']:
             pick_up(m300) #These tips are reused in the first transfer of beads
             ctx.comment(' ')
@@ -284,6 +285,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
     #Transfer parameters
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         beads_transfer_vol=[155, 155] #Two rounds of 155
         x_offset = 0
         air_gap_vol = 15
@@ -324,6 +326,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         # incubate off and on magnet
         magdeck.disengage()
         ctx.comment(' ')
@@ -335,6 +338,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         magdeck.engage(height=mag_height)
         ctx.comment(' ')
         ctx.delay(seconds=120, msg='Incubating ON magnet for 5 minutes.')
@@ -345,7 +349,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
-        ctx.comment('Remove supernatant ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment(' ')
         # remove supernatant -> height calculation can be omitted and referred to bottom!
         supernatant_vol = [160, 160, 160, 160]
@@ -375,7 +379,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
-        ctx.comment('Wash with Isopropanol')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment(' ')
         isoprop_wash_vol = [150]
         air_gap_vol_isoprop = 15
@@ -408,6 +412,9 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
+        ctx.comment(' ')
         ctx.delay(seconds=30, msg='Wait for 30 seconds.')
         ctx.comment(' ')
         ####################################################################
@@ -415,6 +422,9 @@ def run(ctx: protocol_api.ProtocolContext):
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
+        ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
         supernatant_vol=[150]
         air_gap_vol_rs=15
         x_offset_rs=2
@@ -444,7 +454,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
-        ctx.comment('Wash with ethanol')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment(' ')
         ethanol_wash_vol = [100, 100]
         air_gap_vol_eth = 15
@@ -476,6 +486,9 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
+        ctx.comment(' ')
         ctx.delay(seconds=30, msg='Wait for 30 seconds.')
         ctx.comment(' ')
 
@@ -484,6 +497,9 @@ def run(ctx: protocol_api.ProtocolContext):
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
+        ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
         supernatant_vol=[100, 100]
         air_gap_vol_rs=15
         x_offset_rs=2
@@ -512,7 +528,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
-        ctx.comment('Wash with ethanol for the second time')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment(' ')
         ethanol_wash_vol = [100, 100]
         air_gap_vol_eth = 15
@@ -544,6 +560,8 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
         ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
         ctx.delay(seconds=30, msg='Incubating for 30 seconds.')
         ctx.comment(' ')
         start = timer()
@@ -552,6 +570,9 @@ def run(ctx: protocol_api.ProtocolContext):
         # remove supernatant -> height calculation can be omitted and referred to bottom!
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
+        ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
         supernatant_vol = [100, 100, 40]
         air_gap_vol_rs = 15
         x_offset_rs = 2
@@ -580,6 +601,9 @@ def run(ctx: protocol_api.ProtocolContext):
     ########
     STEP += 1
     if STEPS[STEP]['Execute']=='True':
+        ctx.comment(' ')
+        ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
+        ctx.comment(' ')
         end = timer()
         delta = end - start
         delta_time = 5*60 - delta
