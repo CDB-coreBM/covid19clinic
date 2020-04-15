@@ -312,37 +312,37 @@ def run(ctx: protocol_api.ProtocolContext):
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
-
-    for i in range(num_cols):
-        for supernatant_remove_vol in supernatant_vol:
-            [change_col,pickup_height,vol_final]=calc_height(vol_ini, deepwell_cross_section_area,
-            supernatant_remove_vol,1,extra_vol,vol_next,old_bool)
-
-            ctx.comment('Change column: ' + str(change_col))
-            ctx.comment('Pickup height is ' + str(pickup_height))
-            ctx.pause()
-            move_vol_multi(m300, flow_rate_aspirate, flow_rate_dispense,air_gap_vol_rs, supernatant_remove_vol, x_offset_rs, pickup_height,work_destinations[i], i, waste, aspiration_height_t, blow_height, False, False, ctx)
-
-            vol_ini=vol_final
-            old_bool=change_col
-
-        vol_ini=np.sum(supernatant_vol)
-        old_bool = 0
-        m300.drop_tip(home_after=True)
-
 ###############################################################################
-    # STEP 6* Washing 1 ISOPROP
+    # STEP 6* Washing 1 Isopropanol
     ctx.comment(' ')
     ctx.comment('Wash with ethanol')
     ctx.comment(' ')
-    Ref_vol = 2400
-    isoprop_wash_vol=[150]
-    [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
-    air_gap_vol_isoprop=10
+    isoprop_wash_vol = [150]
+    air_gap_vol_isoprop = 10
+    x_offset = 0
+    rinse = True #Only first time
 
-    # WASH 2 TIMES
     ########
     # isoprop washes
+    for i in range(num_cols):
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in isoprop_wash_vol:
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol)
+            ctx.comment('Aspirate from Reservoir column: ' + str(Isopropanol.col))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.pause()
+            if i!=0:
+                rinse = False
+            move_vol_multi(m300, reagent = Isopropanol, source = Isopropanol.reagent_reservoir[Isopropanol.col],
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_isoprop, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = rinse)
+
+        ctx.pause()
+    m300.drop_tip(home_after = True)
+    tip_track['counts'][m300] += 8
+
     for i in range(num_cols):
         # transfer isoprop
         # STEP 6  ADD AND CLEAN WITH ETOH [STEP 9]
