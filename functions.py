@@ -20,7 +20,10 @@ def mix_custom
 
 
 def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-pickup_height, touch_tip):
+pickup_height, rinse):
+    # Rinse before aspirating
+    if rinse == True:
+        [custom_mix(pipet, reagent, source, dest, vol) for _ in range(2)]
     # SOURCE
     s = source.bottom(pickup_height).move(Point(x = x_offset))
     pipet.move_to(s) # go to source
@@ -36,6 +39,3 @@ pickup_height, touch_tip):
     if air_gap_vol != 0:
         pipet.move_to(dest.top(z = -2), speed = 20)
         pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
-    # Touch tip
-    if touch_tip == True:
-        pipet.touch_tip(speed = 20, radius = 1.05)
