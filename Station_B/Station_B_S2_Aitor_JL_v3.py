@@ -1,4 +1,4 @@
-miximport math
+import math
 from opentrons.types import Point
 from opentrons import protocol_api
 import time
@@ -14,28 +14,6 @@ metadata = {
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
-STEP = 0
-STEPS={
-        1:{'Execute': False, 'description': 'Mix beads'},#
-        2:{'Execute': False, 'description': 'Transfer beads'},#
-        3:{'Execute': False, 'description': 'Wait with magnet OFF'},#
-        4:{'Execute': False, 'description': 'Wait with magnet ON'},#
-        5:{'Execute': False, 'description': 'Remove supernatant'},#
-        6:{'Execute': False, 'description': 'Add Isopropanol'},#
-        7:{'Execute': False, 'description': 'Wait for 30s'},#
-        8:{'Execute': False, 'description': 'Remove isopropanol'},#
-        9:{'Execute': False, 'description': 'Wash with ethanol'},#
-        10:{'Execute': False, 'description': 'Wait for 30s'},#
-        11:{'Execute': False, 'description': 'Remove supernatant'},#
-        12:{'Execute': False, 'description': 'Wash with ethanol'},#
-        13:{'Execute': False, 'description': 'Wait 30s'},#
-        14:{'Execute': False, 'description': 'Remove supernatant'},#
-        15:{'Execute': False, 'description': 'Allow to dry'},#
-        16:{'Execute': False, 'description': 'Add water and LTA'},#
-        17:{'Execute': False, 'description': 'Wait with magnet OFF'},
-        18:{'Execute': False, 'description': 'Wait with magnet ON'},
-        19:{'Execute': False, 'description': 'Transfer to final elution plate'},
-        }
 
 mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 16
@@ -48,6 +26,28 @@ num_cols = math.ceil(NUM_SAMPLES/8) # Columns we are working on
 
 def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: '+str(num_cols))
+    STEP = 0
+    STEPS={
+            1:{'Execute': True, 'description': 'Mix beads'},#
+            2:{'Execute': True, 'description': 'Transfer beads'},#
+            3:{'Execute': False, 'description': 'Wait with magnet OFF'},#
+            4:{'Execute': False, 'description': 'Wait with magnet ON'},#
+            5:{'Execute': False, 'description': 'Remove supernatant'},#
+            6:{'Execute': False, 'description': 'Add Isopropanol'},#
+            7:{'Execute': False, 'description': 'Wait for 30s'},#
+            8:{'Execute': False, 'description': 'Remove isopropanol'},#
+            9:{'Execute': False, 'description': 'Wash with ethanol'},#
+            10:{'Execute': False, 'description': 'Wait for 30s'},#
+            11:{'Execute': False, 'description': 'Remove supernatant'},#
+            12:{'Execute': False, 'description': 'Wash with ethanol'},#
+            13:{'Execute': False, 'description': 'Wait 30s'},#
+            14:{'Execute': False, 'description': 'Remove supernatant'},#
+            15:{'Execute': False, 'description': 'Allow to dry'},#
+            16:{'Execute': False, 'description': 'Add water and LTA'},#
+            17:{'Execute': False, 'description': 'Wait with magnet OFF'},
+            18:{'Execute': False, 'description': 'Wait with magnet ON'},
+            19:{'Execute': False, 'description': 'Transfer to final elution plate'},
+            }
 
     #Define Reagents as objects with their properties
     class Reagent:
