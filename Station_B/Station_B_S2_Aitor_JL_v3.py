@@ -309,7 +309,7 @@ def run(ctx: protocol_api.ProtocolContext):
         m300.touch_tip(location= work_destinations[i].top(z=-2), speed = 20, radius = 1.05)
 
         ctx.pause()
-        m300.drop_tip(home_after = False)
+        m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
 
