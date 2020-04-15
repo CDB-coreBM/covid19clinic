@@ -150,7 +150,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
         # GO TO DESTINATION
         pipet.move_to(dest.top())
-        pipet.dispense(vol + air_gap_vol + 20, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
+        pipet.dispense(vol + air_gap_vol, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
         pipet.blow_out(dest.top(z = -1)) # Blow out
         if air_gap_vol != 0:
             pipet.move_to(dest.top(z = -2), speed = 20)
@@ -213,7 +213,6 @@ def run(ctx: protocol_api.ProtocolContext):
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells] # 1 row, 4 columns (first ones)
     Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)] # 1 row, 2 columns (from 5 to 6)
     Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6 + Ethanol.num_wells)] # 1 row, 2 columns (from 7 to 10)
-    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6 + Ethanol.num_wells)] # 1 row, 2 columns (from 7 to 10)
     Water.reagent_reservoir = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
     final_destinations = elution_plate.rows()[0][:Elution.num_wells]
@@ -240,7 +239,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Mixing '+Beads.name)
     ctx.comment(' ')
     #Mixing
-    custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
+    custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 10, blow_out = True)
     ctx.comment('Finished premixing!')
     ctx.comment('Now, reagents will be transferred to deepwell plate.')
     ctx.comment(' ')
@@ -248,7 +247,7 @@ def run(ctx: protocol_api.ProtocolContext):
 #Transfer parameters
     beads_transfer_vol=[155, 155] #Two rounds of 155
     x_offset = 0
-    air_gap_vol = 10
+    air_gap_vol = 15
     for i in range(num_cols):
         if not m300.hw_pipette['has_tip']:
             pick_up(m300)
@@ -258,7 +257,7 @@ def run(ctx: protocol_api.ProtocolContext):
             if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
                 ctx.comment('Mixing new reservoir column: ' + str(Beads.col))
                 custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                vol = 180, rounds = 20, blow_out = True)
+                vol = 180, rounds = 10, blow_out = True)
             ctx.comment('Aspirate from reservoir column: ' + str(Beads.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
@@ -286,7 +285,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # incubate off and on magnet
     magdeck.disengage()
     ctx.comment(' ')
-    ctx.delay(seconds=30, msg='Incubating OFF magnet for 5 minutes.') # minutes=5
+    ctx.delay(seconds=30, msg='Incubating OFF magnet for 2 minutes.') # minutes=2
     ctx.comment(' ')
 ###############################################################################
 
@@ -294,7 +293,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ########
     magdeck.engage(height=mag_height)
     ctx.comment(' ')
-    ctx.delay(seconds=30, msg='Incubating ON magnet for 5 minutes.')
+    ctx.delay(seconds=120, msg='Incubating ON magnet for 5 minutes.')
     ctx.comment(' ')
 ###############################################################################
 # STEP 5 REMOVE SUPERNATANT
@@ -303,7 +302,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Remove supernatant ')
     ctx.comment(' ')
     # remove supernatant -> height calculation can be omitted and referred to bottom!
-    supernatant_vol = [160, 160, 160, 140]
+    supernatant_vol = [160, 160, 160, 160]
     x_offset_rs = 2
     air_gap_vol = 15
 
@@ -313,14 +312,14 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in supernatant_vol:
             #Pickup_height is fixed here
-            pickup_height = 0.1
+            pickup_height = 0.5
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
-        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
+        m300.touch_tip(speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
         ctx.pause()
         m300.drop_tip(home_after = True)
@@ -329,10 +328,10 @@ def run(ctx: protocol_api.ProtocolContext):
 ###############################################################################
     # STEP 6* Washing 1 Isopropanol
     ctx.comment(' ')
-    ctx.comment('Wash with ethanol')
+    ctx.comment('Wash with Isopropanol')
     ctx.comment(' ')
     isoprop_wash_vol = [150]
-    air_gap_vol_isoprop = 10
+    air_gap_vol_isoprop = 15
     x_offset = 0
     rinse = True #Only first time
 
@@ -346,7 +345,6 @@ def run(ctx: protocol_api.ProtocolContext):
             [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Isopropanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            ctx.pause()
             if i!=0:
                 rinse = False
             move_vol_multi(m300, reagent = Isopropanol, source = Isopropanol.reagent_reservoir[Isopropanol.col],
@@ -397,7 +395,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Wash with ethanol')
     ctx.comment(' ')
     ethanol_wash_vol = [100, 100]
-    air_gap_vol_eth = 10
+    air_gap_vol_eth = 15
 
     # WASH 2 TIMES
     ########
@@ -410,7 +408,6 @@ def run(ctx: protocol_api.ProtocolContext):
             [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            ctx.pause()
             if i != 0:
                 rinse = False
             move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
@@ -444,7 +441,6 @@ def run(ctx: protocol_api.ProtocolContext):
             pickup_height = 0.1
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
-            ctx.pause()
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
@@ -461,7 +457,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Wash with ethanol for the second time')
     ctx.comment(' ')
     ethanol_wash_vol = [100, 100]
-    air_gap_vol_eth = 10
+    air_gap_vol_eth = 15
 
     # WASH 2 TIMES
     ########
@@ -474,7 +470,6 @@ def run(ctx: protocol_api.ProtocolContext):
             [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            ctx.pause()
             if i!=0:
                 rinse = False
             move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
@@ -508,7 +503,6 @@ def run(ctx: protocol_api.ProtocolContext):
             pickup_height = 0.1
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            ctx.pause()
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
@@ -533,11 +527,13 @@ def run(ctx: protocol_api.ProtocolContext):
 ###############################################################################
     magdeck.disengage()
 ###############################################################################
+
+    #Water elution
     water_wash_vol = [50]
     air_gap_vol_water = 10
 
     ########
-    # Water and LTA washes
+    # Water or elution buffer
     for i in range(num_cols):
         if not m300.hw_pipette['has_tip']:
             pick_up(m300)
@@ -546,19 +542,17 @@ def run(ctx: protocol_api.ProtocolContext):
             [pickup_height, change_col] = calc_height(Water, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Water.col))
             ctx.comment('Pickup height is ' + str(pickup_height))
-            ctx.pause()
-            if i!=0:
-                rinse = False
             move_vol_multi(m300, reagent = Water, source = Water.reagent_reservoir,
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_water, x_offset = x_offset,
-            pickup_height = pickup_height, rinse = rinse)
+            pickup_height = pickup_height, rinse = False)
 
         ctx.pause()
 
         ctx.comment(' ')
         ctx.comment('Mixing sample with beads ')
         #Mixing
-        custom_mix(m300, Elution, work_destinations[i], vol = 50, rounds = 4, blow_out = True)
+        custom_mix(m300, Elution, work_destinations[i], vol = 40, rounds = 4,
+        blow_out = True)
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
@@ -566,7 +560,7 @@ def run(ctx: protocol_api.ProtocolContext):
 # STEP 14 WAIT 1-2' WITHOUT MAGNET
 ########
     ctx.comment(' ')
-    ctx.delay(minutes=2, msg='Incubating OFF magnet for 2 minutes.')
+    ctx.delay(minutes=0, msg='Incubating OFF magnet for 2 minutes.')
     ctx.comment(' ')
 ###############################################################################
 
@@ -574,7 +568,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ########
     magdeck.engage(height=mag_height)
     ctx.comment(' ')
-    ctx.delay(minutes=5, msg='Incubating on magnet for 5 minutes.')
+    ctx.delay(minutes=2, msg='Incubating on magnet for 5 minutes.')
     ctx.comment(' ')
 ###############################################################################
 
@@ -584,7 +578,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('TRANSFER TO FINAL ELUTION PLATE')
     ctx.comment(' ')
     elution_vol=[45]
-    air_gap_vol_rs=10
+    air_gap_vol_rs=15
     x_offset_rs=2
 
     for i in range(num_cols):
@@ -593,7 +587,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(m300)
         for transfer_vol in elution_vol:
             #Pickup_height is fixed here
-            pickup_height = 0.1
+            pickup_height = 0.5
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
             ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
             ctx.pause()
