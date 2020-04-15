@@ -107,7 +107,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     def calc_height(reagent, cross_section_area, aspirate_volume):
         if reagent.vol_well < aspirate_volume:
-            reagent.vol_well = reagent.vol_well_original - aspirate_volume
+            reagent.vol_well = reagent.vol_well_original() - aspirate_volume
             height = (reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.col = reagent.col + 1 # column selector position; intialize to required number
             if height < 0:
