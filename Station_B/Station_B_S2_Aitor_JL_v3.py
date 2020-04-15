@@ -53,7 +53,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume = 45000,
                     num_wells = 4, #num_Wells max is 4
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2, #Prismatic
+                    v_fondo = 1.95*8*71/2, #Prismatic
                     tip_recycling = 'A1')
 
     Beads = Reagent(name = 'Magnetic beads',
@@ -63,7 +63,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume = 32860,
                     num_wells = 4,
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2, #Prismatic
+                    v_fondo = 1.95*8*71/2, #Prismatic
                     tip_recycling = 'A2')
 
     Isopropanol = Reagent(name = 'Isopropanol',
@@ -73,7 +73,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume = 16000,
                     num_wells = 2, #num_Wells max is 2
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2, #Prismatic
+                    v_fondo = 1.95*8*71/2, #Prismatic
                     tip_recycling = 'A3')
 
     Water = Reagent(name = 'Water',
@@ -83,7 +83,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume = 6000,
                     num_wells = 1, #num_Wells max is 1
                     h_cono = 1.95,
-                    v_fondo = 1.95*7*71/2) #Prismatic
+                    v_fondo = 1.95*8*71/2) #Prismatic
 
     Elution = Reagent(name = 'Elution',
                     flow_rate_aspirate = 0.25,
