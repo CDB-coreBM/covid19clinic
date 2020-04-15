@@ -551,7 +551,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.pause()
 
         ctx.comment(' ')
-        ctx.comment('Mixing sample with beads ')
+        ctx.comment('Mixing sample with Water and LTA')
         #Mixing
         custom_mix(m300, Elution, work_destinations[i], vol = 40, rounds = 4,
         blow_out = True)
