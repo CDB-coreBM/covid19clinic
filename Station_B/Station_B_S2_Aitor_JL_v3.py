@@ -57,7 +57,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     tip_recycling = 'A1')
 
     Beads = Reagent(name = 'Magnetic beads',
-                    flow_rate_aspirate = 0.5,
+                    flow_rate_aspirate = 0.75,
                     flow_rate_dispense = 1,
                     rinse = True,
                     reagent_reservoir_volume = 32860,
@@ -96,7 +96,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     v_fondo = 1.95*8*71/2) #Prismatic
 
     Elution = Reagent(name = 'Elution',
-                    flow_rate_aspirate = 0.25,
+                    flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = False,
                     reagent_reservoir_volume = 800,
