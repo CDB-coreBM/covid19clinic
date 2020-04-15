@@ -93,6 +93,14 @@ def run(ctx: protocol_api.ProtocolContext):
                     num_wells = num_cols, #num_cols comes from available columns
                     h_cono = 4,
                     v_fondo = 4*math.pi*4**3/3) #Sphere
+
+
+    Ethanol.vol_well=Ethanol.vol_well_original()
+    Beads.vol_well=Beads.vol_well_original()
+    Isopropanol.vol_well=Isopropanol.vol_well_original()
+    Water.vol_well=Water.vol_well_original()
+    Elution.vol_well=350
+
     ###################
     #Custom functions
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out):
