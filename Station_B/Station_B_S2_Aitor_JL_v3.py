@@ -115,21 +115,23 @@ def run(ctx: protocol_api.ProtocolContext):
 
     def calc_height(reagent, cross_section_area, aspirate_volume):
         nonlocal ctx
-        ctx.comment(str(reagent.vol_well)+'<'+str(aspirate_volume))
+        ctx.comment('Remaining volume '+str(reagent.vol_well)+'< needed volume '+str(aspirate_volume)+'?')
         if reagent.vol_well < aspirate_volume:
+            ctx.comment('Next column should be picked')
             ctx.comment('Previous to change: '+str(reagent.col))
             reagent.col = reagent.col + 1 # column selector position; intialize to required number
             ctx.comment(str('After change: '+str(reagent.col)))
-            ctx.comment('Original volume:' + str(reagent.vol_well_original()))
             reagent.vol_well=reagent.vol_well_original()
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area - reagent.h_cono
-            reagent.vol_well = rreagent.vol_well - aspirate_volume
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area + reagent.h_cono
+            reagent.vol_well = reagent.vol_well - aspirate_volume
+            ctx.comment('Remaining volume:' + str(reagent.vol_well))
+            ctx.comment(' ')
             if height < 0:
                 height = 0.1
             col_change = True
         else:
-            height=(reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area - reagent.h_cono
+            height=(reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area + reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             if height < 0:
                 height = 0.1
