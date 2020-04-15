@@ -68,6 +68,12 @@ Elution = Reagent(name = 'Elution',
                 h_cono = 4,
                 v_fondo = 4*math.pi*4**3/3) #Sphere
 
+Ethanol.vol_well=Ethanol.vol_well_original()
+Beads.vol_well=Beads.vol_well_original()
+Isopropanol.vol_well=Isopropanol.vol_well_original()
+Water.vol_well=Water.vol_well_original()
+Elution.vol_well=350
+
 def custom_mix(pipet, reagent, location, vol, rounds, blow_out):
     for _ in range(rounds):
         pipet.aspirate(vol, location, rate = reagent.flow_rate_aspirate)
