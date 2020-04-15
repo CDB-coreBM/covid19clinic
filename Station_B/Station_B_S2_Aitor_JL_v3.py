@@ -219,7 +219,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ### PREMIX BEADS
     if not m300.hw_pipette['has_tip']:
-        pick_up(m300)
+        pick_up(m300) #These tips are reused in the first transfer of beads
         ctx.comment(' ')
         ctx.comment('Tip picked up')
     ctx.comment(' ')
@@ -236,15 +236,17 @@ def run(ctx: protocol_api.ProtocolContext):
     x_offset = 0
     air_gap_vol = 10
     for i in range(num_cols):
-        x_offset = find_side(i) * x_offset
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
         for transfer_vol in beads_transfer_vol:
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol)
             if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
-                ctx.comment('Mixing new reservoir column: '+str(Beads.col))
-                custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
-            ctx.comment('Aspirate from reservoir column: '+str(Beads.col))
-            ctx.comment('Pickup height is '+str(pickup_height))
+                ctx.comment('Mixing new reservoir column: ' + str(Beads.col))
+                custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
+                vol = 180, rounds = 20, blow_out = True)
+            ctx.comment('Aspirate from reservoir column: ' + str(Beads.col))
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
 
             move_vol_multi(m300, reagent = Beads, source = Beads.reagent_reservoir[Beads.col],
@@ -252,18 +254,15 @@ def run(ctx: protocol_api.ProtocolContext):
             pickup_height = pickup_height, rinse = True)
 
         ctx.comment(' ')
-
         ctx.comment('Mixing sample with beads ')
+
         ctx.pause()
         # mix beads with sample
-        for _ in range(4):
-            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
-            0, 190, 0, 0.5,work_destinations[i],i,work_destinations[i],
-            aspiration_height_t,blow_height,False,False,ctx)
+        custom_mix(m300, Beads, location = work_destinations[i], vol = 180,
+        rounds = 4, blow_out = True)
+        m300.drop_tip(home_after = False)
+        tip_track['counts'][m300] += 8
 
-        m300.drop_tip(home_after=False)
-        pick_up(m300)
-        used_tips=used_tips+8
     ctx.comment(' ')
     ctx.comment('Now incubation will start ')
     ctx.comment(' ')
@@ -290,27 +289,45 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Remove supernatant ')
     ctx.comment(' ')
     # remove supernatant -> height calculation can be omitted and referred to bottom!
-    supernatant_vol=[160,160,160,140]
-    air_gap_vol_rs=15
-    x_offset_rs=2
-    [vol_ini,old_bool,vol_next]=reset_reservoir(np.sum(supernatant_vol))
+    supernatant_vol = [160, 160, 160, 140]
+    x_offset_rs = 2
+    air_gap_vol = 15
+
+    for i in range(num_cols):
+        x_offset = find_side(i) * x_offset_rs
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in supernatant_vol:
+            #Pickup_height is fixed here
+            pickup_height = 0.1
+            ctx.comment('Aspirate from deep well column: ' + str(i+1))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.pause()
+            move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
+            dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = False)
+        m300.touch_tip(location= work_destinations[i].top(z=-2), speed = 20, radius = 1.05)
+
+        ctx.pause()
+        m300.drop_tip(home_after = False)
+        tip_track['counts'][m300] += 8
+
 
     for i in range(num_cols):
         for supernatant_remove_vol in supernatant_vol:
             [change_col,pickup_height,vol_final]=calc_height(vol_ini, deepwell_cross_section_area,
             supernatant_remove_vol,1,extra_vol,vol_next,old_bool)
 
-            ctx.comment('Change column: '+str(change_col))
-            ctx.comment('Pickup height is '+str(pickup_height))
+            ctx.comment('Change column: ' + str(change_col))
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
             move_vol_multi(m300, flow_rate_aspirate, flow_rate_dispense,air_gap_vol_rs, supernatant_remove_vol, x_offset_rs, pickup_height,work_destinations[i], i, waste, aspiration_height_t, blow_height, False, False, ctx)
 
             vol_ini=vol_final
             old_bool=change_col
 
-
         vol_ini=np.sum(supernatant_vol)
-        old_bool=0
+        old_bool = 0
         m300.drop_tip(home_after=True)
 
 ###############################################################################
