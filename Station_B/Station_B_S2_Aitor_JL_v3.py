@@ -16,7 +16,7 @@ metadata = {
 
 
 mag_height = 12 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 8
+NUM_SAMPLES = 16
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
 multi_well_rack_area = 8*71 #Cross section of the 12 well reservoir
