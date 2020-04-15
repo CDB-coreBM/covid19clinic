@@ -8,10 +8,11 @@ from timeit import default_timer as timer
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station B Version 2',
+    'protocolName': 'S2 Station B Version 3',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
-    'apiLevel': '2.0'
+    'apiLevel': '2.0',
+    'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
 
@@ -216,7 +217,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 ctx.comment('Mixing beads new column ')
                 for j in range(mix_number):
                     move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
-                    air_gap_vol, mix_vol, x_offset*find_side(j), z_offset, beads[change_col],0,beads[change_col],
+                    air_gap_vol, mix_vol, x_offset, z_offset, beads[change_col],0,beads[change_col],
                     aspiration_height,blow_height,False,False,ctx)
 
             ctx.pause()

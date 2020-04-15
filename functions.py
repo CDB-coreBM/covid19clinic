@@ -31,7 +31,6 @@ pickup_height, rinse):
     if air_gap_vol !=0: #If there is air_gap_vol, switch pipette to slow speed
         pipet.move_to(source.top(z = -2), speed = 20)
         pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
-
     # GO TO DESTINATION
     pipet.move_to(dest.top())
     pipet.dispense(vol + air_gap_vol + 20, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
