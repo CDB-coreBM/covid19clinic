@@ -16,7 +16,7 @@ metadata = {
 
 
 mag_height = 12 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
 multi_well_rack_area = 7*71 #Cross section of the 12 well reservoir
@@ -27,14 +27,15 @@ num_cols = math.ceil(NUM_SAMPLES/8) # Columns we are working on
 def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: '+str(num_cols))
 
+    #Define Reagents as objects with their properties
     class Reagent:
-        def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse, reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling = 'none'):
+        def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
+        reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling = 'none'):
             self.name = name
             self.flow_rate_aspirate = flow_rate_aspirate
             self.flow_rate_dispense = flow_rate_dispense
             self.rinse = bool(rinse)
             self.reagent_reservoir_volume = reagent_reservoir_volume
-            self.reagent_reservoir = 'none'
             self.num_wells = num_wells
             self.col = 0
             self.vol_well = 0
@@ -93,6 +94,13 @@ def run(ctx: protocol_api.ProtocolContext):
                     h_cono = 4,
                     v_fondo = 4*math.pi*4**3/3) #Sphere
 
+
+    Ethanol.vol_well=Ethanol.vol_well_original()
+    Beads.vol_well=Beads.vol_well_original()
+    Isopropanol.vol_well=Isopropanol.vol_well_original()
+    Water.vol_well=Water.vol_well_original()
+    Elution.vol_well=350
+
     ###################
     #Custom functions
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out):
@@ -106,8 +114,10 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.blow_out(location.top(z = -2)) # Blow out
 
     def calc_height(reagent, cross_section_area, aspirate_volume):
+        nonlocal ctx
+        ctx.comment(str(reagent.vol_well)+'<'+str(aspirate_volume))
         if reagent.vol_well < aspirate_volume:
-            reagent.vol_well = reagent.vol_well_original - aspirate_volume
+            reagent.vol_well = reagent.vol_well_original() - aspirate_volume
             height = (reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.col = reagent.col + 1 # column selector position; intialize to required number
             if height < 0:
@@ -126,7 +136,7 @@ def run(ctx: protocol_api.ProtocolContext):
     pickup_height, rinse):
         # Rinse before aspirating
         if rinse == True:
-            [custom_mix(pipet, reagent, source, dest, vol) for _ in range(2)]
+            custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset))
         pipet.move_to(s) # go to source
@@ -151,7 +161,6 @@ def run(ctx: protocol_api.ProtocolContext):
             resuming.')
             pip.reset_tipracks()
             tip_track['counts'][pip] = 0
-        tip_track['counts'][pip] += 1
         pip.pick_up_tip()
     ##########
     def find_side(col):
@@ -199,7 +208,7 @@ def run(ctx: protocol_api.ProtocolContext):
     #Declare which reagents are in each reservoir as well as deepwell and elution plate
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells] # 1 row, 4 columns (first ones)
     Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)] # 1 row, 2 columns (from 5 to 6)
-    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:Ethanol.num_wells] # 1 row, 2 columns (from 7 to 10)
+    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6+Ethanol.num_wells)] # 1 row, 2 columns (from 7 to 10)
     Water.reagent_reservoir = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
     final_destinations = elution_plate.rows()[0][:Elution.num_wells]
@@ -211,14 +220,15 @@ def run(ctx: protocol_api.ProtocolContext):
     #### used tip counter and set maximum tips available
     tip_track = {
         'counts': {m300: 0},
-        #, p1000: 0},
-        'maxes': {m300: len(tips300)*12}#, p1000: len(tips1000)*96}
-    }
+        'maxes': {m300: 672}
+        }
+        #, p1000: len(tips1000)*96}
 
 ###############################################################################
+
 ### PREMIX BEADS
     if not m300.hw_pipette['has_tip']:
-        pick_up(m300)
+        pick_up(m300) #These tips are reused in the first transfer of beads
         ctx.comment(' ')
         ctx.comment('Tip picked up')
     ctx.comment(' ')
@@ -235,17 +245,373 @@ def run(ctx: protocol_api.ProtocolContext):
     x_offset = 0
     air_gap_vol = 10
     for i in range(num_cols):
-        x_offset = find_side(i) * x_offset
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
         for transfer_vol in beads_transfer_vol:
             #Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol)
+            [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol*8)
             if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
-                ctx.comment('Mixing new reservoir column: '+str(Beads.col))
-                custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
-            ctx.comment('Aspirate from reservoir column: '+str(Beads.col))
-            ctx.comment('Pickup height is '+str(pickup_height))
+                ctx.comment('Mixing new reservoir column: ' + str(Beads.col))
+                custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
+                vol = 180, rounds = 20, blow_out = True)
+            ctx.comment('Aspirate from reservoir column: ' + str(Beads.col))
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
 
             move_vol_multi(m300, reagent = Beads, source = Beads.reagent_reservoir[Beads.col],
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = True)
+
+        ctx.comment(' ')
+        ctx.comment('Mixing sample with beads ')
+
+        ctx.pause()
+        # mix beads with sample
+        custom_mix(m300, Beads, location = work_destinations[i], vol = 180,
+        rounds = 4, blow_out = True)
+        m300.drop_tip(home_after = False)
+        tip_track['counts'][m300] += 8
+
+    ctx.comment(' ')
+    ctx.comment('Now incubation will start ')
+    ctx.comment(' ')
+###############################################################################
+# STEP 3 INCUBATE WITHOUT MAGNET
+########
+    # incubate off and on magnet
+    magdeck.disengage()
+    ctx.comment(' ')
+    ctx.delay(seconds=30, msg='Incubating OFF magnet for 5 minutes.') # minutes=5
+    ctx.comment(' ')
+###############################################################################
+
+# STEP 4 INCUBATE WITH MAGNET
+########
+    magdeck.engage(height=mag_height)
+    ctx.comment(' ')
+    ctx.delay(seconds=30, msg='Incubating ON magnet for 5 minutes.')
+    ctx.comment(' ')
+###############################################################################
+# STEP 5 REMOVE SUPERNATANT
+########
+    ctx.comment(' ')
+    ctx.comment('Remove supernatant ')
+    ctx.comment(' ')
+    # remove supernatant -> height calculation can be omitted and referred to bottom!
+    supernatant_vol = [160, 160, 160, 140]
+    x_offset_rs = 2
+    air_gap_vol = 15
+
+    for i in range(num_cols):
+        x_offset = find_side(i) * x_offset_rs
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in supernatant_vol:
+            #Pickup_height is fixed here
+            pickup_height = 0.1
+            ctx.comment('Aspirate from deep well column: ' + str(i+1))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.pause()
+            move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
+            dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = False)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
+
+        ctx.pause()
+        m300.drop_tip(home_after = True)
+        tip_track['counts'][m300] += 8
+
+###############################################################################
+    # STEP 6* Washing 1 Isopropanol
+    ctx.comment(' ')
+    ctx.comment('Wash with ethanol')
+    ctx.comment(' ')
+    isoprop_wash_vol = [150]
+    air_gap_vol_isoprop = 10
+    x_offset = 0
+    rinse = True #Only first time
+
+    ########
+    # isoprop washes
+    for i in range(num_cols):
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in isoprop_wash_vol:
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol*8)
+            ctx.comment('Aspirate from Reservoir column: ' + str(Isopropanol.col))
+            ctx.comment('Pickup height is ' + str(pickup_height))
+            ctx.pause()
+            if i!=0:
+                rinse = False
+            move_vol_multi(m300, reagent = Isopropanol, source = Isopropanol.reagent_reservoir[Isopropanol.col],
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_isoprop, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = rinse)
+
+        ctx.pause()
+    m300.drop_tip(home_after = True)
+    tip_track['counts'][m300] += 8
+
+###############################################################################
+    # STEP 7* WAIT FOR 30s-1'
+    ########
+    ctx.comment(' ')
+    ctx.delay(seconds=30, msg='Wait for 30 seconds.')
+    ctx.comment(' ')
+    ####################################################################
+    # STEP 8* REMOVE ISOPROP (supernatant)
+    # remove supernatant -> height calculation can be omitted and referred to bottom!
+    supernatant_vol=[150]
+    air_gap_vol_rs=15
+    x_offset_rs=2
+
+    for i in range(num_cols):
+        x_offset = find_side(i) * x_offset_rs
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in supernatant_vol:
+            #Pickup_height is fixed here
+            pickup_height = 0.1
+            ctx.comment('Aspirate from deep well column: ' + str(i+1))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.pause()
+            move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
+            dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = False)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
+
+        ctx.pause()
+        m300.drop_tip(home_after = True)
+        tip_track['counts'][m300] += 8
+
+
+
+###############################################################################
+    # STEP 6 Washing 1
+    ctx.comment(' ')
+    ctx.comment('Wash with ethanol')
+    ctx.comment(' ')
+    ethanol_wash_vol = [100, 100]
+    air_gap_vol_eth = 10
+
+    # WASH 2 TIMES
+    ########
+    # 70% EtOH washes
+    for i in range(num_cols):
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in ethanol_wash_vol:
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
+            ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
+            ctx.comment('Pickup height is ' + str(pickup_height))
+            ctx.pause()
+            if i!=0:
+                rinse = False
+            move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = rinse)
+
+        ctx.pause()
+    m300.drop_tip(home_after = True)
+    tip_track['counts'][m300] += 8
+
+###############################################################################
+    # STEP 7 WAIT FOR 30s-1'
+    ########
+    ctx.comment(' ')
+    ctx.delay(seconds=30, msg='Wait for 30 seconds.')
+    ctx.comment(' ')
+
+    ####################################################################
+    # STEP 8 REMOVE SUPERNATANT
+    # remove supernatant -> height calculation can be omitted and referred to bottom!
+    supernatant_vol=[100, 100]
+    air_gap_vol_rs=15
+    x_offset_rs=2
+
+    for i in range(num_cols):
+        x_offset = find_side(i) * x_offset_rs
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in supernatant_vol:
+            #Pickup_height is fixed here
+            pickup_height = 0.1
+            ctx.comment('Aspirate from deep well column: ' + str(i+1))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.pause()
+            move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
+            dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = False)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
+
+        ctx.pause()
+        m300.drop_tip(home_after = True)
+        tip_track['counts'][m300] += 8
+
+
+###############################################################################
+    # STEP 9 Washing 2
+    ctx.comment(' ')
+    ctx.comment('Wash with ethanol for the second time')
+    ctx.comment(' ')
+    ethanol_wash_vol = [100, 100]
+    air_gap_vol_eth = 10
+
+    # WASH 2 TIMES
+    ########
+    # 70% EtOH washes
+    for i in range(num_cols):
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in ethanol_wash_vol:
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
+            ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
+            ctx.comment('Pickup height is ' + str(pickup_height))
+            ctx.pause()
+            if i!=0:
+                rinse = False
+            move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = rinse)
+
+        ctx.pause()
+    m300.drop_tip(home_after = True)
+    tip_track['counts'][m300] += 8
+
+###############################################################################
+    # STEP 10 WAIT FOR 30s-1'
+    ########
+    ctx.comment(' ')
+    ctx.delay(seconds=30, msg='Incubating for 30 seconds.')
+    ctx.comment(' ')
+    start = timer()
+    ####################################################################
+    # STEP 11 REMOVE SUPERNATANT AGAIN
+    # remove supernatant -> height calculation can be omitted and referred to bottom!
+    supernatant_vol = [100, 100, 40]
+    air_gap_vol_rs = 15
+    x_offset_rs = 2
+
+    for i in range(num_cols):
+        x_offset = find_side(i) * x_offset_rs
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in supernatant_vol:
+            #Pickup_height is fixed here
+            pickup_height = 0.1
+            ctx.comment('Aspirate from deep well column: ' + str(i+1))
+            ctx.comment('Pickup height is ' + str(pickup_height))
+            ctx.pause()
+            move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
+            dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = False)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
+
+        ctx.pause()
+        m300.drop_tip(home_after = True)
+        tip_track['counts'][m300] += 8
+
+
+# STEP 12 DRY
+########
+    end = timer()
+    delta = end - start
+    delta_time = 5*60 - delta
+    if delta_time < 0:
+        ctx.comment('ERROR. Waiting time has been: '+str(delta/60)+' minutes')
+        delta_time = 0
+    ctx.comment(' ')
+    ctx.delay(seconds = delta_time, msg = 'Airdrying beads')
+    ctx.comment(' ')
+###############################################################################
+    magdeck.disengage()
+###############################################################################
+    water_wash_vol = [50]
+    air_gap_vol_water = 10
+
+    ########
+    # Water and LTA washes
+    for i in range(num_cols):
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in water_wash_vol:
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Water, multi_well_rack_area, transfer_vol*8)
+            ctx.comment('Aspirate from Reservoir column: ' + str(Water.col))
+            ctx.comment('Pickup height is ' + str(pickup_height))
+            ctx.pause()
+            if i!=0:
+                rinse = False
+            move_vol_multi(m300, reagent = Water, source = Water.reagent_reservoir,
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_water, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = rinse)
+
+        ctx.pause()
+
+        ctx.comment(' ')
+        ctx.comment('Mixing sample with beads ')
+        #Mixing
+        custom_mix(m300, Elution, work_destinations[i], vol = 50, rounds = 4, blow_out = True)
+        m300.drop_tip(home_after = True)
+        tip_track['counts'][m300] += 8
+
+
+# STEP 14 WAIT 1-2' WITHOUT MAGNET
+########
+    ctx.comment(' ')
+    ctx.delay(minutes=2, msg='Incubating OFF magnet for 2 minutes.')
+    ctx.comment(' ')
+###############################################################################
+
+# STEP 15 WAIT 5' WITH MAGNET
+########
+    magdeck.engage(height=mag_height)
+    ctx.comment(' ')
+    ctx.delay(minutes=5, msg='Incubating on magnet for 5 minutes.')
+    ctx.comment(' ')
+###############################################################################
+
+# STEP 16 TRANSFER TO ELUTION PLATE
+########
+    ctx.comment(' ')
+    ctx.comment('TRANSFER TO FINAL ELUTION PLATE')
+    ctx.comment(' ')
+    elution_vol=[45]
+    air_gap_vol_rs=10
+    x_offset_rs=2
+
+    for i in range(num_cols):
+        x_offset = find_side(i) * x_offset_rs
+        if not m300.hw_pipette['has_tip']:
+            pick_up(m300)
+        for transfer_vol in elution_vol:
+            #Pickup_height is fixed here
+            pickup_height = 0.1
+            ctx.comment('Aspirate from deep well column: ' + str(i+1))
+            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.pause()
+            move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
+            dest = final_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_rs, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = False)
+        #m300.touch_tip(location= final_destinations[i].top(z=-2), speed = 20, radius = 1.05)
+
+        ctx.pause()
+        m300.drop_tip(home_after = True)
+        tip_track['counts'][m300] += 8
+
+###############################################################################
+    # Light flash end of program
+    from opentrons.drivers.rpi_drivers import gpio
+    for i in range(3):
+        gpio.set_rail_lights(False)
+        gpio.set_button_light(1,0,0)
+        time.sleep(0.3)
+        gpio.set_rail_lights(True)
+        gpio.set_button_light(0,0,1)
+        time.sleep(0.3)
+    gpio.set_button_light(0,1,0)
+    ctx.comment('Finished! \nMove deepwell plate (slot 5) to Station C for MMIX addition and qPCR preparation.')
+    ctx.comment('Used tips in total: '+str(tip_track['counts'][m300]))
+    ctx.comment('Used racks in total: '+str(tip_track['counts'][m300]/96))

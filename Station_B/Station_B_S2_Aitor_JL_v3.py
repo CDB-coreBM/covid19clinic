@@ -16,7 +16,7 @@ metadata = {
 
 
 mag_height = 12 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 16
+NUM_SAMPLES = 8
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
 multi_well_rack_area = 7*71 #Cross section of the 12 well reservoir
@@ -30,12 +30,12 @@ def run(ctx: protocol_api.ProtocolContext):
     #Define Reagents as objects with their properties
     class Reagent:
         def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
-        reagent_reservoir, num_wells, h_cono, v_fondo, tip_recycling = 'none'):
+        reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling = 'none'):
             self.name = name
             self.flow_rate_aspirate = flow_rate_aspirate
             self.flow_rate_dispense = flow_rate_dispense
             self.rinse = bool(rinse)
-            self.reagent_reservoir = reagent_reservoir
+            self.reagent_reservoir_volume = reagent_reservoir_volume
             self.num_wells = num_wells
             self.col = 0
             self.vol_well = 0
@@ -43,14 +43,14 @@ def run(ctx: protocol_api.ProtocolContext):
             self.v_cono = v_fondo
             self.tip_recycling = tip_recycling
         def vol_well_original(self):
-            return self.reagent_reservoir/self.num_wells
+            return self.reagent_reservoir_volume/self.num_wells
 
     #Reagents and their characteristics
     Ethanol = Reagent(name = 'Ethanol',
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir = 12000,
+                    reagent_reservoir_volume = 12000,
                     num_wells = 4, #num_Wells max is 4
                     h_cono = 1.95,
                     v_fondo = 1.95*7*71/2, #Prismatic
@@ -60,7 +60,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir = 12000,
+                    reagent_reservoir_volume = 12000,
                     num_wells = 4,
                     h_cono = 1.95,
                     v_fondo = 1.95*7*71/2, #Prismatic
@@ -70,7 +70,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir = 5000,
+                    reagent_reservoir_volume = 5000,
                     num_wells = 2, #num_Wells max is 2
                     h_cono = 1.95,
                     v_fondo = 1.95*7*71/2, #Prismatic
@@ -80,7 +80,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate = 1,
                     flow_rate_dispense = 1,
                     rinse = False,
-                    reagent_reservoir = 6000,
+                    reagent_reservoir_volume = 6000,
                     num_wells = 1, #num_Wells max is 1
                     h_cono = 1.95,
                     v_fondo = 1.95*7*71/2) #Prismatic
@@ -89,7 +89,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate = 0.25,
                     flow_rate_dispense = 1,
                     rinse = False,
-                    reagent_reservoir = 800,
+                    reagent_reservoir_volume = 800,
                     num_wells = num_cols, #num_cols comes from available columns
                     h_cono = 4,
                     v_fondo = 4*math.pi*4**3/3) #Sphere
@@ -114,6 +114,8 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.blow_out(location.top(z = -2)) # Blow out
 
     def calc_height(reagent, cross_section_area, aspirate_volume):
+        nonlocal ctx
+        ctx.comment(str(reagent.vol_well)+'<'+str(aspirate_volume))
         if reagent.vol_well < aspirate_volume:
             reagent.vol_well = reagent.vol_well_original() - aspirate_volume
             height = (reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
@@ -159,7 +161,6 @@ def run(ctx: protocol_api.ProtocolContext):
             resuming.')
             pip.reset_tipracks()
             tip_track['counts'][pip] = 0
-        tip_track['counts'][pip] += 1
         pip.pick_up_tip()
     ##########
     def find_side(col):
@@ -207,7 +208,7 @@ def run(ctx: protocol_api.ProtocolContext):
     #Declare which reagents are in each reservoir as well as deepwell and elution plate
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells] # 1 row, 4 columns (first ones)
     Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)] # 1 row, 2 columns (from 5 to 6)
-    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:Ethanol.num_wells] # 1 row, 2 columns (from 7 to 10)
+    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6+Ethanol.num_wells)] # 1 row, 2 columns (from 7 to 10)
     Water.reagent_reservoir = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
     final_destinations = elution_plate.rows()[0][:Elution.num_wells]
@@ -219,9 +220,9 @@ def run(ctx: protocol_api.ProtocolContext):
     #### used tip counter and set maximum tips available
     tip_track = {
         'counts': {m300: 0},
-        #, p1000: 0},
-        'maxes': {m300: len(tips300)*12}#, p1000: len(tips1000)*96}
-    }
+        'maxes': {m300: 672}
+        }
+        #, p1000: len(tips1000)*96}
 
 ###############################################################################
 
@@ -314,7 +315,7 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
-        m300.touch_tip(location= work_destinations[i].top(z=-2), speed = 20, radius = 1.05)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
         ctx.pause()
         m300.drop_tip(home_after = True)
@@ -339,7 +340,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Isopropanol.col))
-            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
             if i!=0:
                 rinse = False
@@ -377,7 +378,7 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
-        m300.touch_tip(location= work_destinations[i].top(z=-2), speed = 20, radius = 1.05)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
         ctx.pause()
         m300.drop_tip(home_after = True)
@@ -403,7 +404,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
-            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
             if i!=0:
                 rinse = False
@@ -442,7 +443,7 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
-        m300.touch_tip(location= work_destinations[i].top(z=-2), speed = 20, radius = 1.05)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
         ctx.pause()
         m300.drop_tip(home_after = True)
@@ -467,7 +468,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
-            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
             if i!=0:
                 rinse = False
@@ -501,12 +502,12 @@ def run(ctx: protocol_api.ProtocolContext):
             #Pickup_height is fixed here
             pickup_height = 0.1
             ctx.comment('Aspirate from deep well column: ' + str(i+1))
-            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
             move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
             dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
             pickup_height = pickup_height, rinse = False)
-        m300.touch_tip(location= work_destinations[i].top(z=-2), speed = 20, radius = 1.05)
+        m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
 
         ctx.pause()
         m300.drop_tip(home_after = True)
@@ -539,11 +540,11 @@ def run(ctx: protocol_api.ProtocolContext):
             #Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Water, multi_well_rack_area, transfer_vol*8)
             ctx.comment('Aspirate from Reservoir column: ' + str(Water.col))
-            ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
+            ctx.comment('Pickup height is ' + str(pickup_height))
             ctx.pause()
             if i!=0:
                 rinse = False
-            move_vol_multi(m300, reagent = Water, source = Water.reagent_reservoir[Water.col],
+            move_vol_multi(m300, reagent = Water, source = Water.reagent_reservoir,
             dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_water, x_offset = x_offset,
             pickup_height = pickup_height, rinse = rinse)
 
@@ -612,5 +613,5 @@ def run(ctx: protocol_api.ProtocolContext):
         time.sleep(0.3)
     gpio.set_button_light(0,1,0)
     ctx.comment('Finished! \nMove deepwell plate (slot 5) to Station C for MMIX addition and qPCR preparation.')
-    ctx.comment('Used tips in total: '+str(used_tips))
-    ctx.comment('Used racks in total: '+str(used_tips/96))
+    ctx.comment('Used tips in total: '+str(tip_track['counts'][m300]))
+    ctx.comment('Used racks in total: '+str(tip_track['counts'][m300]/96))

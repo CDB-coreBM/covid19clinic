@@ -90,18 +90,20 @@ final_destinations = elution_plate.rows()[0][:Elution.num_wells]
 
 def calc_height(reagent, cross_section_area, aspirate_volume):
     if reagent.vol_well < aspirate_volume:
-        reagent.vol_well = reagent.vol_well_original - aspirate_volume
+        reagent.vol_well = reagent.vol_well_original() - aspirate_volume
         height = (reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
         reagent.col = reagent.col + 1 # column selector position; intialize to required number
         if height < 0:
             height = 0.1
+        col_change = True
     else:
         height=(reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
         reagent.col = 0 + reagent.col
         reagent.vol_well = reagent.vol_well - aspirate_volume
         if height < 0:
             height = 0.1
-    return height
+        col_change = False
+    return height, col_change
 
 tip_recycle = [ctx.load_labware('opentrons_96_tiprack_300ul', '5', '200µl filter tiprack')]
 
@@ -112,7 +114,7 @@ def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
 pickup_height, rinse):
     # Rinse before aspirating
     if rinse == True:
-        [custom_mix(pipet, reagent, source, dest, vol) for _ in range(2)]
+        custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
     # SOURCE
     s = source.bottom(pickup_height).move(Point(x = x_offset))
     pipet.move_to(s) # go to source
@@ -127,7 +129,6 @@ pickup_height, rinse):
     if air_gap_vol != 0:
         pipet.move_to(dest.top(z = -2), speed = 20)
         pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
-
 
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
