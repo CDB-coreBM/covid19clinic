@@ -112,13 +112,15 @@ def run(ctx: protocol_api.ProtocolContext):
             reagent.col = reagent.col + 1 # column selector position; intialize to required number
             if height < 0:
                 height = 0.1
+            col_change = True
         else:
             height=(reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.col = 0 + reagent.col
             reagent.vol_well = reagent.vol_well - aspirate_volume
             if height < 0:
                 height = 0.1
-        return height
+            col_change = False
+        return height, col_change
 
     def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
     pickup_height, rinse):
@@ -215,49 +217,39 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ###############################################################################
 
-### PREMIX
+### PREMIX BEADS
     if not m300.hw_pipette['has_tip']:
         pick_up(m300)
-    custom_mix(m300, Beads, Beads.reagent_reservoir, vol = 180, rounds = 20, blow_out = True)
-    for i in range(mix_number):
-        move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
-        air_gap_vol, mix_vol, x_offset, z_offset, beads[0],column,beads[0],
-        aspiration_height,blow_height,False,False,ctx)
-
-    ctx.comment('Finished premixing!')
-    ctx.comment('Now, stuff will be transferred to deepwell plate.')
+        ctx.comment(' ')
+        ctx.comment('Tip picked up')
     ctx.comment(' ')
+    ctx.comment('Mixing '+Beads.name)
+    ctx.comment(' ')
+    #Mixing
+    custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
+    ctx.comment('Finished premixing!')
+    ctx.comment('Now, reagents will be transferred to deepwell plate.')
+    ctx.comment(' ')
+
 #Transfer parameters
-    beads_transfer_vol=[155,155]
-    Ref_vol = 4960
-    [vol_ini,old_bool,vol_next]=reset_reservoir(Ref_vol)
-    air_gap_vol_t=10
-    aspiration_height_t=-5
-    drop_t=True
+    beads_transfer_vol=[155, 155] #Two rounds of 155
+    x_offset = 0
+    air_gap_vol = 10
     for i in range(num_cols):
+        x_offset = find_side(i) * x_offset
         for transfer_vol in beads_transfer_vol:
-            [change_col,pickup_height,vol_final]=calc_height(vol_ini, multi_well_rack_area,
-            transfer_vol,8,extra_vol,Ref_vol,old_bool)
-
-            ctx.comment('Change column: '+str(change_col))
+            #Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Beads, multi_well_rack_area, transfer_vol)
+            if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
+                ctx.comment('Mixing new reservoir column: '+str(Beads.col))
+                custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180, rounds = 20, blow_out = True)
+            ctx.comment('Aspirate from reservoir column: '+str(Beads.col))
             ctx.comment('Pickup height is '+str(pickup_height))
-            if change_col!=old_bool: #if beads column changes, remix
-                m300.drop_tip(home_after=False)
-                pick_up(m300)
-                ctx.comment(' ')
-                ctx.comment('Mixing beads new column ')
-                for j in range(mix_number):
-                    move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,
-                    air_gap_vol, mix_vol, x_offset, z_offset, beads[change_col],0,beads[change_col],
-                    aspiration_height,blow_height,False,False,ctx)
-
             ctx.pause()
 
-            move_vol_multi(m300,flow_rate_aspirate,flow_rate_dispense,air_gap_vol_t, transfer_vol, x_offset, pickup_height,beads[change_col],i,work_destinations[i],aspiration_height_t,blow_height,False,False,ctx)
-
-            vol_ini=vol_final
-            vol_next=vol_ini
-            old_bool=change_col
+            move_vol_multi(m300, reagent = Beads, source = Beads.reagent_reservoir[Beads.col],
+            dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            pickup_height = pickup_height, rinse = True)
 
         ctx.comment(' ')
 
