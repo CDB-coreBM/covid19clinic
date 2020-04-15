@@ -126,7 +126,7 @@ def run(ctx: protocol_api.ProtocolContext):
     pickup_height, rinse):
         # Rinse before aspirating
         if rinse == True:
-            [custom_mix(pipet, reagent, source, dest, vol) for _ in range(2)]
+            custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset))
         pipet.move_to(s) # go to source
