@@ -67,8 +67,6 @@ Elution = Reagent(name = 'Elution',
                 h_cono = ,
                 v_fondo = )
 
-[custom_mix(p,r,s,vol) for _ in range(5)]
-
 def custom_mix(pipet, reagent, location, vol, rounds, blow_out):
     for _ in range(rounds):
         pipet.aspirate(vol, location, rate = reagent.flow_rate_aspirate)
@@ -83,17 +81,17 @@ water = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
 work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
 final_destinations = elution_plate.rows()[0][:Elution.num_wells]
 
-def calc_height(reagent, cross_section_area, aspirate_volume,):
+def calc_height(reagent, cross_section_area, aspirate_volume):
     if reagent.vol_well < aspirate_volume:
         reagent.vol_well = reagent.vol_well_original - aspirate_volume
-        height = (reagent.vol_well-reagent.v_cono)/cross_section_area-reagent.h_cono
-        reagent.col = reagent.col+1 # column selector position; intialize to required number
+        height = (reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
+        reagent.col = reagent.col + 1 # column selector position; intialize to required number
         if height < 0:
             height = 0.1
     else:
-        height=(reagent.vol_well - reagent.v_cono)/cross_section_area-reagent.h_cono
+        height=(reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
         reagent.col = 0 + reagent.col
-        reagent.vol_well = reagent.vol_well-aspirate_volume
+        reagent.vol_well = reagent.vol_well - aspirate_volume
         if height < 0:
             height = 0.1
     return height
