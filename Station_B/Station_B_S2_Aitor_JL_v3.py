@@ -1,7 +1,7 @@
 import math
 from opentrons.types import Point
 from opentrons import protocol_api
-#import time
+import time
 import numpy as np
 #from timeit import default_timer as timer
 #import threading
@@ -571,7 +571,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 pickup_height = pickup_height, rinse = False)
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
-        m300.reset_tipracks()
+        #m300.reset_tipracks()
 
 
     # STEP 15 DRY
