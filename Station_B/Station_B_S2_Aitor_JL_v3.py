@@ -304,7 +304,8 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Mixing sample with beads ')
             custom_mix(m300, Beads, location = work_destinations[i], vol = 180,
             rounds = 4, blow_out = True, mix_height = 16)
-            m300.drop_tip(home_after = False)
+            #m300.drop_tip(home_after = False)
+            m300.return_tip()
             tip_track['counts'][m300] += 8
 
         ctx.comment(' ')
