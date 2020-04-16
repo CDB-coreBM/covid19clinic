@@ -362,8 +362,8 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
                 dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-            m300.move_to(location = work_destinations[i].top(z=-2))
-            m300.touch_tip(speed = 20, radius = 1.05)
+            #m300.move_to(location = work_destinations[i].top(z=-2))
+            #m300.touch_tip(speed = 20, radius = 1.05)
 
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
