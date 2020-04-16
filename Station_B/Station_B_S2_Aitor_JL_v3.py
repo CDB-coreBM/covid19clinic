@@ -14,8 +14,8 @@ metadata = {
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
-mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 96
+mag_height = 17 # Height needed for NUNC deepwell in magnetic deck
+NUM_SAMPLES = 8
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
 multi_well_rack_area = 8*71 #Cross section of the 12 well reservoir
@@ -27,15 +27,15 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: '+str(num_cols))
     STEP = 0
     STEPS={
-            1:{'Execute': False, 'description': 'Mix beads'},#
-            2:{'Execute': False, 'description': 'Transfer beads'},#
-            3:{'Execute': False, 'description': 'Wait with magnet OFF'},#
-            4:{'Execute': True, 'description': 'Wait with magnet ON'},#
-            5:{'Execute': False, 'description': 'Remove supernatant'},#
-            6:{'Execute': True, 'description': 'Add Isopropanol'},#
+            1:{'Execute': True, 'description': 'Mix beads'},#
+            2:{'Execute': True, 'description': 'Transfer beads'},#
+            3:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},#60
+            4:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 900},#900
+            5:{'Execute': True, 'description': 'Remove supernatant'},#
+            6:{'Execute': False, 'description': 'Add Isopropanol'},#
             7:{'Execute': False, 'description': 'Wait for 30s'},#
             8:{'Execute': False, 'description': 'Remove isopropanol'},#
-            9:{'Execute': True, 'description': 'Wash with ethanol'},#
+            9:{'Execute': False, 'description': 'Wash with ethanol'},#
             10:{'Execute': False, 'description': 'Wait for 30s'},#
             11:{'Execute': False, 'description': 'Remove supernatant'},#
             12:{'Execute': False, 'description': 'Wash with ethanol'},#
@@ -43,8 +43,8 @@ def run(ctx: protocol_api.ProtocolContext):
             14:{'Execute': False, 'description': 'Remove supernatant'},#
             15:{'Execute': False, 'description': 'Allow to dry'},#
             16:{'Execute': False, 'description': 'Add water and LTA'},#
-            17:{'Execute': False, 'description': 'Wait with magnet OFF'},
-            18:{'Execute': False, 'description': 'Wait with magnet ON'},
+            17:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},#60
+            18:{'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 300},#300
             19:{'Execute': False, 'description': 'Transfer to final elution plate'},
             }
 
@@ -88,7 +88,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     tip_recycling = 'A2')
 
     Isopropanol = Reagent(name = 'Isopropanol',
-                    flow_rate_aspirate = 0.5,
+                    flow_rate_aspirate = 1,
                     flow_rate_dispense = 1,
                     rinse = True,
                     reagent_reservoir_volume = 14400,
@@ -114,7 +114,6 @@ def run(ctx: protocol_api.ProtocolContext):
                     num_wells = num_cols, #num_cols comes from available columns
                     h_cono = 4,
                     v_fondo = 4*math.pi*4**3/3) #Sphere
-
 
     Ethanol.vol_well=Ethanol.vol_well_original()
     Beads.vol_well=Beads.vol_well_original()
@@ -175,7 +174,7 @@ def run(ctx: protocol_api.ProtocolContext):
         pipet.dispense(vol + air_gap_vol, dest.top(z = -2), rate = reagent.flow_rate_dispense) #dispense all
         pipet.blow_out(dest.top(z = -2))
         if air_gap_vol != 0:
-            pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
+            pipet.aspirate(air_gap_vol, dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -214,7 +213,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ############################################
     ######## Elution plate - comes from A
     magdeck = ctx.load_module('magdeck', '6')
-    deepwell_plate = magdeck.load_labware('nunc_96_wellplate_2000ul', '96-deepwell sample plate')
+    deepwell_plate = magdeck.load_labware('abgenestorage_96_wellplate_1200ul', 'ABGENE 1200ul 96 well sample plate')
     magdeck.disengage()
 
 ####################################
@@ -319,7 +318,7 @@ def run(ctx: protocol_api.ProtocolContext):
         # incubate off and on magnet
         magdeck.disengage()
         ctx.comment(' ')
-        ctx.delay(seconds=30, msg='Incubating OFF magnet for 2 minutes.') # minutes=2
+        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating OFF magnet for ' + format(STEPS[STEP]['wait_time']) + ' seconds.') # minutes=2
         ctx.comment(' ')
     ###############################################################################
 
@@ -331,7 +330,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         magdeck.engage(height=mag_height)
         ctx.comment(' ')
-        ctx.delay(seconds=120, msg='Incubating ON magnet for 5 minutes.')
+        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating ON magnet for ' + format(STEPS[STEP]['wait_time']) + ' seconds.') # minutes=2
         ctx.comment(' ')
     ###############################################################################
     # STEP 5 REMOVE SUPERNATANT
@@ -663,7 +662,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         ctx.comment(' ')
-        ctx.delay(minutes=0, msg='Incubating OFF magnet for 2 minutes.')
+        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating OFF magnet for ' + format(STEPS[STEP]['wait_time']) + ' seconds.') # minutes=2
         ctx.comment(' ')
     ###############################################################################
 
@@ -676,7 +675,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         magdeck.engage(height=mag_height)
         ctx.comment(' ')
-        ctx.delay(minutes=2, msg='Incubating on magnet for 5 minutes.')
+        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating ON magnet for ' + format(STEPS[STEP]['wait_time']) + ' seconds.') # minutes=2
         ctx.comment(' ')
     ###############################################################################
 
