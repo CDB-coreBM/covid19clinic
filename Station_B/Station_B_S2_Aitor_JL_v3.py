@@ -71,40 +71,40 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir_volume = 45000,
+                    reagent_reservoir_volume = 38400,
                     num_wells = 4, #num_Wells max is 4
                     h_cono = 1.95,
-                    v_fondo = 1.95*8*71/2, #Prismatic
+                    v_fondo = 1.95*multi_well_rack_area/2, #Prismatic
                     tip_recycling = 'A1')
 
     Beads = Reagent(name = 'Magnetic beads',
                     flow_rate_aspirate = 1,
                     flow_rate_dispense = 1.5,
                     rinse = True,
-                    reagent_reservoir_volume = 32860,
+                    reagent_reservoir_volume = 29760,
                     num_wells = 4,
                     h_cono = 1.95,
-                    v_fondo = 1.95*8*71/2, #Prismatic
+                    v_fondo = 1.95*multi_well_rack_area/2, #Prismatic
                     tip_recycling = 'A2')
 
     Isopropanol = Reagent(name = 'Isopropanol',
                     flow_rate_aspirate = 0.5,
                     flow_rate_dispense = 1,
                     rinse = True,
-                    reagent_reservoir_volume = 16000,
+                    reagent_reservoir_volume = 14400,
                     num_wells = 2, #num_Wells max is 2
                     h_cono = 1.95,
-                    v_fondo = 1.95*8*71/2, #Prismatic
+                    v_fondo = 1.95*multi_well_rack_area/2, #Prismatic
                     tip_recycling = 'A3')
 
     Water = Reagent(name = 'Water',
                     flow_rate_aspirate = 1,
                     flow_rate_dispense = 1,
                     rinse = False,
-                    reagent_reservoir_volume = 6000,
+                    reagent_reservoir_volume = 4800,
                     num_wells = 1, #num_Wells max is 1
                     h_cono = 1.95,
-                    v_fondo = 1.95*8*71/2) #Prismatic
+                    v_fondo = 1.95*multi_well_rack_area/2) #Prismatic
 
     Elution = Reagent(name = 'Elution',
                     flow_rate_aspirate = 0.5,
