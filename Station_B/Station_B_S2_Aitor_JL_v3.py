@@ -14,7 +14,6 @@ metadata = {
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
-
 mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
 NUM_SAMPLES = 8
 temperature = 25
@@ -28,15 +27,15 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: '+str(num_cols))
     STEP = 0
     STEPS={
-            1:{'Execute': True, 'description': 'Mix beads'},#
-            2:{'Execute': True, 'description': 'Transfer beads'},#
+            1:{'Execute': False, 'description': 'Mix beads'},#
+            2:{'Execute': False, 'description': 'Transfer beads'},#
             3:{'Execute': False, 'description': 'Wait with magnet OFF'},#
             4:{'Execute': True, 'description': 'Wait with magnet ON'},#
-            5:{'Execute': True, 'description': 'Remove supernatant'},#
-            6:{'Execute': False, 'description': 'Add Isopropanol'},#
+            5:{'Execute': False, 'description': 'Remove supernatant'},#
+            6:{'Execute': True, 'description': 'Add Isopropanol'},#
             7:{'Execute': False, 'description': 'Wait for 30s'},#
             8:{'Execute': False, 'description': 'Remove isopropanol'},#
-            9:{'Execute': False, 'description': 'Wash with ethanol'},#
+            9:{'Execute': True, 'description': 'Wash with ethanol'},#
             10:{'Execute': False, 'description': 'Wait for 30s'},#
             11:{'Execute': False, 'description': 'Remove supernatant'},#
             12:{'Execute': False, 'description': 'Wash with ethanol'},#
@@ -169,15 +168,12 @@ def run(ctx: protocol_api.ProtocolContext):
             custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset))
-        #pipet.move_to(s) # go to source
         pipet.aspirate(vol, s) # aspirate liquid
         if air_gap_vol !=0: #If there is air_gap_vol, switch pipette to slow speed
             pipet.move_to(source.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
         # GO TO DESTINATION
-        #pipet.move_to(dest.top())
         pipet.dispense(vol + air_gap_vol + 10, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
-        #pipet.blow_out(dest.top(z = -1)) # Blow out
         if air_gap_vol != 0:
             pipet.move_to(dest.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
