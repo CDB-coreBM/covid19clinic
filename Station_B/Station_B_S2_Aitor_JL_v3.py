@@ -15,7 +15,7 @@ metadata = {
 }
 
 mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-NUM_SAMPLES = 8
+NUM_SAMPLES = 96
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter
 multi_well_rack_area = 8*71 #Cross section of the 12 well reservoir
@@ -170,12 +170,12 @@ def run(ctx: protocol_api.ProtocolContext):
         s = source.bottom(pickup_height).move(Point(x = x_offset))
         pipet.aspirate(vol, s) # aspirate liquid
         if air_gap_vol !=0: #If there is air_gap_vol, switch pipette to slow speed
-            pipet.move_to(source.top(z = -2), speed = 20)
+            #pipet.move_to(source.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
         # GO TO DESTINATION
-        pipet.dispense(vol + air_gap_vol + 10, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
+        pipet.dispense(vol + air_gap_vol + 10, dest.top(z = -2), rate = reagent.flow_rate_dispense) #dispense all
         if air_gap_vol != 0:
-            pipet.move_to(dest.top(z = -2), speed = 20)
+            #pipet.move_to(dest.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
 
     ##########
