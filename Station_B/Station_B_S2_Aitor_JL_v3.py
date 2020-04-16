@@ -170,12 +170,11 @@ def run(ctx: protocol_api.ProtocolContext):
         s = source.bottom(pickup_height).move(Point(x = x_offset))
         pipet.aspirate(vol, s) # aspirate liquid
         if air_gap_vol !=0: #If there is air_gap_vol, switch pipette to slow speed
-            #pipet.move_to(source.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
         # GO TO DESTINATION
-        pipet.dispense(vol + air_gap_vol + 10, dest.top(z = -2), rate = reagent.flow_rate_dispense) #dispense all
+        pipet.dispense(vol + air_gap_vol, dest.top(z = -2), rate = reagent.flow_rate_dispense) #dispense all
+        pipet.blow_out(dest.top(z = -2))
         if air_gap_vol != 0:
-            #pipet.move_to(dest.top(z = -2), speed = 20)
             pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
 
     ##########
@@ -384,12 +383,12 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for j,transfer_vol in enumerate(isoprop_wash_vol):
+            for transfer_vol in isoprop_wash_vol:
                 #Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(Isopropanol, multi_well_rack_area, transfer_vol*8)
                 ctx.comment('Aspirate from Reservoir column: ' + str(Isopropanol.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-                if j!=0:
+                if i!=0:
                     rinse = False
                 move_vol_multi(m300, reagent = Isopropanol, source = Isopropanol.reagent_reservoir[Isopropanol.col],
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_isoprop, x_offset = x_offset,
@@ -461,12 +460,12 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for j,transfer_vol in enumerate(ethanol_wash_vol):
+            for transfer_vol in ethanol_wash_vol:
                 #Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(Ethanol, multi_well_rack_area, transfer_vol*8)
                 ctx.comment('Aspirate from Reservoir column: ' + str(Ethanol.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-                if j!=0:
+                if i!=0:
                     rinse = False
                 move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
