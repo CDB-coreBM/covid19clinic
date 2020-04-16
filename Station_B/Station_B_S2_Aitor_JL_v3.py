@@ -14,10 +14,12 @@ metadata = {
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
-mag_height = 17 # Height needed for NUNC deepwell in magnetic deck
+#mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
+mag_height = 17 # Height needed for ABGENE deepwell in magnetic deck
 NUM_SAMPLES = 8
 temperature = 25
-D_deepwell = 6.9 # Deepwell diameter
+D_deepwell = 6.9 # Deepwell diameter (ABGENE deepwell)
+#D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
 multi_well_rack_area = 8*71 #Cross section of the 12 well reservoir
 deepwell_cross_section_area = math.pi*D_deepwell**2/4 # deepwell cilinder cross secion area
 
@@ -30,7 +32,7 @@ def run(ctx: protocol_api.ProtocolContext):
             1:{'Execute': True, 'description': 'Mix beads'},#
             2:{'Execute': True, 'description': 'Transfer beads'},#
             3:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},#60
-            4:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 900},#900
+            4:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 180},#900
             5:{'Execute': True, 'description': 'Remove supernatant'},#
             6:{'Execute': False, 'description': 'Add Isopropanol'},#
             7:{'Execute': False, 'description': 'Wait for 30s'},#
@@ -123,15 +125,17 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ###################
     #Custom functions
-    def custom_mix(pipet, reagent, location, vol, rounds, blow_out):
+    def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
         '''
+        if mix_height == 0:
+            mix_height = 3
         pipet.aspirate(1, location = location.bottom(z = 3), rate = reagent.flow_rate_aspirate)
         for _ in range(rounds):
             pipet.aspirate(vol, location = location.bottom(z = 3), rate = reagent.flow_rate_aspirate)
-            pipet.dispense(vol, location = location.bottom(z = 3), rate = reagent.flow_rate_dispense)
-        pipet.dispense(1, location = location.bottom(z = 3), rate = reagent.flow_rate_dispense)
+            pipet.dispense(vol, location = location.bottom(z = mix_height), rate = reagent.flow_rate_dispense)
+        pipet.dispense(1, location = location.bottom(z = mix_height), rate = reagent.flow_rate_dispense)
         if blow_out == True:
             pipet.blow_out(location.top(z = -2)) # Blow out
 
@@ -301,7 +305,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
             # mix beads with sample
             custom_mix(m300, Beads, location = work_destinations[i], vol = 180,
-            rounds = 4, blow_out = True)
+            rounds = 4, blow_out = True, mix_height = 16)
             m300.drop_tip(home_after = False)
             tip_track['counts'][m300] += 8
 
