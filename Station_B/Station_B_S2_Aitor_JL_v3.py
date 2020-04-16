@@ -4,7 +4,7 @@ from opentrons import protocol_api
 import time
 import numpy as np
 from timeit import default_timer as timer
-
+import threading
 # metadata
 metadata = {
     'protocolName': 'S2 Station B Version 3',
@@ -301,9 +301,6 @@ def run(ctx: protocol_api.ProtocolContext):
 
             ctx.comment(' ')
             ctx.comment('Mixing sample with beads ')
-
-
-            # mix beads with sample
             custom_mix(m300, Beads, location = work_destinations[i], vol = 180,
             rounds = 4, blow_out = True, mix_height = 16)
             m300.drop_tip(home_after = False)
@@ -362,9 +359,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
                 dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-            #m300.move_to(location = work_destinations[i].top(z=-2))
-            #m300.touch_tip(speed = 20, radius = 1.05)
-
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
@@ -396,8 +390,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Isopropanol, source = Isopropanol.reagent_reservoir[Isopropanol.col],
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_isoprop, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
-
-
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
@@ -438,9 +430,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
                 dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-            m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
-
-
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
@@ -473,8 +462,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
-
-
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
@@ -516,9 +503,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
                 dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-            m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
-
-
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
@@ -550,8 +534,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
-
-
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
 
@@ -592,9 +574,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
                 dest = waste, vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-            m300.touch_tip( speed = 20, radius = 1.05) #work_destinations[i].top(z=-2),
-
-
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
         m300.reset_tipracks()
@@ -645,8 +624,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Water, source = Water.reagent_reservoir,
                 dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_water, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-
-
 
             ctx.comment(' ')
             ctx.comment('Mixing sample with Water and LTA')
@@ -707,9 +684,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
                 dest = final_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_rs, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
-            #m300.touch_tip(location= final_destinations[i].top(z=-2), speed = 20, radius = 1.05)
-
-
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
