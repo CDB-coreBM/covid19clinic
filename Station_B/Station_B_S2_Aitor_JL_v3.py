@@ -168,7 +168,7 @@ def run(ctx: protocol_api.ProtocolContext):
     pickup_height, rinse):
         # Rinse before aspirating
         if rinse == True:
-            custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
+            custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True, mix_height = 0)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset))
         pipet.aspirate(vol, s) # aspirate liquid
@@ -267,7 +267,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment(' ')
         #Mixing
         custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol = 180,
-        rounds = 10, blow_out = True)
+        rounds = 10, blow_out = True, mix_height = 0)
         ctx.comment('Finished premixing!')
         ctx.comment('Now, reagents will be transferred to deepwell plate.')
         ctx.comment(' ')
@@ -290,7 +290,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 if change_col == True: #If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment('Mixing new reservoir column: ' + str(Beads.col))
                     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                    vol = 180, rounds = 10, blow_out = True)
+                    vol = 180, rounds = 10, blow_out = True, mix_height = 0)
                 ctx.comment('Aspirate from reservoir column: ' + str(Beads.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
                 if j!=0:
@@ -652,7 +652,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Mixing sample with Water and LTA')
             #Mixing
             custom_mix(m300, Elution, work_destinations[i], vol = 40, rounds = 4,
-            blow_out = True)
+            blow_out = True, mix_height = 0)
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
 
