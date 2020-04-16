@@ -1,10 +1,11 @@
 import math
 from opentrons.types import Point
 from opentrons import protocol_api
-import time
+#import time
 import numpy as np
-from timeit import default_timer as timer
-import threading
+#from timeit import default_timer as timer
+#import threading
+
 # metadata
 metadata = {
     'protocolName': 'S2 Station B Version 3',
@@ -14,9 +15,11 @@ metadata = {
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
+NUM_SAMPLES = 24
+air_gap_vol = 15
+
 #mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
 mag_height = 17 # Height needed for ABGENE deepwell in magnetic deck
-NUM_SAMPLES = 8
 temperature = 25
 D_deepwell = 6.9 # Deepwell diameter (ABGENE deepwell)
 #D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
@@ -28,22 +31,22 @@ num_cols = math.ceil(NUM_SAMPLES/8) # Columns we are working on
 def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: '+str(num_cols))
     STEP = 0
-    STEPS={
+    STEPS = { #Dictionary with STEP activation, description, and times
             1:{'Execute': True, 'description': 'Mix beads'},#
             2:{'Execute': True, 'description': 'Transfer beads'},#
-            3:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},#60
-            4:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 180},#900
+            3:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60}, #60
+            4:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 450}, #900
             5:{'Execute': True, 'description': 'Remove supernatant'},#
-            6:{'Execute': False, 'description': 'Add Isopropanol'},#
-            7:{'Execute': False, 'description': 'Wait for 30s'},#
-            8:{'Execute': False, 'description': 'Remove isopropanol'},#
-            9:{'Execute': False, 'description': 'Wash with ethanol'},#
-            10:{'Execute': False, 'description': 'Wait for 30s'},#
-            11:{'Execute': False, 'description': 'Remove supernatant'},#
-            12:{'Execute': False, 'description': 'Wash with ethanol'},#
-            13:{'Execute': False, 'description': 'Wait 30s'},#
-            14:{'Execute': False, 'description': 'Remove supernatant'},#
-            15:{'Execute': False, 'description': 'Allow to dry'},#
+            6:{'Execute': True, 'description': 'Add Isopropanol'},#
+            7:{'Execute': True, 'description': 'Wait for 30s'},#
+            8:{'Execute': True, 'description': 'Remove isopropanol'},#
+            9:{'Execute': True, 'description': 'Wash with ethanol'},#
+            10:{'Execute': True, 'description': 'Wait for 30s'},#
+            11:{'Execute': True, 'description': 'Remove supernatant'},#
+            12:{'Execute': True, 'description': 'Wash with ethanol'},#
+            13:{'Execute': True, 'description': 'Wait 30s'},#
+            14:{'Execute': True, 'description': 'Remove supernatant'},#
+            15:{'Execute': True, 'description': 'Allow to dry'},#
             16:{'Execute': False, 'description': 'Add water and LTA'},#
             17:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},#60
             18:{'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 300},#300
@@ -65,8 +68,7 @@ def run(ctx: protocol_api.ProtocolContext):
             self.h_cono = h_cono
             self.v_cono = v_fondo
             self.tip_recycling = tip_recycling
-        def vol_well_original(self):
-            return self.reagent_reservoir_volume/self.num_wells
+            self.vol_well_original = reagent_reservoir_volume/num_wells
 
     #Reagents and their characteristics
     Ethanol = Reagent(name = 'Ethanol',
@@ -117,10 +119,10 @@ def run(ctx: protocol_api.ProtocolContext):
                     h_cono = 4,
                     v_fondo = 4*math.pi*4**3/3) #Sphere
 
-    Ethanol.vol_well=Ethanol.vol_well_original()
-    Beads.vol_well=Beads.vol_well_original()
-    Isopropanol.vol_well=Isopropanol.vol_well_original()
-    Water.vol_well=Water.vol_well_original()
+    Ethanol.vol_well=Ethanol.vol_well_original
+    Beads.vol_well=Beads.vol_well_original
+    Isopropanol.vol_well=Isopropanol.vol_well_original
+    Water.vol_well=Water.vol_well_original
     Elution.vol_well=350
 
     ###################
@@ -147,7 +149,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Previous to change: '+str(reagent.col))
             reagent.col = reagent.col + 1 # column selector position; intialize to required number
             ctx.comment(str('After change: '+str(reagent.col)))
-            reagent.vol_well=reagent.vol_well_original()
+            reagent.vol_well=reagent.vol_well_original
             ctx.comment('New volume:' + str(reagent.vol_well))
             height = (reagent.vol_well - aspirate_volume - reagent.v_cono)/cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
@@ -279,7 +281,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         beads_transfer_vol=[155, 155] #Two rounds of 155
         x_offset = 0
-        air_gap_vol = 15
         rinse = True
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
@@ -345,7 +346,6 @@ def run(ctx: protocol_api.ProtocolContext):
         # remove supernatant -> height calculation can be omitted and referred to bottom!
         supernatant_vol = [160, 160, 160, 160]
         x_offset_rs = 2
-        air_gap_vol = 15
 
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
@@ -371,7 +371,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         isoprop_wash_vol = [150]
-        air_gap_vol_isoprop = 15
         x_offset = 0
         rinse = True #Only first time
 
@@ -388,7 +387,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 if i!=0:
                     rinse = False
                 move_vol_multi(m300, reagent = Isopropanol, source = Isopropanol.reagent_reservoir[Isopropanol.col],
-                dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_isoprop, x_offset = x_offset,
+                dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
@@ -415,7 +414,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         supernatant_vol=[150]
-        air_gap_vol_rs=15
         x_offset_rs=2
 
         for i in range(num_cols):
@@ -444,7 +442,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         ethanol_wash_vol = [100, 100]
-        air_gap_vol_eth = 15
         x_offset = 0
         # WASH 2 TIMES
         ########
@@ -460,7 +457,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 if i!=0:
                     rinse = False
                 move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
-                dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
+                dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
@@ -488,7 +485,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         supernatant_vol=[100, 100]
-        air_gap_vol_rs=15
         x_offset_rs=2
 
         for i in range(num_cols):
@@ -516,8 +512,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         ethanol_wash_vol = [100, 100]
-        air_gap_vol_eth = 15
-
+        x_offset = 0
         # WASH 2 TIMES
         ########
         # 70% EtOH washes
@@ -532,7 +527,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 if j!=0:
                     rinse = False
                 move_vol_multi(m300, reagent = Ethanol, source = Ethanol.reagent_reservoir[Ethanol.col],
-                dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_eth, x_offset = x_offset,
+                dest = work_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = rinse)
         m300.drop_tip(home_after = True)
         tip_track['counts'][m300] += 8
@@ -559,7 +554,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         supernatant_vol = [100, 100, 40]
-        air_gap_vol_rs = 15
         x_offset_rs = 2
 
         for i in range(num_cols):
@@ -669,7 +663,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         ctx.comment(' ')
         elution_vol=[45]
-        air_gap_vol_rs=15
         x_offset_rs=2
 
         for i in range(num_cols):
@@ -682,7 +675,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 ctx.comment('Aspirate from deep well column: ' + str(i+1))
                 ctx.comment('Pickup height is ' + str(pickup_height) +' (fixed)')
                 move_vol_multi(m300, reagent = Elution, source = work_destinations[i],
-                dest = final_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol_rs, x_offset = x_offset,
+                dest = final_destinations[i], vol = transfer_vol, air_gap_vol = air_gap_vol, x_offset = x_offset,
                 pickup_height = pickup_height, rinse = False)
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
