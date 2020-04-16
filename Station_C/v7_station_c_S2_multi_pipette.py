@@ -8,7 +8,7 @@ metadata = {
     'author': 'Aitor & JL (jlvillanueva@clinic.cat)',
     'source': 'Custom Protocol',
     'apiLevel': '2.0'
-}
+            }
 
 """
 REAGENT SETUP:
@@ -18,7 +18,7 @@ REAGENT SETUP:
 """
 
 #Initial variables
-NUM_SAMPLES = 96
+NUM_SAMPLES = 48
 TRANSFER_MMIX = True
 TRANSFER_SAMPLES = False
 
@@ -32,7 +32,6 @@ extra_dispensal=5 #Extra volume for master mix in each distribute transfer
 diameter_screwcap=8.25 #Diameter of the screwcap
 temperature=25 #Temperature of temp module
 volume_cone=50 #Volume in ul that fit in the screwcap cone
-
 
 #Calculated variables
 area_section_screwcap=(np.pi*diameter_screwcap**2)/4
