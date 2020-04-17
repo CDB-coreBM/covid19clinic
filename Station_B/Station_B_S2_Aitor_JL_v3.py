@@ -194,11 +194,12 @@ def run(ctx: protocol_api.ProtocolContext):
     # pick up tip and if there is none left, prompt user for a new rack
     def pick_up(pip):
         nonlocal tip_track
-        if tip_track['counts'][pip] == tip_track['maxes'][pip]:
-            ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-            resuming.')
-            pip.reset_tipracks()
-            tip_track['counts'][pip] = 0
+        if not ctx.is_simulating():
+            if tip_track['counts'][pip] == tip_track['maxes'][pip]:
+                ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
+                resuming.')
+                pip.reset_tipracks()
+                tip_track['counts'][pip] = 0
         pip.pick_up_tip()
     ##########
     def find_side(col):
@@ -639,7 +640,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 pickup_height = pickup_height, rinse = False)
             m300.drop_tip(home_after = True)
             tip_track['counts'][m300] += 8
-        #m300.reset_tipracks()
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] + ' took ' + str(time_taken))
@@ -649,6 +649,8 @@ def run(ctx: protocol_api.ProtocolContext):
 
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        m300.reset_tipracks()
+        ctx.comment('CAMBIAR TIPRACKS!')
         start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
