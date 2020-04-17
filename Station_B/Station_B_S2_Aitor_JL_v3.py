@@ -55,7 +55,9 @@ def run(ctx: protocol_api.ProtocolContext):
             18:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 300},#300
             19:{'Execute': True, 'description': 'Transfer to final elution plate'},
             }
-
+    for STEP in STEPS: #Create an empty wait_time
+        if 'wait_time' not in STEPS[STEP]:
+            STEPS[STEP]['wait_time'] = 0
     folder_path='/data/log_times/'
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
@@ -672,7 +674,7 @@ def run(ctx: protocol_api.ProtocolContext):
         water_wash_vol = [50]
         air_gap_vol_water = 10
         x_offset = 0
-        
+
         ########
         # Water or elution buffer
         for i in range(num_cols):
@@ -767,9 +769,15 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:']=str(time_taken)
 
     if not ctx.is_simulating():
-        with open(file_path,'w') as outfile:
-            json.dump(STEPS, outfile)
-
+        with open(file_path,'w') as f:
+            #json.dump(STEPS, outfile)
+            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
+            for key in STEPS.keys():
+                row=str(key)+'\t'
+                for key2 in STEPS[key].keys():
+                    row+=format(STEPS[key][key2])+'\t'
+                f.write(row+'\n')
+        f.close()
 ###############################################################################
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
