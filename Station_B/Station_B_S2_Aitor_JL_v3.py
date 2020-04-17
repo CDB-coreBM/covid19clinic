@@ -671,7 +671,8 @@ def run(ctx: protocol_api.ProtocolContext):
         #Water elution
         water_wash_vol = [50]
         air_gap_vol_water = 10
-
+        x_offset = 0
+        
         ########
         # Water or elution buffer
         for i in range(num_cols):
