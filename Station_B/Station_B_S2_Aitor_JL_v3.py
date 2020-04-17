@@ -11,7 +11,7 @@ import csv
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station B Version 3',
+    'protocolName': 'S2 Station B Version 4',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
@@ -669,7 +669,8 @@ def run(ctx: protocol_api.ProtocolContext):
         #Water elution
         water_wash_vol = [50]
         air_gap_vol_water = 10
-
+        x_offset = 0
+        
         ########
         # Water or elution buffer
         for i in range(num_cols):
