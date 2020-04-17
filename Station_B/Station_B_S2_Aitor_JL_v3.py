@@ -7,7 +7,6 @@ import numpy as np
 from timeit import default_timer as timer
 import json
 from datetime import datetime
-from datetime import timedelta
 import csv
 
 # metadata
@@ -19,7 +18,7 @@ metadata = {
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
-NUM_SAMPLES = 8
+NUM_SAMPLES = 96
 air_gap_vol = 15
 
 #mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
@@ -37,24 +36,24 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = { #Dictionary with STEP activation, description, and times
             1:{'Execute': True, 'description': 'Mix beads'},#
-            2:{'Execute': False, 'description': 'Transfer beads'},#
-            3:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60}, #60
-            4:{'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 450}, #900
-            5:{'Execute': False, 'description': 'Remove supernatant'},#
-            6:{'Execute': False, 'description': 'Add Isopropanol'},#
-            7:{'Execute': False, 'description': 'Wait for 30s'},#
-            8:{'Execute': False, 'description': 'Remove isopropanol'},#
-            9:{'Execute': False, 'description': 'Wash with ethanol'},#
-            10:{'Execute': False, 'description': 'Wait for 30s'},#
-            11:{'Execute': False, 'description': 'Remove supernatant'},#
-            12:{'Execute': False, 'description': 'Wash with ethanol'},#
-            13:{'Execute': False, 'description': 'Wait 30s'},#
-            14:{'Execute': False, 'description': 'Remove supernatant'},#
-            15:{'Execute': False, 'description': 'Allow to dry'},#
-            16:{'Execute': False, 'description': 'Add water and LTA'},#
-            17:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},#60
-            18:{'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 300},#300
-            19:{'Execute': False, 'description': 'Transfer to final elution plate'},
+            2:{'Execute': True, 'description': 'Transfer beads'},#
+            3:{'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 60}, #60
+            4:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 900}, #900
+            5:{'Execute': True, 'description': 'Remove supernatant'},#
+            6:{'Execute': True, 'description': 'Add Isopropanol'},#
+            7:{'Execute': True, 'description': 'Wait for 30s'},#
+            8:{'Execute': True, 'description': 'Remove isopropanol'},#
+            9:{'Execute': True, 'description': 'Wash with ethanol'},#
+            10:{'Execute': True, 'description': 'Wait for 30s'},#
+            11:{'Execute': True, 'description': 'Remove supernatant'},#
+            12:{'Execute': True, 'description': 'Wash with ethanol'},#
+            13:{'Execute': True, 'description': 'Wait 30s'},#
+            14:{'Execute': True, 'description': 'Remove supernatant'},#
+            15:{'Execute': True, 'description': 'Allow to dry', 'wait_time': 300},#
+            16:{'Execute': True, 'description': 'Add water and LTA'},#
+            17:{'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 60},#60
+            18:{'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 300},#300
+            19:{'Execute': True, 'description': 'Transfer to final elution plate'},
             }
 
     folder_path='/data/log_times/'
@@ -264,10 +263,10 @@ def run(ctx: protocol_api.ProtocolContext):
         #, p1000: len(tips1000)*96}
 
 ###############################################################################
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
     ### PREMIX BEADS
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
         if not m300.hw_pipette['has_tip']:
@@ -286,13 +285,13 @@ def run(ctx: protocol_api.ProtocolContext):
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:']=str(time_taken)
 
 
-    STEPS[STEP]['Time:']=str(time_taken)
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
     #Transfer parameters
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
         beads_transfer_vol=[155, 155] #Two rounds of 155
@@ -333,9 +332,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
     # STEP 3 INCUBATE WITHOUT MAGNET
     ########
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
         # incubate off and on magnet
@@ -351,9 +351,10 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # STEP 4 INCUBATE WITH MAGNET
     ########
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
         magdeck.engage(height=mag_height)
@@ -367,9 +368,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
     # STEP 5 REMOVE SUPERNATANT
     ########
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -398,9 +400,10 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:']=str(time_taken)
     ###############################################################################
         # STEP 6* Washing 1 Isopropanol
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -433,16 +436,13 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
         # STEP 7* WAIT FOR 30s-1'
         ########
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
-        ctx.comment(' ')
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
-        ctx.comment(' ')
-        ctx.comment(' ')
         ctx.delay(seconds=30, msg='Wait for 30 seconds.')
-        ctx.comment(' ')
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] + ' took ' + str(time_taken))
@@ -450,13 +450,12 @@ def run(ctx: protocol_api.ProtocolContext):
         ####################################################################
         # STEP 8* REMOVE ISOPROP (supernatant)
         # remove supernatant -> height calculation can be omitted and referred to bottom!
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
-        ctx.comment(' ')
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
-        ctx.comment(' ')
         supernatant_vol=[150]
         x_offset_rs=2
 
@@ -479,10 +478,11 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:']=str(time_taken)
     ###############################################################################
-        # STEP 9 Washing 1
-    start = datetime.now()
+        # STEP 9 Washing 1 ethanol
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -514,9 +514,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
         # STEP 10 WAIT FOR 30s-1'
         ########
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -531,9 +532,10 @@ def run(ctx: protocol_api.ProtocolContext):
         ####################################################################
         # STEP 11 REMOVE SUPERNATANT
         # remove supernatant -> height calculation can be omitted and referred to bottom!
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -562,9 +564,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ###############################################################################
         # STEP 12 Washing 2
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -596,9 +598,9 @@ def run(ctx: protocol_api.ProtocolContext):
     ###############################################################################
         # STEP 13 WAIT FOR 30s-1'
         ########
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -613,9 +615,9 @@ def run(ctx: protocol_api.ProtocolContext):
         ####################################################################
         # STEP 14 REMOVE SUPERNATANT AGAIN
         # remove supernatant -> height calculation can be omitted and referred to bottom!
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -641,42 +643,29 @@ def run(ctx: protocol_api.ProtocolContext):
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] + ' took ' + str(time_taken))
-
         STEPS[STEP]['Time:']=str(time_taken)
     # STEP 15 DRY
     ########
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
-        ctx.comment(' ')
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
-        ctx.comment(' ')
-        end = datetime.now()
-        delta = end - start_timer
-        delta_time = 5*60 - delta
-        if delta_time < 0:
-            ctx.comment('ERROR. Waiting time has been: '+str(delta/60)+' minutes')
-            delta_time = 0
-        ctx.comment(' ')
-        ctx.delay(seconds = delta_time, msg = 'Airdrying beads')
-        ctx.comment(' ')
+        ctx.delay(seconds = STEPS[STEP]['wait_time'], msg = 'Airdrying beads')
+        magdeck.disengage()
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:']=str(time_taken)
     ###############################################################################
-        magdeck.disengage()
-    ###############################################################################
-    # STEP 16 DRY
+    # STEP 16 Transfer water
     ########
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
-        ctx.comment(' ')
+        start = datetime.now()
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
-        ctx.comment(' ')
         #Water elution
         water_wash_vol = [50]
         air_gap_vol_water = 10
@@ -709,9 +698,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # STEP 17 WAIT 1-2' WITHOUT MAGNET
     ########
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -727,9 +716,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # STEP 18 WAIT 5' WITH MAGNET
     ########
-    start = datetime.now()
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
@@ -745,16 +734,16 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # STEP 19 TRANSFER TO ELUTION PLATE
     ########
-    start = datetime.now()
+
     STEP += 1
     if STEPS[STEP]['Execute']==True:
+        start = datetime.now()
         ctx.comment(' ')
         ctx.comment('Step '+str(STEP)+': '+STEPS[STEP]['description'])
         ctx.comment('###############################################')
         ctx.comment(' ')
         elution_vol=[45]
         x_offset_rs=2
-
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
             if not m300.hw_pipette['has_tip']:
@@ -772,7 +761,7 @@ def run(ctx: protocol_api.ProtocolContext):
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] + ' took ' + str(time_taken))
-    STEPS[STEP]['Time:']=str(time_taken)
+        STEPS[STEP]['Time:']=str(time_taken)
 
     if not ctx.is_simulating():
         with open(file_path,'w') as outfile:
