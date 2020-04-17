@@ -8,6 +8,7 @@ from timeit import default_timer as timer
 import json
 from datetime import datetime
 import csv
+import os
 
 # metadata
 metadata = {
@@ -40,10 +41,10 @@ def run(ctx: protocol_api.ProtocolContext):
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': False, 'description': 'Mix beads'},
         2: {'Execute': False, 'description': 'Transfer beads'},
-        3: {'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
+        3: {'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 5},  # 60
         4: {'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 900},  # 900
         5: {'Execute': False, 'description': 'Remove supernatant'},
-        6: {'Execute': True, 'description': 'Add Isopropanol'},
+        6: {'Execute': False, 'description': 'Add Isopropanol'},
         7: {'Execute': False, 'description': 'Wait for 30s'},
         8: {'Execute': False, 'description': 'Remove isopropanol'},
         9: {'Execute': False, 'description': 'Wash with ethanol'},
@@ -857,10 +858,11 @@ def run(ctx: protocol_api.ProtocolContext):
                     row += format(STEPS[key][key2]) + '\t'
                 f.write(row + '\n')
         f.close()
-
+    ctx.home()
     ############################################################################
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
+
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
@@ -869,6 +871,7 @@ def run(ctx: protocol_api.ProtocolContext):
         gpio.set_button_light(0, 0, 1)
         time.sleep(0.3)
     gpio.set_button_light(0, 1, 0)
+    os.system('mpg123 /var/lib/jupyter/notebooks/pacman.mp3')
     ctx.comment(
         'Finished! \nMove deepwell plate (slot 5) to Station C for MMIX addition and qPCR preparation.')
     ctx.comment('Used tips in total: ' + str(tip_track['counts'][m300]))
