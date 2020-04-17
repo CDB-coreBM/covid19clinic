@@ -75,16 +75,16 @@ def fill_96_rack(dests, src,pipette,bool,SAMPLE_VOLUME,CONTROL_VOLUME,air_gap_vo
 #A(right pipette up-and-down motion)
 
 ##########################################################################
-NUM_SAMPLES = 6
+NUM_SAMPLES = 3
 SAMPLE_VOLUME = 300
 CONTROL_VOLUME = 10
 TRANSFER_SAMPLES_F = True
 TRANSFER_CONTROL_F_custom = False
-mix_bool=False
+mix_bool = False
 volume_epp = 1500
 extra_dispensal = 0
 size_transfer = 1
-air_gap_volume=30
+air_gap_volume = 15
 cross_section_area = 63.61 ## Ojo que es cónico en su parte final y haya que modificar esta función
 ##########################################################################
 
@@ -101,7 +101,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     source_racks = [ctx.load_labware(
             'opentrons_24_tuberack_generic_2ml_screwcap', slot,
-            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['4','6','3','1'][:rack_num])
+            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['4','1','6','3'][:rack_num])
         ]
 ##########################################################################
     if TRANSFER_CONTROL_F_custom==True:
@@ -114,8 +114,8 @@ def run(ctx: protocol_api.ProtocolContext):
         p20 = ctx.load_instrument('p20_single_gen2', 'right', tip_racks=[tiprack])
 ##########################################################################
     dest_plate = ctx.load_labware(
-        'nunc_96_wellplate_2000ul', '5',
-        'NUNC STORAGE 96 Well Plate 2000 µL')
+        'abgenestorage_96_wellplate_1200ul', '5',
+        'ABGENE STORAGE 96 Well Plate 1200 µL')
 
 # Load tipracks
 ##############
