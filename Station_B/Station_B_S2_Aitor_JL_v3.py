@@ -18,6 +18,8 @@ metadata = {
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
 }
 
+#Defined variables
+##################
 NUM_SAMPLES = 96
 air_gap_vol = 15
 
@@ -27,11 +29,10 @@ temperature = 25
 D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
 # D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
 multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
+
+#Calculated variables
 deepwell_cross_section_area = math.pi * D_deepwell**2 / 4  # deepwell cilinder cross secion area
-
-
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
-
 
 def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
@@ -221,6 +222,9 @@ def run(ctx: protocol_api.ProtocolContext):
     ##########
 
     def find_side(col):
+        '''
+        Detects if the current column has the magnet at its left or right side
+        '''
         if col % 2 == 0:
             side = -1  # left
         else:
@@ -437,7 +441,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 6* Washing 1 Isopropanol
+    # STEP 6 Washing 1 Isopropanol
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -476,7 +480,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 7* WAIT FOR 30s-1'
+    # STEP 7 WAIT FOR 30s-1'
     ############################################################################
 
     STEP += 1
@@ -490,9 +494,10 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-        ####################################################################
-        # STEP 8* REMOVE ISOPROP (supernatant)
-        # remove supernatant -> height calculation can be omitted and referred to bottom!
+
+    ####################################################################
+    # STEP 8 REMOVE ISOPROPANOL (supernatant)
+    # remove supernatant -> height calculation can be omitted and referred to bottom!
 
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
