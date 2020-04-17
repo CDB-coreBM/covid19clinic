@@ -1,0 +1,102 @@
+{
+  "1": {
+    "Execute": true,
+    "description": "Mix beads",
+    "Time:": "0:02:26.840142"
+  },
+  "2": {
+    "Execute": true,
+    "description": "Transfer beads",
+    "Time:": "0:18:05.747756"
+  },
+  "3": {
+    "Execute": true,
+    "description": "Wait with magnet OFF",
+    "wait_time": 60,
+    "Time:": "0:01:00.627367"
+  },
+  "4": {
+    "Execute": true,
+    "description": "Wait with magnet ON",
+    "wait_time": 900,
+    "Time:": "0:15:01.026170"
+  },
+  "5": {
+    "Execute": true,
+    "description": "Remove supernatant",
+    "Time:": "0:16:19.254480"
+  },
+  "6": {
+    "Execute": true,
+    "description": "Add Isopropanol",
+    "Time:": "0:03:39.182630"
+  },
+  "7": {
+    "Execute": true,
+    "description": "Wait for 30s",
+    "Time:": "0:00:30.053035"
+  },
+  "8": {
+    "Execute": true,
+    "description": "Remove isopropanol",
+    "Time:": "0:06:28.108593"
+  },
+  "9": {
+    "Execute": true,
+    "description": "Wash with ethanol",
+    "Time:": "0:05:53.952340"
+  },
+  "10": {
+    "Execute": true,
+    "description": "Wait for 30s",
+    "Time:": "0:00:30.086487"
+  },
+  "11": {
+    "Execute": true,
+    "description": "Remove supernatant",
+    "Time:": "0:08:55.840921"
+  },
+  "12": {
+    "Execute": true,
+    "description": "Wash with ethanol",
+    "Time:": "0:05:52.345992"
+  },
+  "13": {
+    "Execute": true,
+    "description": "Wait 30s",
+    "Time:": "0:00:30.081294"
+  },
+  "14": {
+    "Execute": true,
+    "description": "Remove supernatant",
+    "Time:": "0:11:08.825423"
+  },
+  "15": {
+    "Execute": true,
+    "description": "Allow to dry",
+    "wait_time": 300,
+    "Time:": "0:05:01.872962"
+  },
+  "16": {
+    "Execute": true,
+    "description": "Add water and LTA",
+    "Time:": "0:08:34.484512"
+  },
+  "17": {
+    "Execute": true,
+    "description": "Wait with magnet OFF",
+    "wait_time": 60,
+    "Time:": "0:01:00.127041"
+  },
+  "18": {
+    "Execute": true,
+    "description": "Wait with magnet ON",
+    "wait_time": 300,
+    "Time:": "0:05:01.039178"
+  },
+  "19": {
+    "Execute": true,
+    "description": "Transfer to final elution plate",
+    "Time:": "0:05:23.605506"
+  }
+}
