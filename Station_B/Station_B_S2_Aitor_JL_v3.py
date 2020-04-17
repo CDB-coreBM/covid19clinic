@@ -8,7 +8,7 @@ from timeit import default_timer as timer
 import json
 from datetime import datetime
 from datetime import timedelta
-
+import csv
 
 # metadata
 metadata = {
@@ -37,7 +37,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = { #Dictionary with STEP activation, description, and times
             1:{'Execute': True, 'description': 'Mix beads'},#
-            2:{'Execute': True, 'description': 'Transfer beads'},#
+            2:{'Execute': False, 'description': 'Transfer beads'},#
             3:{'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60}, #60
             4:{'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 450}, #900
             5:{'Execute': False, 'description': 'Remove supernatant'},#
