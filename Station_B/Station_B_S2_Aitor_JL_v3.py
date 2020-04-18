@@ -271,12 +271,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    Beads.reagent_reservoir = reagent_res.rows(
-    )[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
-    Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(
-        4 + Isopropanol.num_wells)]  # 1 row, 2 columns (from 5 to 6)
-    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(
-        6 + Ethanol.num_wells)]  # 1 row, 2 columns (from 7 to 10)
+    Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
+    Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)]  # 1 row, 2 columns (from 5 to 6)
+    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6 + Ethanol.num_wells)]  # 1 row, 2 columns (from 7 to 10)
     # 1 row, 1 column (last one) full of water
     Water.reagent_reservoir = reagent_res.rows()[0][-1]
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
