@@ -12,8 +12,8 @@ import os
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station B Version 4',
-    'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
+    'protocolName': 'S2 Station B',
+    'author': 'Aitor Gastaminza & José Luis Villanueva <jlvillanueva@clinic.cat>',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
@@ -29,11 +29,11 @@ mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
 temperature = 25
 D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
 # D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
-multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
 
 #Calculated variables
 deepwell_cross_section_area = math.pi * D_deepwell**2 / 4  # deepwell cilinder cross secion area
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
+multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
 
 def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
@@ -59,14 +59,17 @@ def run(ctx: protocol_api.ProtocolContext):
         18: {'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 300},  # 300
         19: {'Execute': False, 'description': 'Transfer to final elution plate'}
     }
+    ############################################################################
+    # Create log file structure
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
     folder_path = '/data/log_times/'
-    if not os.path.isdir(folder_path):
-        os.mkdir(folder_path)
-    file_path = folder_path + '/time_log.json'
-
+    if not ctx.is_simulating():
+        if not os.path.isdir(folder_path):
+            os.mkdir(folder_path)
+        file_path = folder_path + '/time_log.json'
+    ############################################################################
     # Define Reagents as objects with their properties
     class Reagent:
         def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
@@ -128,10 +131,10 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_aspirate=0.5,
                       flow_rate_dispense=1,
                       rinse=False,
-                      reagent_reservoir_volume=800,
+                      reagent_reservoir_volume=4800,
                       num_wells=num_cols,  # num_cols comes from available columns
                       h_cono=4,
-                      v_fondo=4 * math.pi * 4**3 / 3)  # Sphere
+                      v_fondo=4 * math.pi * (D_deepwell/2)**3 / 3)  # Sphere
 
     Ethanol.vol_well = Ethanol.vol_well_original
     Beads.vol_well = Beads.vol_well_original
@@ -139,8 +142,9 @@ def run(ctx: protocol_api.ProtocolContext):
     Water.vol_well = Water.vol_well_original
     Elution.vol_well = 350
 
-    ##################
-    # Custom functions
+    ############################################################################
+    # CUSTOM FUNCTIONS
+    ############################################################################
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
@@ -159,6 +163,7 @@ def run(ctx: protocol_api.ProtocolContext):
         if blow_out == True:
             pipet.blow_out(location.top(z=-2))  # Blow out
 
+    ############################################################################
     def calc_height(reagent, cross_section_area, aspirate_volume):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
@@ -189,6 +194,7 @@ def run(ctx: protocol_api.ProtocolContext):
             col_change = False
         return height, col_change
 
+    ############################################################################
     def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                        pickup_height, rinse):
         # Rinse before aspirating
@@ -209,7 +215,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.aspirate(air_gap_vol, dest.top(z=-2),
                            rate=reagent.flow_rate_aspirate)  # air gap
 
-    ##########
+    ############################################################################
     # pick up tip and if there is none left, prompt user for a new rack
     def pick_up(pip):
         nonlocal tip_track
@@ -220,8 +226,8 @@ def run(ctx: protocol_api.ProtocolContext):
                 pip.reset_tipracks()
                 tip_track['counts'][pip] = 0
         pip.pick_up_tip()
-    ##########
 
+    ############################################################################
     def find_side(col):
         '''
         Detects if the current column has the magnet at its left or right side
@@ -231,49 +237,49 @@ def run(ctx: protocol_api.ProtocolContext):
         else:
             side = 1
         return side
-
-####################################
+    ############################################################################
+    ############################################################################
     # load labware and modules
     # 12 well rack
     reagent_res = ctx.load_labware(
         'nest_12_reservoir_15ml', '2', 'reagent deepwell plate 1')
 
-############################################
+    ############################################################################
     # tempdeck
     tempdeck = ctx.load_module('tempdeck', '3')
     # tempdeck.set_temperature(temperature)
 
-##################################
+    ############################################################################
     # Elution plate - final plate, goes to C
     elution_plate = tempdeck.load_labware(
         'transparent_96_wellplate_250ul',
         'cooled elution plate')
 
-############################################
+    ############################################################################
     # Elution plate - comes from A
     magdeck = ctx.load_module('magdeck', '6')
     deepwell_plate = magdeck.load_labware(
         'abgenestorage_96_wellplate_1200ul', 'ABGENE 1200ul 96 well sample plate')
     magdeck.disengage()
 
-####################################
+    ############################################################################
     # Waste reservoir
     waste_reservoir = ctx.load_labware(
         'nalgene_1_reservoir_300000ul', '9', 'waste reservoir')
     waste = waste_reservoir.wells()[0]  # referenced as reservoir
 
-####################################
+    ############################################################################
     # Load tip_racks
     tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
                for slot in ['5', '8', '11', '1', '4', '7', '10']]
     # tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
     #    for slot in ['10']]
 
-################################################################################
+    ############################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
-    Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)]  # 1 row, 2 columns (from 5 to 6)
-    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(6 + Ethanol.num_wells)]  # 1 row, 2 columns (from 7 to 10)
+    Isopropanol.reagent_reservoir = reagent_res.rows()[0][Beads.num_wells:(Beads.num_wells + Isopropanol.num_wells)]  # 1 row, 2 columns (from 5 to 6)
+    Ethanol.reagent_reservoir = reagent_res.rows()[0][(Beads.num_wells + Isopropanol.num_wells):((Beads.num_wells + Isopropanol.num_wells) + Ethanol.num_wells)]  # 1 row, 2 columns (from 7 to 10)
     # 1 row, 1 column (last one) full of water
     Water.reagent_reservoir = reagent_res.rows()[0][-1]
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
@@ -294,6 +300,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     # STEP 1: PREMIX BEADS
     ############################################################################
+
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
 
@@ -441,6 +448,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     # STEP 6 Washing 1 Isopropanol
     ############################################################################
+
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
         start = datetime.now()
@@ -493,9 +501,9 @@ def run(ctx: protocol_api.ProtocolContext):
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-    ####################################################################
+    ############################################################################
     # STEP 8 REMOVE ISOPROPANOL (supernatant)
-    # remove supernatant -> height calculation can be omitted and referred to bottom!
+    ############################################################################
 
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -564,6 +572,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
+
     ############################################################################
     # STEP 10 WAIT FOR 30s-1'
     ############################################################################
@@ -583,9 +592,9 @@ def run(ctx: protocol_api.ProtocolContext):
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-    ####################################################################
+    ############################################################################
     # STEP 11 REMOVE SUPERNATANT
-    # remove supernatant -> height calculation can be omitted and referred to bottom!
+    ############################################################################
 
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -676,9 +685,9 @@ def run(ctx: protocol_api.ProtocolContext):
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-    ####################################################################
+    ############################################################################
     # STEP 14 REMOVE SUPERNATANT AGAIN
-    # remove supernatant -> height calculation can be omitted and referred to bottom!
+    ############################################################################
 
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -710,7 +719,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-    ####################################################################
+    ############################################################################
     # STEP 15 DRY
     ############################################################################
 
@@ -743,7 +752,6 @@ def run(ctx: protocol_api.ProtocolContext):
         air_gap_vol_water = 10
         x_offset = 0
 
-        ########
         # Water or elution buffer
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
@@ -856,8 +864,10 @@ def run(ctx: protocol_api.ProtocolContext):
                 f.write(row + '\n')
         f.close()
     ctx.home()
+
     ############################################################################
-    # Light flash end of program
+    # Light flash and sound end of program
+    ############################################################################
     from opentrons.drivers.rpi_drivers import gpio
 
     for i in range(3):
