@@ -1,8 +1,9 @@
 # covid19clinic
 
-Current global pandemic due to the SARS-COVID19 have struggled and pushed the limits of global health systems. Supply chain disruptions and scarce availability of RNA extraction kits have motivated  worldwide actors to do research on virus detection systems.  
+Current global pandemic due to the SARS-COVID19 have struggled and pushed the limits of global health systems. Supply chain disruptions and scarce availability of RNA extraction kits have motivated  worldwide actors to do research on virus detection systems.
 
-The NGO ***COVIDwarriors*** made a proposal to multiple hospitals in Spain to develop a home made protocol to extract the RNA from patient samples without using any commercial standard kits. COVIDWarriors, under collaboration with the ***Hospital Clínic de Barcelona*** and the CORE biologia molecular from ***Centre de Diagnòstic Biomèdic (CDB)*** have developed an automated method to extract RNA using some opensource robots developed by the US company ***Opentrons***. These robots will prepare the already inactivated samples for their study with a PCR equipment, *Polymerase Chain Reaction*.
+The NGO ***COVIDwarriors*** made a donation to multiple hospitals in Spain to automatize the PCR testing of SARS-cov2 by equiping them with opensource programmable robots, developed by the US company ***Opentrons***.
+ COVIDWarriors, under collaboration with the ***Hospital Clínic de Barcelona*** and the CORE biologia molecular from ***Centre de Diagnòstic Biomèdic (CDB)*** have developed an automated method to extract RNA using  these opensource robots. This methodology does not depend on the use of any kits, as it implements a custom protocol using commonly available reactives. [cite original protocol here]. These robots will prepare the already inactivated samples for their study with a PCR equipment, *Polymerase Chain Reaction*.
 
 The equipment is composed by 4 multidispensing robots divided in 3 different stations named A, B, and C. Each of the stations will carry different assignments as described below:
 
