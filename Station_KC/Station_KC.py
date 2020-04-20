@@ -27,7 +27,7 @@ air_gap_vol = 15
 size_transfer = 7  # Number of wells the distribute function will fill
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_screw_one = 1500  # Total volume of first screwcap
+volume_screw_one = 1200  # Total volume of first screwcap
 volume_screw_two = 1100  # Total volume of second screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
@@ -101,7 +101,7 @@ def run(ctx: protocol_api.ProtocolContext):
     def calc_height(reagent, cross_section_area, aspirate_volume):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
-                    '< needed volume ' + str(aspirate_volume) + '?')
+                    '< needed volume ' + str(aspirate_volume) + ', is that okay?')
         if reagent.vol_well < aspirate_volume:
             ctx.comment('Next column should be picked')
             ctx.comment('Previous to change: ' + str(reagent.col))
@@ -116,16 +116,17 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent.v_cono) / cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            if height < 0:
-                height = 0.3
+            ctx.comment('Calculated height is ' + str(height))
+            if height <= 0:
+                height = 0.2
             col_change = True
         else:
             height = (reagent.vol_well - aspirate_volume -
                       reagent.v_cono) / cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height < 0:
-                height = 0.3
+            if height <= 0:
+                height = 0.2
             ctx.comment('Used height is ' + str(height))
             col_change = False
         return height, col_change
@@ -175,7 +176,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # 12 well rack
     tuberack = ctx.load_labware(
         'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
-        'Bloque Aluminio 24 Screwcap Well Plate 1500 µL')
+        'Bloque Aluminio 24 Screwcap Well Plate 1500 µL ')
 
 ############################################
     # tempdeck
@@ -186,13 +187,13 @@ def run(ctx: protocol_api.ProtocolContext):
     # Elution plate - final plate, goes to PCR
     elution_plate = tempdeck.load_labware(
         'roche_96_wellplate_100ul',
-        'chilled RNA elution plate from station B')
+        'chilled RNA elution plate from station B ')
 
 ##################################
     # Sample plate - comes from B
     source_plate = ctx.load_labware(
         'roche_96_wellplate_100ul', '1',
-        'chilled RNA elution plate from station B')
+        'Chilled RNA elution plate 2for PCR ')
     samples = source_plate.wells()[:NUM_SAMPLES]
 
 ##################################
@@ -247,6 +248,7 @@ def run(ctx: protocol_api.ProtocolContext):
             used_vol_temp = distribute_custom(
                 p300, volume_mmix, MMIX_reservoir[col_change], dest,
                 MMIX_reservoir[col_change], pickup_height, extra_dispensal)
+
             used_vol.append(used_vol_temp)
 
         p300.drop_tip()
@@ -265,7 +267,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if STEPS[STEP]['Execute'] == True:
         # Transfer parameters
         start = datetime.now()
-        for s, d in zip(samples, pcr_wells):
+        for s, d in zip(pcr_wells, samples):
             p20.pick_up_tip()
             p20.transfer(volume_sample, s, d, new_tip='never')
             p20.mix(1, 10, d)
