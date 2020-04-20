@@ -349,9 +349,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        if not p1000.hw_pipette['has_tip']:
-            pick_up(p1000)
         for s, d in zip(sample_sources, destinations):
+            if not p1000.hw_pipette['has_tip']:
+                pick_up(p1000)
             move_vol_multi(p1000, reagent = ProtK, source = s, dest = d,
             vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 1, drop_height = 0, rinse = False)
@@ -377,9 +377,10 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        if not p1000.hw_pipette['has_tip']:
-            pick_up(p1000)
+
         for d in destinations:
+            if not p1000.hw_pipette['has_tip']:
+                pick_up(p1000)
             move_vol_multi(p1000, reagent = Buffer, source = Buffer.reagent_reservoir, dest = d,
             vol = volume_buffer, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 1, drop_height = 0, rinse = False)
