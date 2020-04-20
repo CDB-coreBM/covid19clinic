@@ -21,25 +21,26 @@ metadata = {
 #Defined variables
 ##################
 NUM_SAMPLES = 96
-air_gap_vol = 15
+air_gap_vol = 5
 
 volume_protk = 10
 volume_buffer = 550
 volume_control = 10
+volume_sample = 330
 height_protk = 10
 height_control = 20
-
 temperature = 25
-D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
-# D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
-multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
 
-#Calculated variables
-deepwell_cross_section_area = math.pi * D_deepwell**2 / 4  # deepwell cilinder cross secion area
-num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
+#Screwcap variables
+diameter_screwcap = 8.25  # Diameter of the screwcap
+volume_cone = 50  # Volume in ul that fit in the screwcap cone
+
+# Calculated variables
+area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
+h_cone = (volume_cone * 3 / area_section_screwcap)
+screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screcap cross secion area
 
 def run(ctx: protocol_api.ProtocolContext):
-    ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': '1: Add proteinase K (10ul)'},
@@ -47,7 +48,6 @@ def run(ctx: protocol_api.ProtocolContext):
         3: {'Execute': True, 'description': '3: Add samples (300ul)'},
         4: {'Execute': True, 'description': '4: Add binding buffer (550ul)'}
     }
-
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
@@ -79,8 +79,8 @@ def run(ctx: protocol_api.ProtocolContext):
     Buffer = Reagent(name = 'Buffer',
                       flow_rate_aspirate = 0.5,
                       flow_rate_dispense = 1,
-                      rinse = True,
-                      reagent_reservoir_volume = 38400,
+                      rinse = False,
+                      reagent_reservoir_volume = 1500,
                       num_wells = 1,  # num_Wells max is 4
                       h_cono = 1.95,
                       v_fondo = 1.95 * multi_well_rack_area / 2,  # Prismatic
@@ -89,11 +89,11 @@ def run(ctx: protocol_api.ProtocolContext):
     ProtK = Reagent(name = 'Proteinase K',
                        flow_rate_aspirate = 0.5,
                        flow_rate_dispense = 1,
-                       rinse = True,
-                       reagent_reservoir_volume = 38400,
-                       num_wells = 2,  # num_Wells max is 4
-                       h_cono = 1.95,
-                       v_fondo = 1.95 * multi_well_rack_area / 2,  # Prismatic
+                       rinse = False,
+                       reagent_reservoir_volume = 1500,
+                       num_wells = 1,  # num_Wells max is 4
+                       h_cono = (volume_cone * 3 / area_section_screwcap),
+                       v_fondo = 50,
                        tip_recycling = 'A1')
 
     Control_I = Reagent(name = 'Internal Control',
@@ -101,9 +101,9 @@ def run(ctx: protocol_api.ProtocolContext):
                      flow_rate_dispense = 1,
                      rinse = True,
                      reagent_reservoir_volume = 38400,
-                     num_wells = 2,  # num_Wells max is 4
-                     h_cono = 1.95,
-                     v_fondo = 1.95 * multi_well_rack_area / 2,  # Prismatic
+                     num_wells = 1,  # num_Wells max is 4
+                     h_cono = (volume_cone * 3 / area_section_screwcap),
+                     v_fondo = 50,
                      tip_recycling = 'A1')
 
     Samples = Reagent(name = 'Samples',
@@ -122,6 +122,17 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ##################
     # Custom functions
+    def generate_source_table(source):
+        '''
+        Concatenate the wells frome the different origin racks
+        '''
+        for rack_number in range(len(source)):
+            if rack_number == 0:
+                s = source[rack_number].wells()
+            else:
+                s = s + source[rack_number].wells()
+        return s
+
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
@@ -238,7 +249,6 @@ def run(ctx: protocol_api.ProtocolContext):
     buffer_res = ctx.load_labware(
         'nalgene_1_reservoir_300000ul', '9', 'buffer reservoir')
 
-
     ####################################
     # Load tip_racks
     tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
@@ -253,6 +263,9 @@ def run(ctx: protocol_api.ProtocolContext):
     Buffer.reagent_reservoir = buffer_res.wells()[0]
     Control_I.reagent_reservoir = reagents.wells()[0]
     ProtK.reagent_reservoir = reagents.wells()[4]
+    # setup samples and destinations
+    sample_sources_full = generate_source_table(source_racks)
+    sample_sources = sample_sources_full[:NUM_SAMPLES]
     destinations = dest_plate.wells()[:NUM_SAMPLES]
 
     p20 = ctx.load_instrument(
@@ -270,19 +283,28 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
         # Transfer parameters
         start = datetime.now()
+        if not p20.hw_pipette['has_tip']:
+            pick_up(p20)
         for d in destinations:
-            p20.pick_up_tip()
-            tip_track['counts'][p20]+=1
-            p20.transfer(volume_protk, ProtK.reagent_reservoir, d, new_tip='never')
-            p20.mix(1, 10, d)
-            p20.aspirate(5, d.bottom(height_protk))
+            # Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(ProtK, screwcap_cross_section_area, volume_protk)
+            move_vol_multi(p20, reagent = ProtK, source = ProtK.reagent_reservoir,
+            dest = d.bottom(height_protk), vol = volume_protk, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = pickup_height, rinse = False)
+        #Drop tip and update counter
         p20.drop_tip()
+        tip_track['counts'][p20]+=1
+
+        #Time statistics
         end = datetime.now()
         time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+        ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
 
@@ -291,19 +313,85 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
         # Transfer parameters
         start = datetime.now()
-        for d in destinations):
-            p20.pick_up_tip()
-            tip_track['counts'][p20]+=1
-            p20.transfer(volume_control, Control_I.reagent_reservoir, d, new_tip='never')
-            p20.mix(1, 10, d)
-            p20.aspirate(5, d.bottom(height_control))
+        if not p20.hw_pipette['has_tip']:
+            pick_up(p20)
+        for d in destinations:
+            # Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_protk)
+            move_vol_multi(p20, reagent = ProtK, source = Control_I.reagent_reservoir,
+            dest = d.bottom(height_control), vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = pickup_height, rinse = False)
+        #Drop tip and update counter
         p20.drop_tip()
+        tip_track['counts'][p20]+=1
+
+        #Time statistics
         end = datetime.now()
         time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+        ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    ############################################################################
+    # STEP 3: Add Samples
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        # Transfer parameters
+        start = datetime.now()
+        if not p300.hw_pipette['has_tip']:
+            pick_up(p300)
+        for s, d in zip(sample_sources, destinations):
+            move_vol_multi(p20, reagent = ProtK, source = s, dest = d.bottom(height_control),
+            vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = 1, rinse = False)
+        #Drop tip and update counter
+        p20.drop_tip()
+        tip_track['counts'][p20]+=1
+
+        #Time statistics
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+        ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+
+    ############################################################################
+    # STEP 4: Add Buffer
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        # Transfer parameters
+        start = datetime.now()
+        if not p20.hw_pipette['has_tip']:
+            pick_up(p20)
+        for d in destinations:
+            # Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_protk)
+            move_vol_multi(p20, reagent = ProtK, source = Control_I.reagent_reservoir,
+            dest = d.bottom(height_control), vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = pickup_height, rinse = False)
+        #Drop tip and update counter
+        p20.drop_tip()
+        tip_track['counts'][p20]+=1
+
+        #Time statistics
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+        ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
     # Export the time log to a tsv file
