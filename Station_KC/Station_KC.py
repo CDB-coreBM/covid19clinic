@@ -53,11 +53,11 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/data/log_times/'
+    folder_path = '/var/lib/jupyter/notebooks'
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/time_log.json'
+        file_path = folder_path + '/KFC_time_log.json'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -127,6 +127,8 @@ def run(ctx: protocol_api.ProtocolContext):
             height = (reagent.vol_well - aspirate_volume -
                       reagent.v_cono) / cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
+            if reagent.col==0:
+                reagent.unused_one=reagent.vol_well
             ctx.comment('Calculated height is ' + str(height))
             if height <= 0:
                 height = 0.2
@@ -183,7 +185,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ############################################
     # tempdeck
-    tempdeck = ctx.load_module('tempdeck', '3')
+    tempdeck = ctx.load_module('tempdeck', '4')
     # tempdeck.set_temperature(temperature)
 
 ##################################
@@ -247,7 +249,6 @@ def run(ctx: protocol_api.ProtocolContext):
 
             aspirate_volume=volume_mmix * len(dest) + extra_dispensal + 35
             [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, aspirate_volume)
-
             # source MMIX_reservoir[col_change]
             used_vol_temp = distribute_custom(
                 p300, volume_mmix, MMIX_reservoir[col_change], dest,
@@ -271,7 +272,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if STEPS[STEP]['Execute'] == True:
         # Transfer parameters
         start = datetime.now()
-        for s, d in zip(pcr_wells, samples):
+        for s, d in zip(samples,pcr_wells):
             p20.pick_up_tip()
             tip_track['counts'][p20]+=1
             p20.transfer(volume_sample, s, d, new_tip='never')
@@ -313,11 +314,10 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_button_light(0, 1, 0)
     ctx.comment('Finished! \nMove plate to PCR')
     total_used_vol = np.sum(used_vol)
-    total_needed_volume = total_used_vol + MMIX.unused_one + \
-        MMIX.unused_two + extra_dispensal * len(dests)
+    total_needed_volume = total_used_vol
     ctx.comment('Total Master Mix used volume is: ' + str(total_used_vol) + '\u03BCl.')
     ctx.comment('Needed Master Mix volume is ' +
-                format(int(total_needed_volume)) + '\u03BCl')
+                str(total_needed_volume + extra_dispensal + 35*2) +'\u03BCl')
     ctx.comment('Used Master Mix volumes per run are: ' + str(used_vol) + '\u03BCl.')
     ctx.comment('200 ul Used tips in total: ' + str(tip_track['counts'][p300]))
     ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
@@ -327,3 +327,5 @@ def run(ctx: protocol_api.ProtocolContext):
                 format(int(MMIX.unused_one)) + '\u03BCl.')
     ctx.comment('Master Mix Volume remaining in second tube is:' +
                 format(int(MMIX.unused_two)) + '\u03BCl.')
+    if ctx.is_simulating():
+        os.system('afplay /Users/covid19warriors/Downloads/lionking.mp3 ')
