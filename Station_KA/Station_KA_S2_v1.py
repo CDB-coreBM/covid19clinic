@@ -36,26 +36,12 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Mix beads'},
-        2: {'Execute': True, 'description': 'Transfer beads'},
-        3: {'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
-        4: {'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 900},  # 900
-        5: {'Execute': True, 'description': 'Remove supernatant'},
-        6: {'Execute': True, 'description': 'Add Isopropanol'},
-        7: {'Execute': True, 'description': 'Wait for 30s'},
-        8: {'Execute': True, 'description': 'Remove isopropanol'},
-        9: {'Execute': True, 'description': 'Wash with ethanol'},
-        10: {'Execute': True, 'description': 'Wait for 30s'},
-        11: {'Execute': True, 'description': 'Remove supernatant'},
-        12: {'Execute': True, 'description': 'Wash with ethanol'},
-        13: {'Execute': True, 'description': 'Wait 30s'},
-        14: {'Execute': True, 'description': 'Remove supernatant'},
-        15: {'Execute': True, 'description': 'Allow to dry', 'wait_time': 300},
-        16: {'Execute': True, 'description': 'Add water and LTA'},
-        17: {'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
-        18: {'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 300},  # 300
-        19: {'Execute': True, 'description': 'Transfer to final elution plate'}
+        1: {'Execute': True, 'description': '1: Transfer proteinase K (10ul)'},
+        2: {'Execute': True, 'description': '2: Transfer internal control (10ul)'},
+        3: {'Execute': True, 'description': '3: Transfer samples (300ul)'},
+        4: {'Execute': True, 'description': '4: Transfer binding (550ul)'}
     }
+
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
@@ -84,59 +70,49 @@ def run(ctx: protocol_api.ProtocolContext):
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
     # Reagents and their characteristics
-    Ethanol = Reagent(name='Ethanol',
-                      flow_rate_aspirate=0.5,
-                      flow_rate_dispense=1,
-                      rinse=True,
-                      reagent_reservoir_volume=38400,
-                      num_wells=4,  # num_Wells max is 4
-                      h_cono=1.95,
-                      v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
-                      tip_recycling='A1')
+    Buffer = Reagent(name = 'Buffer',
+                      flow_rate_aspirate = 0.5,
+                      flow_rate_dispense = 1,
+                      rinse = True,
+                      reagent_reservoir_volume = 38400,
+                      num_wells = 1,  # num_Wells max is 4
+                      h_cono = 1.95,
+                      v_fondo = 1.95 * multi_well_rack_area / 2,  # Prismatic
+                      tip_recycling = 'A1')
 
-    Beads = Reagent(name='Magnetic beads',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=1.5,
-                    rinse=True,
-                    reagent_reservoir_volume=29760,
-                    num_wells=4,
-                    h_cono=1.95,
-                    v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
-                    tip_recycling='A2')
+    ProtK = Reagent(name = 'Proteinase K',
+                       flow_rate_aspirate = 0.5,
+                       flow_rate_dispense = 1,
+                       rinse = True,
+                       reagent_reservoir_volume = 38400,
+                       num_wells = 2,  # num_Wells max is 4
+                       h_cono = 1.95,
+                       v_fondo = 1.95 * multi_well_rack_area / 2,  # Prismatic
+                       tip_recycling = 'A1')
 
-    Isopropanol = Reagent(name='Isopropanol',
-                          flow_rate_aspirate=1,
-                          flow_rate_dispense=1,
-                          rinse=True,
-                          reagent_reservoir_volume=14400,
-                          num_wells=2,  # num_Wells max is 2
-                          h_cono=1.95,
-                          v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
-                          tip_recycling='A3')
+    Control_I = Reagent(name = 'Internal Control',
+                     flow_rate_aspirate = 0.5,
+                     flow_rate_dispense = 1,
+                     rinse = True,
+                     reagent_reservoir_volume = 38400,
+                     num_wells = 2,  # num_Wells max is 4
+                     h_cono = 1.95,
+                     v_fondo = 1.95 * multi_well_rack_area / 2,  # Prismatic
+                     tip_recycling = 'A1')
 
-    Water = Reagent(name='Water',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=1,
-                    rinse=False,
-                    reagent_reservoir_volume=4800,
-                    num_wells=1,  # num_Wells max is 1
-                    h_cono=1.95,
-                    v_fondo=1.95 * multi_well_rack_area / 2)  # Prismatic
+    Samples = Reagent(name = 'Samples',
+                      flow_rate_aspirate = 0.5,
+                      flow_rate_dispense = 1,
+                      rinse = False,
+                      reagent_reservoir_volume = 800,
+                      num_wells = 24,  # num_cols comes from available columns
+                      h_cono = 4,
+                      v_fondo = 4 * math.pi * 4**3 / 3)  # Sphere
 
-    Elution = Reagent(name='Elution',
-                      flow_rate_aspirate=0.5,
-                      flow_rate_dispense=1,
-                      rinse=False,
-                      reagent_reservoir_volume=800,
-                      num_wells=num_cols,  # num_cols comes from available columns
-                      h_cono=4,
-                      v_fondo=4 * math.pi * 4**3 / 3)  # Sphere
-
-    Ethanol.vol_well = Ethanol.vol_well_original
-    Beads.vol_well = Beads.vol_well_original
-    Isopropanol.vol_well = Isopropanol.vol_well_original
-    Water.vol_well = Water.vol_well_original
-    Elution.vol_well = 350
+    Buffer.vol_well = Buffer.vol_well_original
+    ProtK.vol_well = ProtK.vol_well_original
+    Control_I.vol_well = Control_I.vol_well_original
+    Samples.vol_well = 700
 
     ##################
     # Custom functions
@@ -192,21 +168,21 @@ def run(ctx: protocol_api.ProtocolContext):
                        pickup_height, rinse):
         # Rinse before aspirating
         if rinse == True:
-            custom_mix(pipet, reagent, location=source, vol=vol,
-                       rounds=2, blow_out=True, mix_height=0)
+            custom_mix(pipet, reagent, location = source, vol = vol,
+                       rounds = 2, blow_out = True, mix_height = 0)
         # SOURCE
-        s = source.bottom(pickup_height).move(Point(x=x_offset))
+        s = source.bottom(pickup_height).move(Point(x = x_offset))
         pipet.aspirate(vol, s)  # aspirate liquid
         if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
-            pipet.aspirate(air_gap_vol, source.top(z=-2),
-                           rate=reagent.flow_rate_aspirate)  # air gap
+            pipet.aspirate(air_gap_vol, source.top(z = -2),
+                           rate = reagent.flow_rate_aspirate)  # air gap
         # GO TO DESTINATION
-        pipet.dispense(vol + air_gap_vol, dest.top(z=-2),
-                       rate=reagent.flow_rate_dispense)  # dispense all
-        pipet.blow_out(dest.top(z=-2))
+        pipet.dispense(vol + air_gap_vol, dest.top(z = -2),
+                       rate = reagent.flow_rate_dispense)  # dispense all
+        pipet.blow_out(dest.top(z = -2))
         if air_gap_vol != 0:
-            pipet.aspirate(air_gap_vol, dest.top(z=-2),
-                           rate=reagent.flow_rate_aspirate)  # air gap
+            pipet.aspirate(air_gap_vol, dest.top(z = -2),
+                           rate = reagent.flow_rate_aspirate)  # air gap
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -220,44 +196,52 @@ def run(ctx: protocol_api.ProtocolContext):
                 tip_track['counts'][pip] = 0
         pip.pick_up_tip()
 
-####################################
+    ####################################
     # load labware and modules
-    # 12 well rack
-    reagent_res = ctx.load_labware(
-        'nest_12_reservoir_15ml', '2', 'reagent deepwell plate 1')
 
-############################################
+    ####################################
+    # Load Sample racks
+    if NUM_SAMPLES<96:
+        rack_num=math.ceil(NUM_SAMPLES/24)
+        ctx.comment('Used source racks are '+str(rack_num))
+        samples_last_rack=NUM_SAMPLES-rack_num*24
+
+    source_racks = [ctx.load_labware(
+            'opentrons_24_tuberack_generic_2ml_screwcap', slot,
+            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['4','1','6','3'][:rack_num])
+        ]
+
+    ##################################
+    # Destination plate
+    dest_plate = ctx.load_labware(
+        'abgenestorage_96_wellplate_1200ul', '5', '96well destination plate')
+
+    ############################################
     # tempdeck
-    tempdeck = ctx.load_module('tempdeck', '3')
-    # tempdeck.set_temperature(temperature)
+    tempdeck = ctx.load_module('tempdeck', '7')
+    #tempdeck.set_temperature(temperature)
 
-##################################
-    # Elution plate - final plate, goes to C
-    elution_plate = tempdeck.load_labware(
-        'transparent_96_wellplate_250ul',
-        'cooled elution plate')
+    ##################################
+    # Cooled reagents in tempdeck
+    reagents = tempdeck.load_labware(
+        'bloquealuminio_24_screwcap_wellplate_1500ul',
+        'cooled reagent tubes')
 
-############################################
-    # Elution plate - comes from A
-    magdeck = ctx.load_module('magdeck', '6')
-    deepwell_plate = magdeck.load_labware(
-        'abgenestorage_96_wellplate_1200ul', 'ABGENE 1200ul 96 well sample plate')
-    magdeck.disengage()
+    ############################################
+    # Buffer reservoir
+    buffer_res = ctx.load_labware(
+        'nalgene_1_reservoir_300000ul', '9', 'buffer reservoir')
 
-####################################
-    # Waste reservoir
-    waste_reservoir = ctx.load_labware(
-        'nalgene_1_reservoir_300000ul', '9', 'waste reservoir')
-    waste = waste_reservoir.wells()[0]  # referenced as reservoir
 
-####################################
+    ####################################
     # Load tip_racks
-    tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-               for slot in ['5', '8', '11', '1', '4', '7', '10']]
-    # tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-    #    for slot in ['10']]
+    tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
+               for slot in ['2', '8']]
+    tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
+        for slot in ['10','11']]
 
-################################################################################
+
+    ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     Beads.reagent_reservoir = reagent_res.rows(
     )[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
@@ -266,14 +250,13 @@ def run(ctx: protocol_api.ProtocolContext):
     Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(
         6 + Ethanol.num_wells)]  # 1 row, 2 columns (from 7 to 10)
     # 1 row, 1 column (last one) full of water
-    Water.reagent_reservoir = reagent_res.rows()[0][-1]
+    Buffer.reagent_reservoir = buffer_res.rows()[0]
     work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
     final_destinations = elution_plate.rows()[0][:Elution.num_wells]
 
-    # pipettes. P1000 currently deactivated
-    m300 = ctx.load_instrument(
-        'p300_multi_gen2', 'right', tip_racks=tips300)  # Load multi pipette
-    # p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=tips1000) # load P1000 pipette
+    p20 = ctx.load_instrument(
+        'p20_single_gen2', mount='right', tip_racks=tips20)
+    p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=tips1000) # load P1000 pipette
 
     # used tip counter and set maximum tips available
     tip_track = {
