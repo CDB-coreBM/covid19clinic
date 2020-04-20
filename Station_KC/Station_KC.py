@@ -300,9 +300,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
     gpio.set_rail_lights(False)
-    time.sleep(1)
+    time.sleep(2)
     gpio.set_rail_lights(True)
-    os.system('mpg123 -f 14000 /var/lib/jupyter/notebooks/lionking.mp3')
+    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/lionking.mp3')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
@@ -311,8 +311,7 @@ def run(ctx: protocol_api.ProtocolContext):
         gpio.set_button_light(0, 0, 1)
         time.sleep(0.3)
     gpio.set_button_light(0, 1, 0)
-    ctx.comment(
-        'Finished! \nMove plate to PCR')
+    ctx.comment('Finished! \nMove plate to PCR')
     total_used_vol = np.sum(used_vol)
     total_needed_volume = total_used_vol + MMIX.unused_one + \
         MMIX.unused_two + extra_dispensal * len(dests)
