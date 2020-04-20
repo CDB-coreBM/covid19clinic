@@ -11,11 +11,11 @@ import csv
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station B Version 4',
+    'protocolName': 'S2 Station Kingfisher Version 1',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
-    'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
+    'description': 'Protocol for Kingfisher sample setup (A)'
 }
 
 #Defined variables
@@ -23,8 +23,6 @@ metadata = {
 NUM_SAMPLES = 96
 air_gap_vol = 15
 
-# mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
 temperature = 25
 D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
 # D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
@@ -61,6 +59,8 @@ def run(ctx: protocol_api.ProtocolContext):
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
+
+    #Folder and file_path for log time
     folder_path = '/data/log_times/'
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
@@ -219,17 +219,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 pip.reset_tipracks()
                 tip_track['counts'][pip] = 0
         pip.pick_up_tip()
-    ##########
-
-    def find_side(col):
-        '''
-        Detects if the current column has the magnet at its left or right side
-        '''
-        if col % 2 == 0:
-            side = -1  # left
-        else:
-            side = 1
-        return side
 
 ####################################
     # load labware and modules
@@ -861,7 +850,6 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
-    os.system('mpg123 -f -14000 lionking.mp3')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
