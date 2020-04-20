@@ -75,6 +75,8 @@ def run(ctx: protocol_api.ProtocolContext):
             self.h_cono = h_cono
             self.v_cono = v_fondo
             self.tip_recycling = tip_recycling
+            self.unused_one=0
+            self.unused_two=0
 
     # Reagents and their characteristics
     MMIX = Reagent(name='Master Mix',
@@ -92,7 +94,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       num_wells=num_cols,  # num_cols comes from available columns
                       h_cono=0,
                       v_fondo=0
-                      )  # Sphere
+                      )
 
 
     ##################
@@ -103,6 +105,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
                     '< needed volume ' + str(aspirate_volume) + ', is that okay?')
         if reagent.vol_well < aspirate_volume:
+            reagent.unused_one=reagent.vol_well
             ctx.comment('Next column should be picked')
             ctx.comment('Previous to change: ' + str(reagent.col))
             # column selector position; intialize to required number
@@ -193,7 +196,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Sample plate - comes from B
     source_plate = ctx.load_labware(
         'roche_96_wellplate_100ul', '1',
-        'Chilled RNA elution plate 2for PCR ')
+        'Chilled RNA elution plate for PCR ')
     samples = source_plate.wells()[:NUM_SAMPLES]
 
 ##################################
@@ -227,8 +230,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # used tip counter and set maximum tips available
     tip_track = {
-        'counts': {p300: 0},
-        'maxes': {p300: 10000}
+        'counts': {p300: 0,p20: 0}
     }
     # , p1000: len(tips1000)*96}
 
@@ -237,10 +239,12 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
+        start = datetime.now()
         p300.pick_up_tip()
+        tip_track['counts'][p300]+=1
         used_vol=[]
         for dest in dests:
-            start = datetime.now()
+
             aspirate_volume=volume_mmix * len(dest) + extra_dispensal + 35
             [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, aspirate_volume)
 
@@ -252,7 +256,7 @@ def run(ctx: protocol_api.ProtocolContext):
             used_vol.append(used_vol_temp)
 
         p300.drop_tip()
-        unused_volume_two = MMIX.vol_well
+        MMIX.unused_two = MMIX.vol_well
 
         end = datetime.now()
         time_taken = (end - start)
@@ -269,6 +273,7 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         for s, d in zip(pcr_wells, samples):
             p20.pick_up_tip()
+            tip_track['counts'][p20]+=1
             p20.transfer(volume_sample, s, d, new_tip='never')
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
@@ -278,8 +283,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-
-        ctx.comment('Finished!')
 
 
     # Export the time log to a tsv file
@@ -310,5 +313,18 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_button_light(0, 1, 0)
     ctx.comment(
         'Finished! \nMove plate to PCR')
-    ctx.comment('Used tips in total: ' + str(tip_track['counts'][p300]))
-    ctx.comment('Used racks in total: ' + str(tip_track['counts'][p300] / 96))
+    total_used_vol = np.sum(used_vol)
+    total_needed_volume = total_used_vol + MMIX.unused_one + \
+        MMIX.unused_two + extra_dispensal * len(dests)
+    ctx.comment('Total Master Mix used volume is: ' + str(total_used_vol) + '\u03BCl.')
+    ctx.comment('Needed Master Mix volume is ' +
+                format(int(total_needed_volume)) + '\u03BCl')
+    ctx.comment('Used Master Mix volumes per run are: ' + str(used_vol) + '\u03BCl.')
+    ctx.comment('200 ul Used tips in total: ' + str(tip_track['counts'][p300]))
+    ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
+    ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][p20]))
+    ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][p20] / 96))
+    ctx.comment('Master Mix Volume remaining in first tube is:' +
+                format(int(MMIX.unused_one)) + '\u03BCl.')
+    ctx.comment('Master Mix Volume remaining in second tube is:' +
+                format(int(MMIX.unused_two)) + '\u03BCl.')
