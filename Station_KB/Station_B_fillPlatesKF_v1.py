@@ -23,15 +23,7 @@ metadata = {
 NUM_SAMPLES = 96
 air_gap_vol = 15
 
-## mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-#mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
-temperature = 25
-D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
-#D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
 multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
-
-#Calculated variables. No caldria!!!!!
-deepwell_cross_section_area = math.pi * D_deepwell**2 / 4  # deepwell cilinder cross secion area
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 
@@ -46,13 +38,15 @@ def run(ctx: protocol_api.ProtocolContext):
         4: {'Execute': True, 'description': '4: Add 50 ul Elution Buffer'},
 
     }
+
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
     folder_path = '/data/log_times/'
-    if not os.path.isdir(folder_path):
-        os.mkdir(folder_path)
-    file_path = folder_path + '/time_log.json'
+    if not ctx.is_simulating():
+        if not os.path.isdir(folder_path):
+            os.mkdir(folder_path)
+        file_path = folder_path + '/time_log.json'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -81,26 +75,6 @@ def run(ctx: protocol_api.ProtocolContext):
                       h_cono=0,
                       v_fondo=0)  # Flat surface
 
-    #Beads = Reagent(name='Magnetic beads',
-                    #flow_rate_aspirate=1,
-                    #flow_rate_dispense=1.5,
-                    #rinse=True,
-                    #reagent_reservoir_volume=29760,
-                    #num_wells=4,
-                    #h_cono=1.95,
-                    #v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
-                    #tip_recycling='A2')
-
-    #Isopropanol = Reagent(name='Isopropanol',
-                          #flow_rate_aspirate=1,
-                          #flow_rate_dispense=1,
-                          #rinse=True,
-                          #reagent_reservoir_volume=14400,
-                          #num_wells=2,  # num_Wells max is 2
-                          #h_cono=1.95,
-                          #v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
-                          #tip_recycling='A3')
-
     WashBuffer = Reagent(name='Wash Buffer',
                     flow_rate_aspirate=0.75,
                     flow_rate_dispense=1,
@@ -109,24 +83,6 @@ def run(ctx: protocol_api.ProtocolContext):
                     num_wells=1,  # num_Wells max is 4
                     h_cono=0,
                     v_fondo=0)  # Flat surface
-
-    #Water = Reagent(name='Water',
-                    #flow_rate_aspirate=1,
-                    #flow_rate_dispense=1,
-                    #rinse=False,
-                    #reagent_reservoir_volume=4800,
-                    #num_wells=1,  # num_Wells max is 1
-                    #h_cono=1.95,
-                    #v_fondo=1.95 * multi_well_rack_area / 2)  # Prismatic
-
-    #Elution = Reagent(name='Elution',
-                      #flow_rate_aspirate=0.5,
-                      #flow_rate_dispense=1,
-                      #rinse=False,
-                      #reagent_reservoir_volume=800,
-                      #num_wells=num_cols,  # num_cols comes from available columns
-                      #h_cono=4,
-                      #v_fondo=4 * math.pi * 4**3 / 3)  # Sphere
 
     ElutionBuffer = Reagent(name='Elution Buffer',
                     flow_rate_aspirate=1,
@@ -140,10 +96,6 @@ def run(ctx: protocol_api.ProtocolContext):
     Ethanol.vol_well = Ethanol.vol_well_original
     WashBuffer.vol_well = WashBuffer.vol_well_original
     ElutionBuffer.vol_well = ElutionBuffer.vol_well_original
-    #Beads.vol_well = Beads.vol_well_original
-    #Isopropanol.vol_well = Isopropanol.vol_well_original
-    #Water.vol_well = Water.vol_well_original
-    #Elution.vol_well = 350
 
     ##################
     # Custom functions
@@ -238,29 +190,14 @@ def run(ctx: protocol_api.ProtocolContext):
             side = 1
         return side
 
+
 ####################################
     # load labware and modules
+
     # 12 well rack
+    ####################################
     reagent_res = ctx.load_labware(
         'nest_12_reservoir_15ml', '11', 'Reservoir 12 channel, column 1')
-
-############################################
-    # tempdeck
-    #tempdeck = ctx.load_module('tempdeck', '3')
-    # tempdeck.set_temperature(temperature)
-
-##################################
-    # Elution plate - final plate, goes to C
-    #elution_plate = tempdeck.load_labware(
-        #'transparent_96_wellplate_250ul',
-        #'cooled elution plate')
-
-############################################
-    # Elution plate - comes from A
-    #magdeck = ctx.load_module('magdeck', '6')
-    #deepwell_plate = magdeck.load_labware(
-        #'abgenestorage_96_wellplate_1200ul', 'ABGENE 1200ul 96 well sample plate')
-    #magdeck.disengage()
 
     # Wash Buffer 1000ul Deepwell plate
 ############################################
@@ -306,15 +243,6 @@ def run(ctx: protocol_api.ProtocolContext):
     Ethanol.reagent_reservoir = Ethanol_reservoir.wells()[0]
     ElutionBuffer.reagent_reservoir = reagent_res.rows()[0][0]
 
-    #Beads.reagent_reservoir = reagent_res.rows(
-    #)[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
-    #Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(
-    #    4 + Isopropanol.num_wells)]  # 1 row, 2 columns (from 5 to 6)
-    #Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(
-    #    6 + Ethanol.num_wells)]  # 1 row, 2 columns (from 7 to 10)
-    # 1 row, 1 column (last one) full of water
-    #Water.reagent_reservoir = reagent_res.rows()[0][-1]
-
     #columns in destination plates to be filled depending the number of samples
     ethanol1000_destination = Ethanol_1000ul_plate.rows()[0][:num_cols]
     ethanol500_destination = Ethanol_500ul_plate.rows()[0][:num_cols]
@@ -324,14 +252,13 @@ def run(ctx: protocol_api.ProtocolContext):
     # pipettes. P1000 currently deactivated
     m300 = ctx.load_instrument(
         'p300_multi_gen2', 'right', tip_racks=tips300)  # Load multi pipette
-    # p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=tips1000) # load P1000 pipette
 
     # used tip counter and set maximum tips available
     tip_track = {
         'counts': {m300: 0},
         'maxes': {m300: 10000}
     }
-    # , p1000: len(tips1000)*96}
+
 
     ############################################################################
     # STEP 1 Filling with WashBuffer
@@ -348,17 +275,11 @@ def run(ctx: protocol_api.ProtocolContext):
         rinse = True  # Only first time
 
         ########
-        # isoprop washes
+        # Wash buffer dispense
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
             for transfer_vol in wash_buffer_vol:
-                # Calculate pickup_height based on remaining volume and shape of container
-                #[pickup_height, change_col] = calc_height(
-                #    WashBuffer, multi_well_rack_area, transfer_vol * 8)
-                #ctx.comment('Aspirate from Reservoir column: ' +
-                #            str(Isopropanol.col))
-                #ctx.comment('Pickup height is ' + str(pickup_height))
                 if i != 0:
                     rinse = False
                 move_vol_multi(m300, reagent=WashBuffer, source=WashBuffer.reagent_reservoir,
@@ -388,17 +309,11 @@ def run(ctx: protocol_api.ProtocolContext):
         rinse = True  # Only first time
 
         ########
-        # isoprop washes
+        # Ethanol dispense
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
             for transfer_vol in wash_buffer_vol:
-                # Calculate pickup_height based on remaining volume and shape of container
-                #[pickup_height, change_col] = calc_height(
-                #    WashBuffer, multi_well_rack_area, transfer_vol * 8)
-                #ctx.comment('Aspirate from Reservoir column: ' +
-                #            str(Isopropanol.col))
-                #ctx.comment('Pickup height is ' + str(pickup_height))
                 if i != 0:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir,
@@ -429,17 +344,11 @@ def run(ctx: protocol_api.ProtocolContext):
         rinse = True  # Only first time
 
         ########
-        # isoprop washes
+        # Ethanol dispense
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
             for transfer_vol in wash_buffer_vol:
-                # Calculate pickup_height based on remaining volume and shape of container
-                #[pickup_height, change_col] = calc_height(
-                #    WashBuffer, multi_well_rack_area, transfer_vol * 8)
-                #ctx.comment('Aspirate from Reservoir column: ' +
-                #            str(Isopropanol.col))
-                #ctx.comment('Pickup height is ' + str(pickup_height))
                 if i != 0:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir,
@@ -464,7 +373,7 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
-        # Water elution
+        # Elution buffer
         ElutionBuffer_vol = [50]
         air_gap_vol_elutionbuffer = 10
         x_offset = 0
@@ -486,10 +395,6 @@ def run(ctx: protocol_api.ProtocolContext):
                                air_gap_vol=air_gap_vol_elutionbuffer, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=False)
 
-            #ctx.comment('Mixing sample with Water and LTA')
-            # Mixing
-            #custom_mix(m300, Elution, work_destinations[i], vol=40, rounds=4,
-            #           blow_out=True, mix_height=0)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
