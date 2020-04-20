@@ -12,30 +12,28 @@ metadata = {
 }
 
 def generate_source_table(source):
+    '''
+    Concatenate the wells frome the different origin racks
+    '''
     for rack_number in range(len(source)):
-        if rack_number==0:
-            s=source[rack_number].wells()
+        if rack_number == 0:
+            s = source[rack_number].wells()
         else:
-            s=s+source[rack_number].wells()
+            s = s + source[rack_number].wells()
     return s
 
 # Distribute control liquid in deepwell
 def distribute_custom(pipette, dispense_volume, source, size_transfer, destination, pickup_height, extra_dispensal):
     pipette.aspirate((size_transfer*dispense_volume)+extra_dispensal, source.bottom(pickup_height))
-    #pipette.move_to(source.top(z=0))
-    pipette.touch_tip(speed=20, v_offset=-3,radius=1.05)
-    #pipette.aspirate(5) # aspirate some air
+    pipette.touch_tip(speed = 20, v_offset = -3, radius = 1.05)
     pipette.dispense(dispense_volume, destination.bottom(2))
-    ### AÑADIR MIX!
-
     pipette.move_to(destination.top(z=5))
     pipette.blow_out()
-    #pipette.move_to(destination.top(z=-8))
     pipette.touch_tip(speed=20,radius=1.05)
 
 # Function to fill the 96 well rack in quadrants
-def fill_96_rack(dests, src,pipette,bool,SAMPLE_VOLUME,CONTROL_VOLUME,air_gap_volume):
-
+def fill_96_rack(dests, src, pipette, bool, SAMPLE_VOLUME, CONTROL_VOLUME,
+air_gap_volume):
     for s, d in zip(src, dests):
         pipette.pick_up_tip()
         pipette.aspirate(SAMPLE_VOLUME,s.bottom(1))
@@ -64,15 +62,6 @@ def fill_96_rack(dests, src,pipette,bool,SAMPLE_VOLUME,CONTROL_VOLUME,air_gap_vo
         pipette.default_speed=400
         pipette.flow_rate.aspirate =500
         pipette.drop_tip(home_after=False)
-#protocol.max_speeds['X'] =50 # limit x axis to 50 mm/s
-#del protocol.max_speeds['X'] # reset x axis limit
-#protocol.max_speeds['A'] =10 # limit a axis to 10 mm/s
-#protocol.max_speeds['A'] = None # reset a axis limit
-
-#X(left-and-right gantry motion),
-#Y(forward-and-back gantry motion),
-#Z(left pipette up-and-downmotion),
-#A(right pipette up-and-down motion)
 
 ##########################################################################
 NUM_SAMPLES = 3
@@ -85,7 +74,7 @@ volume_epp = 1500
 extra_dispensal = 0
 size_transfer = 1
 air_gap_volume = 15
-cross_section_area = 63.61 ## Ojo que es cónico en su parte final y haya que modificar esta función
+cross_section_area = 63.61 # Ojo que es cónico en su parte final y haya que modificar esta función
 ##########################################################################
 
 def run(ctx: protocol_api.ProtocolContext):
@@ -117,21 +106,23 @@ def run(ctx: protocol_api.ProtocolContext):
         'abgenestorage_96_wellplate_1200ul', '5',
         'ABGENE STORAGE 96 Well Plate 1200 µL')
 
-# Load tipracks
-##############
+    # Load tipracks
+    ##############
     tiprack = ctx.load_labware(
         'opentrons_96_filtertiprack_20ul', '11', '20µl tiprack')
     tips1000 = ctx.load_labware(
         'opentrons_96_filtertiprack_1000ul', '10', '1000µl tiprack')
 
-# Load pipettes
-##############
+    # Load pipettes
+    ##############
     p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=[tips1000])
+
     # setup samples and destinations
     sources=generate_source_table(source_racks)
     sources=sources[:NUM_SAMPLES]
     destinations=[well for col in dest_plate.columns() for well in col][:NUM_SAMPLES]
-##########################################################################
+
+    ##########################################################################
     #### NOW DISTRIBUTE THE CONTROL SRC #############
     # transfer with p20 from control source with the CUSTOM functions
     if TRANSFER_CONTROL_F_custom == True:
@@ -145,8 +136,9 @@ def run(ctx: protocol_api.ProtocolContext):
                 #Update pickup_height according to volume left
             pickup_height=(volume_epp/cross_section_area)
             p20.drop_tip()
-##########################################################################
-#### NOW MOVE THE SAMPLE TO DEEPEWELL RACK #############
+
+    ##########################################################################
+    #### NOW MOVE THE SAMPLE TO DEEPEWELL RACK #############
     # Transfer with p1000 from source rack to each of the well quadrants
     if TRANSFER_SAMPLES_F == True:
         fill_96_rack(destinations,sources,p1000,mix_bool,SAMPLE_VOLUME,CONTROL_VOLUME,air_gap_volume)
