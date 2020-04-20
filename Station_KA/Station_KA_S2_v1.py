@@ -36,10 +36,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': '1: Transfer proteinase K (10ul)'},
-        2: {'Execute': True, 'description': '2: Transfer internal control (10ul)'},
-        3: {'Execute': True, 'description': '3: Transfer samples (300ul)'},
-        4: {'Execute': True, 'description': '4: Transfer binding (550ul)'}
+        1: {'Execute': True, 'description': '1: Add proteinase K (10ul)'},
+        2: {'Execute': True, 'description': '2: Add internal control (10ul)'},
+        3: {'Execute': True, 'description': '3: Add samples (300ul)'},
+        4: {'Execute': True, 'description': '4: Add binding buffer (550ul)'}
     }
 
     for s in STEPS:  # Create an empty wait_time
