@@ -62,9 +62,10 @@ def run(ctx: protocol_api.ProtocolContext):
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
     folder_path = '/data/log_times/'
-    if not os.path.isdir(folder_path):
-        os.mkdir(folder_path)
-    file_path = folder_path + '/time_log.json'
+    if not ctx.is_simulating():
+        if not os.path.isdir(folder_path):
+            os.mkdir(folder_path)
+        file_path = folder_path + '/time_log.json'
 
     # Define Reagents as objects with their properties
     class Reagent:
