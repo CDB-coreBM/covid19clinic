@@ -82,9 +82,8 @@ def run(ctx: protocol_api.ProtocolContext):
                       rinse = False,
                       reagent_reservoir_volume = 1500,
                       num_wells = 1,  # num_Wells max is 4
-                      h_cono = 1.95,
-                      v_fondo = 1.95 * multi_well_rack_area / 2,  # Prismatic
-                      tip_recycling = 'A1')
+                      h_cono = 0,
+                      v_fondo = 0)
 
     ProtK = Reagent(name = 'Proteinase K',
                        flow_rate_aspirate = 0.5,
@@ -93,8 +92,7 @@ def run(ctx: protocol_api.ProtocolContext):
                        reagent_reservoir_volume = 1500,
                        num_wells = 1,  # num_Wells max is 4
                        h_cono = (volume_cone * 3 / area_section_screwcap),
-                       v_fondo = 50,
-                       tip_recycling = 'A1')
+                       v_fondo = 50)
 
     Control_I = Reagent(name = 'Internal Control',
                      flow_rate_aspirate = 0.5,
@@ -103,8 +101,7 @@ def run(ctx: protocol_api.ProtocolContext):
                      reagent_reservoir_volume = 38400,
                      num_wells = 1,  # num_Wells max is 4
                      h_cono = (volume_cone * 3 / area_section_screwcap),
-                     v_fondo = 50,
-                     tip_recycling = 'A1')
+                     v_fondo = 50)
 
     Samples = Reagent(name = 'Samples',
                       flow_rate_aspirate = 0.5,
@@ -182,7 +179,7 @@ def run(ctx: protocol_api.ProtocolContext):
         return height, col_change
 
     def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                       pickup_height, rinse):
+                       pickup_height, drop_height, rinse):
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location = source, vol = vol,
@@ -194,6 +191,10 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.aspirate(air_gap_vol, source.top(z = -2),
                            rate = reagent.flow_rate_aspirate)  # air gap
         # GO TO DESTINATION
+        if drop_height!=0:
+            drop=dest.bottom(z = drop_height)
+        else:
+            drop=dest.top(z = -2)
         pipet.dispense(vol + air_gap_vol, dest.top(z = -2),
                        rate = reagent.flow_rate_dispense)  # dispense all
         pipet.blow_out(dest.top(z = -2))
@@ -219,10 +220,11 @@ def run(ctx: protocol_api.ProtocolContext):
     ####################################
     # Load Sample racks
     if NUM_SAMPLES<96:
-        rack_num=math.ceil(NUM_SAMPLES/24)
+        rack_num = math.ceil(NUM_SAMPLES/24)
         ctx.comment('Used source racks are '+str(rack_num))
         samples_last_rack=NUM_SAMPLES-rack_num*24
-
+    else:
+        rack_num=4
     source_racks = [ctx.load_labware(
             'opentrons_24_tuberack_generic_2ml_screwcap', slot,
             'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['4','1','6','3'][:rack_num])
@@ -294,7 +296,7 @@ def run(ctx: protocol_api.ProtocolContext):
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(ProtK, screwcap_cross_section_area, volume_protk)
             move_vol_multi(p20, reagent = ProtK, source = ProtK.reagent_reservoir,
-            dest = d.bottom(height_protk), vol = volume_protk, air_gap_vol = air_gap_vol, x_offset = 0,
+            dest = d, drop_height = height_protk, vol = volume_protk, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = pickup_height, rinse = False)
         #Drop tip and update counter
         p20.drop_tip()
@@ -324,8 +326,8 @@ def run(ctx: protocol_api.ProtocolContext):
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_protk)
             move_vol_multi(p20, reagent = ProtK, source = Control_I.reagent_reservoir,
-            dest = d.bottom(height_control), vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
-                   pickup_height = pickup_height, rinse = False)
+            dest = d, vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = pickup_height, drop_height = height_control, rinse = False)
         #Drop tip and update counter
         p20.drop_tip()
         tip_track['counts'][p20]+=1
@@ -347,15 +349,15 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        if not p300.hw_pipette['has_tip']:
-            pick_up(p300)
+        if not p1000.hw_pipette['has_tip']:
+            pick_up(p1000)
         for s, d in zip(sample_sources, destinations):
-            move_vol_multi(p20, reagent = ProtK, source = s, dest = d.bottom(height_control),
+            move_vol_multi(p1000, reagent = ProtK, source = s, dest = d,
             vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
-                   pickup_height = 1, rinse = False)
-        #Drop tip and update counter
-        p20.drop_tip()
-        tip_track['counts'][p20]+=1
+                   pickup_height = 1, drop_height = 0, rinse = False)
+            #Drop tip and update counter
+            p1000.drop_tip()
+            tip_track['counts'][p1000]+=1
 
         #Time statistics
         end = datetime.now()
@@ -375,17 +377,15 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        if not p20.hw_pipette['has_tip']:
-            pick_up(p20)
+        if not p1000.hw_pipette['has_tip']:
+            pick_up(p1000)
         for d in destinations:
-            # Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_protk)
-            move_vol_multi(p20, reagent = ProtK, source = Control_I.reagent_reservoir,
-            dest = d.bottom(height_control), vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
-                   pickup_height = pickup_height, rinse = False)
+            move_vol_multi(p1000, reagent = Buffer, source = Buffer.reagent_reservoir, dest = d,
+            vol = volume_buffer, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = 1, drop_height = 0, rinse = False)
         #Drop tip and update counter
-        p20.drop_tip()
-        tip_track['counts'][p20]+=1
+        p1000.drop_tip()
+        tip_track['counts'][p1000]+=1
 
         #Time statistics
         end = datetime.now()
@@ -418,5 +418,7 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_button_light(0, 1, 0)
     ctx.comment(
         'Finished! \nMove deepwell plate (slot 5) to Station C for MMIX addition and qPCR preparation.')
-    ctx.comment('Used tips in total: ' + str(tip_track['counts'][m300]))
-    ctx.comment('Used racks in total: ' + str(tip_track['counts'][m300] / 96))
+    ctx.comment('Used p1000 tips in total: ' + str(tip_track['counts'][p1000]))
+    ctx.comment('Used p1000 racks in total: ' + str(tip_track['counts'][p1000] / 96))
+    ctx.comment('Used p20 tips in total: ' + str(tip_track['counts'][p20]))
+    ctx.comment('Used p20 racks in total: ' + str(tip_track['counts'][p20] / 96))
