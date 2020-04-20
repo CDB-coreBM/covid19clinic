@@ -48,6 +48,7 @@ def run(ctx: protocol_api.ProtocolContext):
         1: {'Execute': True, 'description': 'Transfer MMIX'},
         2: {'Execute': True, 'description': 'Transfer elution'}
     }
+
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
