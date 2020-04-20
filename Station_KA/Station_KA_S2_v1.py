@@ -23,6 +23,12 @@ metadata = {
 NUM_SAMPLES = 96
 air_gap_vol = 15
 
+volume_protk = 10
+volume_buffer = 550
+volume_control = 10
+height_protk = 10
+height_control = 20
+
 temperature = 25
 D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
 # D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
@@ -214,7 +220,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ##################################
     # Destination plate
     dest_plate = ctx.load_labware(
-        'abgenestorage_96_wellplate_1200ul', '5', '96well destination plate')
+        'kf_96_wellplate_2400ul', '5', 'KF 96well destination plate')
 
     ############################################
     # tempdeck
@@ -243,16 +249,11 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    Beads.reagent_reservoir = reagent_res.rows(
-    )[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
-    Isopropanol.reagent_reservoir = reagent_res.rows()[0][4:(
-        4 + Isopropanol.num_wells)]  # 1 row, 2 columns (from 5 to 6)
-    Ethanol.reagent_reservoir = reagent_res.rows()[0][6:(
-        6 + Ethanol.num_wells)]  # 1 row, 2 columns (from 7 to 10)
-    # 1 row, 1 column (last one) full of water
-    Buffer.reagent_reservoir = buffer_res.rows()[0]
-    work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
-    final_destinations = elution_plate.rows()[0][:Elution.num_wells]
+
+    Buffer.reagent_reservoir = buffer_res.wells()[0]
+    Control_I.reagent_reservoir = reagents.wells()[0]
+    ProtK.reagent_reservoir = reagents.wells()[4]
+    destinations = dest_plate.wells()[:NUM_SAMPLES]
 
     p20 = ctx.load_instrument(
         'p20_single_gen2', mount='right', tip_racks=tips20)
@@ -260,559 +261,45 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # used tip counter and set maximum tips available
     tip_track = {
-        'counts': {m300: 0},
-        'maxes': {m300: 10000}
+        'counts': {p20: 0, p1000: 0},
+        'maxes': {p20: len(tips20)*96, p1000: len(tips1000)*96}
     }
-    # , p1000: len(tips1000)*96}
 
     ############################################################################
-    # STEP 1: PREMIX BEADS
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        if not m300.hw_pipette['has_tip']:
-            pick_up(m300)  # These tips are reused in the first transfer of beads
-            ctx.comment('Tip picked up')
-        ctx.comment('Mixing ' + Beads.name)
-
-        # Mixing
-        custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol=180,
-                   rounds=10, blow_out=True, mix_height=0)
-        ctx.comment('Finished premixing!')
-        ctx.comment('Now, reagents will be transferred to deepwell plate.')
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 2: TRANSFER BEADS
+    # STEP 1: Add proteinase K
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
         # Transfer parameters
         start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        beads_transfer_vol = [155, 155]  # Two rounds of 155
-        x_offset = 0
-        rinse = True
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for j, transfer_vol in enumerate(beads_transfer_vol):
-                # Calculate pickup_height based on remaining volume and shape of container
-                [pickup_height, change_col] = calc_height(
-                    Beads, multi_well_rack_area, transfer_vol * 8)
-                if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
-                    ctx.comment(
-                        'Mixing new reservoir column: ' + str(Beads.col))
-                    custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                               vol=180, rounds=10, blow_out=True, mix_height=0)
-                ctx.comment(
-                    'Aspirate from reservoir column: ' + str(Beads.col))
-                ctx.comment('Pickup height is ' + str(pickup_height))
-                if j != 0:
-                    rinse = False
-                move_vol_multi(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
-                               dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=rinse)
-
-            ctx.comment('Mixing sample with beads ')
-            custom_mix(m300, Beads, location=work_destinations[i], vol=180,
-                       rounds=4, blow_out=True, mix_height=16)
-            m300.drop_tip(home_after=False)
-            # m300.return_tip()
-            tip_track['counts'][m300] += 8
+        for d in destinations:
+            p20.pick_up_tip()
+            tip_track['counts'][p20]+=1
+            p20.transfer(volume_protk, ProtK.reagent_reservoir, d, new_tip='never')
+            p20.mix(1, 10, d)
+            p20.aspirate(5, d.bottom(height_protk))
+        p20.drop_tip()
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-        ctx.comment('Now incubation will start ')
 
     ############################################################################
-    # STEP 3 INCUBATE WITHOUT MAGNET
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        # incubate off and on magnet
-        magdeck.disengage()
-        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating OFF magnet for ' +
-                  format(STEPS[STEP]['wait_time']) + ' seconds.')  # minutes=2
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 4 INCUBATE WITH MAGNET
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        magdeck.engage(height=mag_height)
-        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating ON magnet for ' +
-                  format(STEPS[STEP]['wait_time']) + ' seconds.')  # minutes=2
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 5 REMOVE SUPERNATANT
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        # remove supernatant -> height calculation can be omitted and referred to bottom!
-        supernatant_vol = [160, 160, 160, 160]
-        x_offset_rs = 2
-
-        for i in range(num_cols):
-            x_offset = find_side(i) * x_offset_rs
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in supernatant_vol:
-                # Pickup_height is fixed here
-                pickup_height = 0.5
-                ctx.comment('Aspirate from deep well column: ' + str(i + 1))
-                ctx.comment('Pickup height is ' +
-                            str(pickup_height) + ' (fixed)')
-                move_vol_multi(m300, reagent=Elution, source=work_destinations[i],
-                               dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=False)
-            m300.drop_tip(home_after=True)
-            tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 6 Washing 1 Isopropanol
+    # STEP 2: Add Internal Control
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
+        # Transfer parameters
         start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        isoprop_wash_vol = [150]
-        x_offset = 0
-        rinse = True  # Only first time
-
-        ########
-        # isoprop washes
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in isoprop_wash_vol:
-                # Calculate pickup_height based on remaining volume and shape of container
-                [pickup_height, change_col] = calc_height(
-                    Isopropanol, multi_well_rack_area, transfer_vol * 8)
-                ctx.comment('Aspirate from Reservoir column: ' +
-                            str(Isopropanol.col))
-                ctx.comment('Pickup height is ' + str(pickup_height))
-                if i != 0:
-                    rinse = False
-                move_vol_multi(m300, reagent=Isopropanol, source=Isopropanol.reagent_reservoir[Isopropanol.col],
-                               dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=rinse)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 7 WAIT FOR 30s-1'
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        ctx.delay(seconds=30, msg='Wait for 30 seconds.')
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ####################################################################
-    # STEP 8 REMOVE ISOPROPANOL (supernatant)
-    # remove supernatant -> height calculation can be omitted and referred to bottom!
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        supernatant_vol = [150]
-        x_offset_rs = 2
-
-        for i in range(num_cols):
-            x_offset = find_side(i) * x_offset_rs
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in supernatant_vol:
-                # Pickup_height is fixed here
-                pickup_height = 0.1
-                ctx.comment('Aspirate from deep well column: ' + str(i + 1))
-                ctx.comment('Pickup height is ' +
-                            str(pickup_height) + ' (fixed)')
-                move_vol_multi(m300, reagent=Elution, source=work_destinations[i],
-                               dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=False)
-            m300.drop_tip(home_after=True)
-            tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 9 Washing 1 ethanol
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        ethanol_wash_vol = [100, 100]
-        x_offset = 0
-        # WASH 2 TIMES
-        ########
-        # 70% EtOH washes
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in ethanol_wash_vol:
-                # Calculate pickup_height based on remaining volume and shape of container
-                [pickup_height, change_col] = calc_height(
-                    Ethanol, multi_well_rack_area, transfer_vol * 8)
-                ctx.comment('Aspirate from Reservoir column: ' +
-                            str(Ethanol.col))
-                ctx.comment('Pickup height is ' + str(pickup_height))
-                if i != 0:
-                    rinse = False
-                move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir[Ethanol.col],
-                               dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=rinse)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-    ############################################################################
-    # STEP 10 WAIT FOR 30s-1'
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        ctx.delay(seconds=30, msg='Wait for 30 seconds.')
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ####################################################################
-    # STEP 11 REMOVE SUPERNATANT
-    # remove supernatant -> height calculation can be omitted and referred to bottom!
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        supernatant_vol = [100, 100]
-        x_offset_rs = 2
-
-        for i in range(num_cols):
-            x_offset = find_side(i) * x_offset_rs
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in supernatant_vol:
-                # Pickup_height is fixed here
-                pickup_height = 0.1
-                ctx.comment('Aspirate from deep well column: ' + str(i + 1))
-                ctx.comment('Pickup height is ' +
-                            str(pickup_height) + ' (fixed)')
-                move_vol_multi(m300, reagent=Elution, source=work_destinations[i],
-                               dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=False)
-            m300.drop_tip(home_after=True)
-            tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 12 Washing 2
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        ethanol_wash_vol = [100, 100]
-        x_offset = 0
-        # WASH 2 TIMES
-        ########
-        # 70% EtOH washes
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for j, transfer_vol in enumerate(ethanol_wash_vol):
-                # Calculate pickup_height based on remaining volume and shape of container
-                [pickup_height, change_col] = calc_height(
-                    Ethanol, multi_well_rack_area, transfer_vol * 8)
-                ctx.comment('Aspirate from Reservoir column: ' +
-                            str(Ethanol.col))
-                ctx.comment('Pickup height is ' + str(pickup_height))
-                if j != 0:
-                    rinse = False
-                move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir[Ethanol.col],
-                               dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=rinse)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 13 WAIT FOR 30s-1'
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        ctx.delay(seconds=30, msg='Incubating for 30 seconds.')
-
-        start_timer = timer()
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ####################################################################
-    # STEP 14 REMOVE SUPERNATANT AGAIN
-    # remove supernatant -> height calculation can be omitted and referred to bottom!
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        supernatant_vol = [100, 100, 40]
-        x_offset_rs = 2
-
-        for i in range(num_cols):
-            x_offset = find_side(i) * x_offset_rs
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in supernatant_vol:
-                # Pickup_height is fixed here
-                pickup_height = 0.1
-                ctx.comment('Aspirate from deep well column: ' + str(i + 1))
-                ctx.comment('Pickup height is ' + str(pickup_height))
-                move_vol_multi(m300, reagent=Elution, source=work_destinations[i],
-                               dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=False)
-            m300.drop_tip(home_after=True)
-            tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ####################################################################
-    # STEP 15 DRY
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        m300.reset_tipracks()
-        ctx.comment('CAMBIAR TIPRACKS!')
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Airdrying beads')
-        magdeck.disengage()
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 16 Transfer water
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        # Water elution
-        water_wash_vol = [50]
-        air_gap_vol_water = 10
-        x_offset = 0
-
-        ########
-        # Water or elution buffer
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in water_wash_vol:
-                # Calculate pickup_height based on remaining volume and shape of container
-                [pickup_height, change_col] = calc_height(
-                    Water, multi_well_rack_area, transfer_vol * 8)
-                ctx.comment(
-                    'Aspirate from Reservoir column: ' + str(Water.col))
-                ctx.comment('Pickup height is ' + str(pickup_height))
-                move_vol_multi(m300, reagent=Water, source=Water.reagent_reservoir,
-                               dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol_water, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=False)
-
-            ctx.comment('Mixing sample with Water and LTA')
-            # Mixing
-            custom_mix(m300, Elution, work_destinations[i], vol=40, rounds=4,
-                       blow_out=True, mix_height=0)
-            m300.drop_tip(home_after=True)
-            tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 17 WAIT 1-2' WITHOUT MAGNET
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating OFF magnet for ' +
-                  format(STEPS[STEP]['wait_time']) + ' seconds.')  # minutes=2
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 18 WAIT 5' WITH MAGNET
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        magdeck.engage(height=mag_height)
-        ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating ON magnet for ' +
-                  format(STEPS[STEP]['wait_time']) + ' seconds.')  # minutes=2
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 19 TRANSFER TO ELUTION PLATE
-    ############################################################################
-
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        elution_vol = [45]
-        x_offset_rs = 2
-        for i in range(num_cols):
-            x_offset = find_side(i) * x_offset_rs
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for transfer_vol in elution_vol:
-                # Pickup_height is fixed here
-                pickup_height = 0.2
-                ctx.comment('Aspirate from deep well column: ' + str(i + 1))
-                ctx.comment('Pickup height is ' +
-                            str(pickup_height) + ' (fixed)')
-                move_vol_multi(m300, reagent=Elution, source=work_destinations[i],
-                               dest=final_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=False)
-            m300.drop_tip(home_after=True)
-            tip_track['counts'][m300] += 8
+        for d in destinations):
+            p20.pick_up_tip()
+            tip_track['counts'][p20]+=1
+            p20.transfer(volume_control, Control_I.reagent_reservoir, d, new_tip='never')
+            p20.mix(1, 10, d)
+            p20.aspirate(5, d.bottom(height_control))
+        p20.drop_tip()
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
