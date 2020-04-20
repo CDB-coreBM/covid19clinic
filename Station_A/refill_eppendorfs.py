@@ -2,8 +2,8 @@ from opentrons import protocol_api
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station A Version 1',
-    'author': 'Nick <protocols@opentrons.com>',
+    'protocolName': 'refill eppendorfs with water',
+    'author': 'Aitor',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.0'
 }

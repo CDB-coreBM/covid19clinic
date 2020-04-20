@@ -11,11 +11,11 @@ import csv
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station B Version 4',
+    'protocolName': 'S2 Station Kingfisher Version 1',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
-    'description': 'Protocol for RNA extraction using custom lab procotol (no kits)'
+    'description': 'Protocol for Kingfisher sample setup (A)'
 }
 
 #Defined variables
@@ -23,8 +23,6 @@ metadata = {
 NUM_SAMPLES = 96
 air_gap_vol = 15
 
-# mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
 temperature = 25
 D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
 # D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
@@ -38,29 +36,31 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': 'Mix beads'},
-        2: {'Execute': False, 'description': 'Transfer beads'},
-        3: {'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
-        4: {'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 900},  # 900
-        5: {'Execute': False, 'description': 'Remove supernatant'},
+        1: {'Execute': True, 'description': 'Mix beads'},
+        2: {'Execute': True, 'description': 'Transfer beads'},
+        3: {'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
+        4: {'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 900},  # 900
+        5: {'Execute': True, 'description': 'Remove supernatant'},
         6: {'Execute': True, 'description': 'Add Isopropanol'},
-        7: {'Execute': False, 'description': 'Wait for 30s'},
-        8: {'Execute': False, 'description': 'Remove isopropanol'},
-        9: {'Execute': False, 'description': 'Wash with ethanol'},
-        10: {'Execute': False, 'description': 'Wait for 30s'},
-        11: {'Execute': False, 'description': 'Remove supernatant'},
-        12: {'Execute': False, 'description': 'Wash with ethanol'},
-        13: {'Execute': False, 'description': 'Wait 30s'},
-        14: {'Execute': False, 'description': 'Remove supernatant'},
-        15: {'Execute': False, 'description': 'Allow to dry', 'wait_time': 300},
-        16: {'Execute': False, 'description': 'Add water and LTA'},
-        17: {'Execute': False, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
-        18: {'Execute': False, 'description': 'Wait with magnet ON', 'wait_time': 300},  # 300
-        19: {'Execute': False, 'description': 'Transfer to final elution plate'}
+        7: {'Execute': True, 'description': 'Wait for 30s'},
+        8: {'Execute': True, 'description': 'Remove isopropanol'},
+        9: {'Execute': True, 'description': 'Wash with ethanol'},
+        10: {'Execute': True, 'description': 'Wait for 30s'},
+        11: {'Execute': True, 'description': 'Remove supernatant'},
+        12: {'Execute': True, 'description': 'Wash with ethanol'},
+        13: {'Execute': True, 'description': 'Wait 30s'},
+        14: {'Execute': True, 'description': 'Remove supernatant'},
+        15: {'Execute': True, 'description': 'Allow to dry', 'wait_time': 300},
+        16: {'Execute': True, 'description': 'Add water and LTA'},
+        17: {'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
+        18: {'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 300},  # 300
+        19: {'Execute': True, 'description': 'Transfer to final elution plate'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
+
+    #Folder and file_path for log time
     folder_path = '/data/log_times/'
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
@@ -219,17 +219,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 pip.reset_tipracks()
                 tip_track['counts'][pip] = 0
         pip.pick_up_tip()
-    ##########
-
-    def find_side(col):
-        '''
-        Detects if the current column has the magnet at its left or right side
-        '''
-        if col % 2 == 0:
-            side = -1  # left
-        else:
-            side = 1
-        return side
 
 ####################################
     # load labware and modules
