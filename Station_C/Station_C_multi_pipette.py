@@ -18,9 +18,7 @@ REAGENT SETUP:
 """
 
 # Initial variables
-NUM_SAMPLES = 48
-TRANSFER_MMIX = True
-TRANSFER_SAMPLES = False
+NUM_SAMPLES = 24
 
 # Tune variables
 size_transfer = 7  # Number of wells the distribute function will fill
@@ -75,6 +73,23 @@ def run(ctx: protocol_api.ProtocolContext):
     unused_volume_one = 0
     unused_volume_two = 0
 
+    STEP = 0
+    STEPS = {  # Dictionary with STEP activation, description, and times
+        1: {'Execute': False, 'description': 'Transfer MMIX'},
+        2: {'Execute': True, 'description': 'Transfer elution'}
+    }
+
+    for s in STEPS:  # Create an empty wait_time
+        if 'wait_time' not in STEPS[s]:
+            STEPS[s]['wait_time'] = 0
+
+    #Folder and file_path for log time
+    folder_path = '/var/lib/jupyter/notebooks'
+    if not ctx.is_simulating():
+        if not os.path.isdir(folder_path):
+            os.mkdir(folder_path)
+        file_path = folder_path + '/Station_C_time_log.json'
+
     # Check if door is opened
     if check_door() == True:
         # Set light color to purple
@@ -85,7 +100,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Load labware
     source_plate = ctx.load_labware(
-        'roche_96_wellplate_100ul', '1',
+        'transparent_96_wellplate_250ul', '1',
         'chilled RNA elution plate from station B')
 
     tuberack = ctx.load_labware(
@@ -95,10 +110,10 @@ def run(ctx: protocol_api.ProtocolContext):
     tempdeck = ctx.load_module('tempdeck', '4')
 
     # Define temperature of module. Should be 4. 25 for testing purposes
-    tempdeck.set_temperature(temperature)
+    #tempdeck.set_temperature(temperature)
 
     pcr_plate = tempdeck.load_labware(
-        'transparent_96_wellplate_250ul', 'PCR plate')
+        'roche_96_wellplate_100ul', 'PCR plate')
 
     # Load Tipracks
     tips20 = [
@@ -131,7 +146,9 @@ def run(ctx: protocol_api.ProtocolContext):
     mmix = tuberack.wells()[0]
 
     # transfer mastermix with P300
-    if TRANSFER_MMIX == True:
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        start = datetime.now()
         p300.pick_up_tip()
         pickup_height = ((volume_screw - volume_cone) /
                          area_section_screwcap - h_cone)
@@ -158,29 +175,53 @@ def run(ctx: protocol_api.ProtocolContext):
                              area_section_screwcap - h_cone)
 
         p300.drop_tip()
-        unused_volume_two = volume_screw
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' +
+                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
 
     # transfer samples to corresponding locations with p20
-    if TRANSFER_SAMPLES == True:
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        # Transfer parameters
+        start = datetime.now()
         for s, d in zip(samples, pcr_wells):
             p20.pick_up_tip()
             p20.transfer(volume_sample, s, d, new_tip='never')
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
             p20.drop_tip()
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' +
+                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    # Export the time log to a tsv file
+    if not ctx.is_simulating():
+        with open(file_path, 'w') as f:
+            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
+            for key in STEPS.keys():
+                row = str(key) + '\t'
+                for key2 in STEPS[key].keys():
+                    row += format(STEPS[key][key2]) + '\t'
+                f.write(row + '\n')
+        f.close()
 
     # Set light color to green
     gpio.set_button_light(0, 1, 0)
-
+    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/lionking.mp3')
     # Print the values of master mix used and remaining theoretical volume
-    total_used_vol = np.sum(used_vol)
-    total_needed_volume = total_used_vol + unused_volume_one + \
-        unused_volume_two + extra_dispensal * len(dests)
-    ctx.comment('Total used volume is: ' + str(total_used_vol) + '\u03BCl.')
-    ctx.comment('Volume remaining in first tube is:' +
-                format(int(unused_volume_one)) + '\u03BCl.')
-    ctx.comment('Volume remaining in second tube is:' +
-                format(int(unused_volume_two)) + '\u03BCl.')
-    ctx.comment('Needed volume is ' +
-                format(int(total_needed_volume)) + '\u03BCl')
-    ctx.comment('Used volumes per run are: ' + str(used_vol) + '\u03BCl.')
+    if STEPS[1]['Execute'] == True:
+        total_used_vol = np.sum(used_vol)
+        total_needed_volume = total_used_vol + unused_volume_one + \
+            unused_volume_two + extra_dispensal * len(dests)
+        ctx.comment('Total used volume is: ' + str(total_used_vol) + '\u03BCl.')
+        ctx.comment('Volume remaining in first tube is:' +
+                    format(int(unused_volume_one)) + '\u03BCl.')
+        ctx.comment('Volume remaining in second tube is:' +
+                    format(int(unused_volume_two)) + '\u03BCl.')
+        ctx.comment('Needed volume is ' +
+                    format(int(total_needed_volume)) + '\u03BCl')
+        ctx.comment('Used volumes per run are: ' + str(used_vol) + '\u03BCl.')
