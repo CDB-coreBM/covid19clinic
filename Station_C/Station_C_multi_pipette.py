@@ -1,6 +1,11 @@
 from opentrons import protocol_api
 from opentrons.drivers.rpi_drivers import gpio
 import numpy as np
+from timeit import default_timer as timer
+import json
+from datetime import datetime
+import csv
+import os
 
 # metadata
 metadata = {
@@ -18,14 +23,14 @@ REAGENT SETUP:
 """
 
 # Initial variables
-NUM_SAMPLES = 24
+NUM_SAMPLES = 16
 
 # Tune variables
 size_transfer = 7  # Number of wells the distribute function will fill
 volume_mmix = 24.6  # Volume of transfered master mix
 volume_sample = 5.4  # Volume of the sample
-volume_screw_one = 1500  # Total volume of first screwcap
-volume_screw_two = 1100  # Total volume of second screwcap
+volume_screw_one = 450  # Total volume of first screwcap
+volume_screw_two = 0  # Total volume of second screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 25  # Temperature of temp module
@@ -75,7 +80,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': 'Transfer MMIX'},
+        1: {'Execute': True, 'description': 'Transfer MMIX'},
         2: {'Execute': True, 'description': 'Transfer elution'}
     }
 
@@ -156,13 +161,18 @@ def run(ctx: protocol_api.ProtocolContext):
         volume_screw = volume_screw_one
         for dest in dests:
             # We make sure there is enough volume in screwcap one or we switch
+            ctx.comment('Needed volume is: '+str(volume_mmix * len(dest) + extra_dispensal + 35)
+                +'\u03BCl., available is '+str(volume_screw)+'\u03BCl.')
             if volume_screw < (volume_mmix * len(dest) + extra_dispensal + 35):
                 unused_volume_one = volume_screw
                 mmix = tuberack.wells()[4]
                 volume_screw = volume_screw_two  # New tube is full now
                 pickup_height = ((volume_screw - volume_cone) /
                                  area_section_screwcap - h_cone)
+            if pickup_height<=0:
+                pickup_height=0.5
             # Distribute the mmix in different wells
+            ctx.comment('height is '+str(pickup_height))
             used_vol_temp = distribute_custom(
                 p300, volume_mmix, mmix, dest, mmix, pickup_height, extra_dispensal)
             used_vol.append(used_vol_temp)
