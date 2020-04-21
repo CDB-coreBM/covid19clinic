@@ -64,7 +64,7 @@ air_gap_volume):
         pipette.drop_tip(home_after=False)
 
 ##########################################################################
-NUM_SAMPLES = 3
+NUM_SAMPLES = 16
 SAMPLE_VOLUME = 300
 CONTROL_VOLUME = 10
 TRANSFER_SAMPLES_F = True

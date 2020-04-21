@@ -77,7 +77,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Reagents and their characteristics
     Buffer = Reagent(name = 'Buffer',
-                      flow_rate_aspirate = 0.5,
+                      flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       rinse = False,
                       reagent_reservoir_volume = 58300,
@@ -86,7 +86,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       v_fondo = 0)
 
     ProtK = Reagent(name = 'Proteinase K',
-                       flow_rate_aspirate = 0.5,
+                       flow_rate_aspirate = 1,
                        flow_rate_dispense = 1,
                        rinse = False,
                        reagent_reservoir_volume = 1500,
@@ -95,7 +95,7 @@ def run(ctx: protocol_api.ProtocolContext):
                        v_fondo = 50)
 
     Control_I = Reagent(name = 'Internal Control',
-                     flow_rate_aspirate = 0.5,
+                     flow_rate_aspirate = 1,
                      flow_rate_dispense = 1,
                      rinse = True,
                      reagent_reservoir_volume = 1500,
@@ -104,7 +104,7 @@ def run(ctx: protocol_api.ProtocolContext):
                      v_fondo = 50)
 
     Samples = Reagent(name = 'Samples',
-                      flow_rate_aspirate = 0.5,
+                      flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       rinse = False,
                       reagent_reservoir_volume = 700*24,
@@ -354,8 +354,8 @@ def run(ctx: protocol_api.ProtocolContext):
         for s, d in zip(sample_sources, destinations):
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
-            move_vol_multi(p1000, reagent = ProtK, source = s, dest = d,
-            vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
+            move_vol_multi(p1000, reagent = Sample, source = s, dest = d,
+            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 1, drop_height = 0, rinse = False)
             #Drop tip and update counter
             p1000.drop_tip()
