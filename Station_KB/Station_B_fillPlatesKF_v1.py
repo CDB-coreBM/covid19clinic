@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 8
 air_gap_vol = 15
 
 multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
@@ -279,8 +279,8 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in wash_buffer_vol:
-                if i != 0:
+            for j, transfer_vol in enumerate(wash_buffer_vol):
+                if i != 0 and j!=0:
                     rinse = False
                 move_vol_multi(m300, reagent=WashBuffer, source=WashBuffer.reagent_reservoir,
                                dest = washbuffer_destination[i], vol=transfer_vol,
