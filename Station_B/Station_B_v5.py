@@ -176,14 +176,14 @@ def run(ctx: protocol_api.ProtocolContext):
                     #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             col_change = True
         else:
             height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             ctx.comment('Used height is ' + str(height))
             col_change = False
