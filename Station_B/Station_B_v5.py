@@ -41,7 +41,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Mix beads'},
         2: {'Execute': True, 'description': 'Transfer beads'},
-        3: {'Execute': True, 'description': 'Wait with magnet OFF after beads', 'wait_time': 60},  # 60
+        3: {'Execute': True, 'description': 'Wait with magnet OFF after beads', 'wait_time': 120},  # 60
         4: {'Execute': True, 'description': 'Wait with magnet ON after beads', 'wait_time': 900},  # 900
         5: {'Execute': True, 'description': 'Remove supernatant'},
         6: {'Execute': True, 'description': 'Add Isopropanol and mix'},
