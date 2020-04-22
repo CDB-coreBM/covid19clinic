@@ -453,21 +453,21 @@ def run(ctx: protocol_api.ProtocolContext):
 
         isoprop_wash_vol = [150]
         x_offset = 0
-        rinse = True  # Only first time
+        rinse = Ethanol.rinse  # Only first time
 
         ########
         # isoprop washes
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in isoprop_wash_vol:
+            for j, transfer_vol in enumerate(isoprop_wash_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
                     Isopropanol, multi_well_rack_area, transfer_vol * 8)
                 ctx.comment('Aspirate from Reservoir column: ' +
                             str(Isopropanol.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-                if i != 0:
+                if i != 0 and j!= 0:
                     rinse = False
                 move_vol_multi(m300, reagent=Isopropanol, source=Isopropanol.reagent_reservoir[Isopropanol.col],
                                dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
@@ -542,20 +542,21 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ethanol_wash_vol = [100, 100]
         x_offset = 0
+        rinse = Ethanol.rinse
         # WASH 2 TIMES
         ########
         # 70% EtOH washes
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in ethanol_wash_vol:
+            for j, transfer_vol in enumerate(ethanol_wash_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
                     Ethanol, multi_well_rack_area, transfer_vol * 8)
                 ctx.comment('Aspirate from Reservoir column: ' +
                             str(Ethanol.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-                if i != 0:
+                if i != 0 and j!=0:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir[Ethanol.col],
                                dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
@@ -634,6 +635,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ethanol_wash_vol = [100, 100]
         x_offset = 0
+        rinse = Ethanol.rinse
         # WASH 2 TIMES
         ########
         # 70% EtOH washes
@@ -647,7 +649,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 ctx.comment('Aspirate from Reservoir column: ' +
                             str(Ethanol.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-                if j != 0:
+                if i!=0 and j!=0:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir[Ethanol.col],
                                dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,

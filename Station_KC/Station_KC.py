@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 24
 air_gap_vol = 15
 
 # Tune variables
@@ -45,7 +45,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Transfer MMIX'},
+        1: {'Execute': False, 'description': 'Transfer MMIX'},
         2: {'Execute': True, 'description': 'Transfer elution'}
     }
 
@@ -181,7 +181,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # load labware and modules
     # 12 well rack
     tuberack = ctx.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
+        'bloquealuminio_24_screwcap_wellplate_1500ul', '3',
         'Bloque Aluminio 24 Screwcap Well Plate 1500 µL ')
 
 ############################################
@@ -198,7 +198,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ##################################
     # Sample plate - comes from B
     source_plate = ctx.load_labware(
-        'roche_96_wellplate_100ul', '1',
+        'transparent_96_wellplate_250ul', '1',
         'Chilled RNA elution plate for PCR ')
     samples = source_plate.wells()[:NUM_SAMPLES]
 
@@ -304,7 +304,7 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_rail_lights(False)
     time.sleep(2)
     gpio.set_rail_lights(True)
-    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/lionking.mp3')
+    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/toreador.mp3')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
@@ -314,19 +314,24 @@ def run(ctx: protocol_api.ProtocolContext):
         time.sleep(0.3)
     gpio.set_button_light(0, 1, 0)
     ctx.comment('Finished! \nMove plate to PCR')
-    total_used_vol = np.sum(used_vol)
-    total_needed_volume = total_used_vol
-    ctx.comment('Total Master Mix used volume is: ' + str(total_used_vol) + '\u03BCl.')
-    ctx.comment('Needed Master Mix volume is ' +
-                str(total_needed_volume + extra_dispensal + 35*2) +'\u03BCl')
-    ctx.comment('Used Master Mix volumes per run are: ' + str(used_vol) + '\u03BCl.')
-    ctx.comment('200 ul Used tips in total: ' + str(tip_track['counts'][p300]))
-    ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
-    ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][p20]))
-    ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][p20] / 96))
-    ctx.comment('Master Mix Volume remaining in first tube is:' +
-                format(int(MMIX.unused_one)) + '\u03BCl.')
-    ctx.comment('Master Mix Volume remaining in second tube is:' +
-                format(int(MMIX.unused_two)) + '\u03BCl.')
+
+    if STEPS[1]['Execute'] == True:
+        total_used_vol = np.sum(used_vol)
+        total_needed_volume = total_used_vol
+        ctx.comment('Total Master Mix used volume is: ' + str(total_used_vol) + '\u03BCl.')
+        ctx.comment('Needed Master Mix volume is ' +
+                    str(total_needed_volume + extra_dispensal + 35*2) +'\u03BCl')
+        ctx.comment('Used Master Mix volumes per run are: ' + str(used_vol) + '\u03BCl.')
+        ctx.comment('Master Mix Volume remaining in first tube is:' +
+                    format(int(MMIX.unused_one)) + '\u03BCl.')
+        ctx.comment('Master Mix Volume remaining in second tube is:' +
+                    format(int(MMIX.unused_two)) + '\u03BCl.')
+        ctx.comment('200 ul Used tips in total: ' + str(tip_track['counts'][p300]))
+        ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
+
+    if STEPS[2]['Execute'] == True:
+        ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][p20]))
+        ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][p20] / 96))
+
     if ctx.is_simulating():
         os.system('afplay /Users/covid19warriors/Downloads/lionking.mp3 ')

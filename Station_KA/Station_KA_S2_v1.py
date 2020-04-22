@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 48
+NUM_SAMPLES = 4
 air_gap_vol = 5
 
 volume_protk = 10
@@ -77,16 +77,16 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Reagents and their characteristics
     Buffer = Reagent(name = 'Buffer',
-                      flow_rate_aspirate = 0.5,
+                      flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       rinse = False,
-                      reagent_reservoir_volume = 1500,
+                      reagent_reservoir_volume = 58300,
                       num_wells = 1,  # num_Wells max is 4
                       h_cono = 0,
                       v_fondo = 0)
 
     ProtK = Reagent(name = 'Proteinase K',
-                       flow_rate_aspirate = 0.5,
+                       flow_rate_aspirate = 1,
                        flow_rate_dispense = 1,
                        rinse = False,
                        reagent_reservoir_volume = 1500,
@@ -95,19 +95,19 @@ def run(ctx: protocol_api.ProtocolContext):
                        v_fondo = 50)
 
     Control_I = Reagent(name = 'Internal Control',
-                     flow_rate_aspirate = 0.5,
+                     flow_rate_aspirate = 1,
                      flow_rate_dispense = 1,
                      rinse = True,
-                     reagent_reservoir_volume = 38400,
+                     reagent_reservoir_volume = 1500,
                      num_wells = 1,  # num_Wells max is 4
                      h_cono = (volume_cone * 3 / area_section_screwcap),
                      v_fondo = 50)
 
     Samples = Reagent(name = 'Samples',
-                      flow_rate_aspirate = 0.5,
+                      flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       rinse = False,
-                      reagent_reservoir_volume = 800,
+                      reagent_reservoir_volume = 700*24,
                       num_wells = 24,  # num_cols comes from available columns
                       h_cono = 4,
                       v_fondo = 4 * math.pi * 4**3 / 3)  # Sphere
@@ -192,15 +192,15 @@ def run(ctx: protocol_api.ProtocolContext):
                            rate = reagent.flow_rate_aspirate)  # air gap
         # GO TO DESTINATION
         if drop_height!=0:
-            drop=dest.bottom(z = drop_height)
+            drop = dest.bottom(z = drop_height)
         else:
-            drop=dest.top(z = -2)
-        pipet.dispense(vol + air_gap_vol, dest.top(z = -2),
+            drop = dest.top(z = -2)
+        pipet.dispense(vol + air_gap_vol, drop,
                        rate = reagent.flow_rate_dispense)  # dispense all
         pipet.blow_out(dest.top(z = -2))
-        if air_gap_vol != 0:
-            pipet.aspirate(air_gap_vol, dest.top(z = -2),
-                           rate = reagent.flow_rate_aspirate)  # air gap
+        #if air_gap_vol != 0: #Air gap for multidispense
+        #    pipet.aspirate(air_gap_vol, dest.top(z = -2),
+        #                   rate = reagent.flow_rate_aspirate)  # air gap
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -227,7 +227,7 @@ def run(ctx: protocol_api.ProtocolContext):
         rack_num=4
     source_racks = [ctx.load_labware(
             'opentrons_24_tuberack_generic_2ml_screwcap', slot,
-            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['4','1','6','3'][:rack_num])
+            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['7','4','9','6'][:rack_num])
         ]
 
     ##################################
@@ -237,19 +237,21 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ############################################
     # tempdeck
-    tempdeck = ctx.load_module('tempdeck', '7')
+    #tempdeck = ctx.load_module('tempdeck', '1')
     #tempdeck.set_temperature(temperature)
 
     ##################################
     # Cooled reagents in tempdeck
-    reagents = tempdeck.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul',
+    #reagents = tempdeck.load_labware(
+        #'bloquealuminio_24_screwcap_wellplate_1500ul',
+        #'cooled reagent tubes')
+    reagents = ctx.load_labware(
+        'bloquealuminio_24_screwcap_wellplate_1500ul', '3',
         'cooled reagent tubes')
-
     ############################################
     # Buffer reservoir
     buffer_res = ctx.load_labware(
-        'nalgene_1_reservoir_300000ul', '9', 'buffer reservoir')
+        'nalgene_1_reservoir_300000ul', '1', 'buffer reservoir')
 
     ####################################
     # Load tip_racks
@@ -352,8 +354,8 @@ def run(ctx: protocol_api.ProtocolContext):
         for s, d in zip(sample_sources, destinations):
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
-            move_vol_multi(p1000, reagent = ProtK, source = s, dest = d,
-            vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
+            move_vol_multi(p1000, reagent = Sample, source = s, dest = d,
+            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 1, drop_height = 0, rinse = False)
             #Drop tip and update counter
             p1000.drop_tip()
