@@ -20,15 +20,16 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 16
 air_gap_vol = 15
 
 # mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
 mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
-temperature = 25
+temperature = 4
 D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
 # D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
 multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
+x_offset_rs = 1 #Offset of the pickup when magnet is ON
 
 #Calculated variables
 deepwell_cross_section_area = math.pi * D_deepwell**2 / 4  # deepwell cilinder cross secion area
@@ -55,7 +56,7 @@ def run(ctx: protocol_api.ProtocolContext):
         15: {'Execute': True, 'description': 'Allow to dry', 'wait_time': 300},
         16: {'Execute': True, 'description': 'Add water and LTA'},
         17: {'Execute': True, 'description': 'Wait with magnet OFF', 'wait_time': 60},  # 60
-        18: {'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 300},  # 300
+        18: {'Execute': True, 'description': 'Wait with magnet ON', 'wait_time': 120},  # 300
         19: {'Execute': True, 'description': 'Transfer to final elution plate'}
     }
     for s in STEPS:  # Create an empty wait_time
@@ -65,7 +66,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/time_log.json'
+        file_path = folder_path + '/time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -241,7 +242,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ############################################
     # tempdeck
     tempdeck = ctx.load_module('tempdeck', '3')
-    # tempdeck.set_temperature(temperature)
+    tempdeck.set_temperature(temperature)
 
 ##################################
     # Elution plate - final plate, goes to C
@@ -355,7 +356,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
             ctx.comment('Mixing sample with beads ')
             custom_mix(m300, Beads, location=work_destinations[i], vol=180,
-                       rounds=4, blow_out=True, mix_height=16)
+                       rounds=6, blow_out=True, mix_height=16)
             m300.drop_tip(home_after=False)
             # m300.return_tip()
             tip_track['counts'][m300] += 8
@@ -418,7 +419,6 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # remove supernatant -> height calculation can be omitted and referred to bottom!
         supernatant_vol = [160, 160, 160, 160]
-        x_offset_rs = 2
 
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
@@ -453,7 +453,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         isoprop_wash_vol = [150]
         x_offset = 0
-        rinse = Ethanol.rinse  # Only first time
+        rinse = Isopropanol.rinse  # Only first time
 
         ########
         # isoprop washes
@@ -472,8 +472,10 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent=Isopropanol, source=Isopropanol.reagent_reservoir[Isopropanol.col],
                                dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=rinse)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
+                custom_mix(m300, reagent=Isopropanol, location=work_destinations[i], vol=transfer_vol,
+                           rounds=6, blow_out=True, mix_height=1)
+               m300.drop_tip(home_after=True)
+               tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -505,8 +507,7 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
-        supernatant_vol = [150]
-        x_offset_rs = 2
+        supernatant_vol = [160]
 
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
@@ -521,8 +522,8 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent=Elution, source=work_destinations[i],
                                dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=False)
-            m300.drop_tip(home_after=True)
-            tip_track['counts'][m300] += 8
+                m300.drop_tip(home_after=True)
+                tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -599,7 +600,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
 
         supernatant_vol = [100, 100]
-        x_offset_rs = 2
 
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
@@ -693,7 +693,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
 
         supernatant_vol = [100, 100, 40]
-        x_offset_rs = 2
 
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
@@ -721,7 +720,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
-        m300.reset_tipracks()
+        #m300.reset_tipracks()
         ctx.comment('CAMBIAR TIPRACKS!')
         start = datetime.now()
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
@@ -828,7 +827,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
 
         elution_vol = [45]
-        x_offset_rs = 2
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
             if not m300.hw_pipette['has_tip']:
@@ -855,9 +853,9 @@ def run(ctx: protocol_api.ProtocolContext):
         with open(file_path, 'w') as f:
             f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
             for key in STEPS.keys():
-                row = str(key) + '\t'
+                row = str(key)
                 for key2 in STEPS[key].keys():
-                    row += format(STEPS[key][key2]) + '\t'
+                    row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
 
