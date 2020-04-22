@@ -354,7 +354,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for s, d in zip(sample_sources, destinations):
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
-            move_vol_multi(p1000, reagent = Sample, source = s, dest = d,
+            move_vol_multi(p1000, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 1, drop_height = 0, rinse = False)
             #Drop tip and update counter
