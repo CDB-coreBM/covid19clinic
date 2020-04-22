@@ -93,7 +93,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/Station_C_time_log.json'
+        file_path = folder_path + '/Station_C_time_log.txt'
 
     # Check if door is opened
     if check_door() == True:
@@ -221,7 +221,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Set light color to green
     gpio.set_button_light(0, 1, 0)
-    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/lionking.mp3')
+    os.system('mpg123 -f -20000 /var/lib/jupyter/notebooks/lionking.mp3')
     # Print the values of master mix used and remaining theoretical volume
     if STEPS[1]['Execute'] == True:
         total_used_vol = np.sum(used_vol)
