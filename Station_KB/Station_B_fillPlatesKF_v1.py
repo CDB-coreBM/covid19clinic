@@ -20,10 +20,10 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 8
+NUM_SAMPLES = 96
 air_gap_vol = 15
 
-multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
+multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 
@@ -91,7 +91,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume=4800,
                     num_wells=1,  # num_Wells max is 1
                     h_cono=1.95,
-                    v_fondo=1.95 * multi_well_rack_area / 2)  # Prismatic
+                    v_fondo=695)  # Prismatic
 
     Ethanol.vol_well = Ethanol.vol_well_original
     WashBuffer.vol_well = WashBuffer.vol_well_original
@@ -129,19 +129,18 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(str('After change: ' + str(reagent.col)))
             reagent.vol_well = reagent.vol_well_original
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+                    #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             ctx.comment('Used height is ' + str(height))
             col_change = False
@@ -272,7 +271,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         wash_buffer_vol = [170,170,170,170,170,150]
         x_offset = 0
-        rinse = True  # Only first time
+        rinse = False  # Only first time
 
         ########
         # Wash buffer dispense
@@ -280,7 +279,9 @@ def run(ctx: protocol_api.ProtocolContext):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
             for j, transfer_vol in enumerate(wash_buffer_vol):
-                if i != 0 and j!=0:
+                if (i == 0 and j == 0):
+                    rinse = True
+                else:
                     rinse = False
                 move_vol_multi(m300, reagent=WashBuffer, source=WashBuffer.reagent_reservoir,
                                dest = washbuffer_destination[i], vol=transfer_vol,
@@ -306,7 +307,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ethanol_vol = [170,170,170,170,170,150]
         x_offset = 0
-        rinse = True  # Only first time
+        rinse = False  # Only first time
 
         ########
         # Ethanol dispense
@@ -314,7 +315,9 @@ def run(ctx: protocol_api.ProtocolContext):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
             for transfer_vol in wash_buffer_vol:
-                if i != 0:
+                if (i == 0 and j == 0):
+                    rinse = True
+                else:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir,
                                dest=ethanol1000_destination[i], vol=transfer_vol,
