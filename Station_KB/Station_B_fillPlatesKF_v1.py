@@ -33,9 +33,9 @@ def run(ctx: protocol_api.ProtocolContext):
     STEPS = {  # Dictionary with STEP activation, description, and times
 
         1: {'Execute': True, 'description': '1: Add 1000 ul Wash Buffer'},
-        2: {'Execute': True, 'description': '2: Add 1000 ul ethanol 80%'},
-        3: {'Execute': True, 'description': '3: Add 500 ul ethanol 80%'},
-        4: {'Execute': True, 'description': '4: Add 50 ul Elution Buffer'},
+        2: {'Execute': False, 'description': '2: Add 1000 ul ethanol 80%'},
+        3: {'Execute': False, 'description': '3: Add 500 ul ethanol 80%'},
+        4: {'Execute': False, 'description': '4: Add 50 ul Elution Buffer'},
 
     }
 
@@ -162,9 +162,11 @@ def run(ctx: protocol_api.ProtocolContext):
         pipet.dispense(vol + air_gap_vol, dest.top(z=-2),
                        rate=reagent.flow_rate_dispense)  # dispense all
         pipet.blow_out(dest.top(z=-2))
-        if air_gap_vol != 0:
-            pipet.aspirate(air_gap_vol, dest.top(z=-2),
-                           rate=reagent.flow_rate_aspirate)  # air gap
+
+        #only for multidispensing purposes
+        #if air_gap_vol != 0:
+        #    pipet.aspirate(air_gap_vol, dest.top(z=-2),
+        #                   rate=reagent.flow_rate_aspirate)  # air gap
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -287,6 +289,8 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest = washbuffer_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
+                ctx.delay(seconds=5)  # 5 sec to let the liquid download
+                m300.touch_tip(speed=20, v_offset=-5)        
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -314,7 +318,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in enumerate(wash_buffer_vol):
+            for j, transfer_vol in enumerate(ethanol_vol):
                 if (i == 0 and j == 0):
                     rinse = True
                 else:
@@ -351,7 +355,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in enumerate(wash_buffer_vol):
+            for j, transfer_vol in enumerate(ethanol_vol):
                 if (i == 0 and j == 0):
                     rinse = True
                 else:
