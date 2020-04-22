@@ -108,11 +108,10 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Load tipracks
     ##############
-    tiprack = ctx.load_labware(
-        'opentrons_96_filtertiprack_20ul', '11', '20µl tiprack')
     tips1000 = ctx.load_labware(
         'opentrons_96_filtertiprack_1000ul', '10', '1000µl tiprack')
-
+    tiprack = ctx.load_labware(
+        'opentrons_96_filtertiprack_20ul', '11', '20µl tiprack')
     # Load pipettes
     ##############
     p1000 = ctx.load_instrument('p1000_single_gen2', 'left', tip_racks=[tips1000])
