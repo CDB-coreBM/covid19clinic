@@ -400,7 +400,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         magdeck.engage(height=mag_height)
         ctx.delay(seconds=STEPS[STEP]['wait_time'], msg='Incubating ON magnet for ' +
-                  format(STEPS[STEP]['wait_time']) + ' seconds.')  # minutes=2
+                  format(STEPS[STEP]['wait_time']) + ' seconds.')  # minutes=15
 
         end = datetime.now()
         time_taken = (end - start)
@@ -577,6 +577,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
+
     ############################################################################
     # STEP 10 WAIT FOR 30s-1'
     ############################################################################
@@ -728,7 +729,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ####################################################################
-    # STEP 15 DRY
+    # STEP 15 DRY ( magnet == OFF)
     ############################################################################
 
     STEP += 1
@@ -809,7 +810,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 18 WAIT 5' WITH MAGNET
+    # STEP 18 WAIT 2' WITH MAGNET
     ############################################################################
 
     STEP += 1
