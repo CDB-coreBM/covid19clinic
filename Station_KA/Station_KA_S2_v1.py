@@ -24,9 +24,9 @@ NUM_SAMPLES = 4
 air_gap_vol = 5
 
 volume_protk = 10
-volume_buffer = 550
 volume_control = 10
-volume_sample = 330
+volume_sample = 300
+volume_buffer = 550
 height_protk = 10
 height_control = 20
 temperature = 25
