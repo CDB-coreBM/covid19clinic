@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 8
 air_gap_vol = 15
 
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
@@ -314,7 +314,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in wash_buffer_vol:
+            for transfer_vol in enumerate(wash_buffer_vol):
                 if (i == 0 and j == 0):
                     rinse = True
                 else:
@@ -344,15 +344,17 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ethanol_vol = [170,170,160]
         x_offset = 0
-        rinse = True  # Only first time
+        rinse = False  # Only first time
 
         ########
         # Ethanol dispense
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in wash_buffer_vol:
-                if i != 0:
+            for transfer_vol in enumerate(wash_buffer_vol):
+                if (i == 0 and j == 0):
+                    rinse = True
+                else:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir,
                                dest=ethanol500_destination[i], vol=transfer_vol,
