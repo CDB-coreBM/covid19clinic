@@ -474,8 +474,8 @@ def run(ctx: protocol_api.ProtocolContext):
                                pickup_height=pickup_height, rinse=rinse)
                 custom_mix(m300, reagent=Isopropanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=6, blow_out=True, mix_height=1)
-               m300.drop_tip(home_after=True)
-               tip_track['counts'][m300] += 8
+                m300.drop_tip(home_after=True)
+                tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
