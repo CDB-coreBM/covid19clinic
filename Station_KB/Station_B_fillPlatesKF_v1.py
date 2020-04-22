@@ -23,7 +23,7 @@ metadata = {
 NUM_SAMPLES = 8
 air_gap_vol = 15
 
-multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
+multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 
@@ -33,9 +33,9 @@ def run(ctx: protocol_api.ProtocolContext):
     STEPS = {  # Dictionary with STEP activation, description, and times
 
         1: {'Execute': True, 'description': '1: Add 1000 ul Wash Buffer'},
-        2: {'Execute': True, 'description': '2: Add 1000 ul ethanol 80%'},
-        3: {'Execute': True, 'description': '3: Add 500 ul ethanol 80%'},
-        4: {'Execute': True, 'description': '4: Add 50 ul Elution Buffer'},
+        2: {'Execute': False, 'description': '2: Add 1000 ul ethanol 80%'},
+        3: {'Execute': False, 'description': '3: Add 500 ul ethanol 80%'},
+        4: {'Execute': False, 'description': '4: Add 50 ul Elution Buffer'},
 
     }
 
@@ -91,7 +91,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume=4800,
                     num_wells=1,  # num_Wells max is 1
                     h_cono=1.95,
-                    v_fondo=1.95 * multi_well_rack_area / 2)  # Prismatic
+                    v_fondo=695)  # Prismatic
 
     Ethanol.vol_well = Ethanol.vol_well_original
     WashBuffer.vol_well = WashBuffer.vol_well_original
@@ -129,19 +129,18 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(str('After change: ' + str(reagent.col)))
             reagent.vol_well = reagent.vol_well_original
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+                    #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             ctx.comment('Used height is ' + str(height))
             col_change = False
@@ -163,9 +162,11 @@ def run(ctx: protocol_api.ProtocolContext):
         pipet.dispense(vol + air_gap_vol, dest.top(z=-2),
                        rate=reagent.flow_rate_dispense)  # dispense all
         pipet.blow_out(dest.top(z=-2))
-        if air_gap_vol != 0:
-            pipet.aspirate(air_gap_vol, dest.top(z=-2),
-                           rate=reagent.flow_rate_aspirate)  # air gap
+
+        #only for multidispensing purposes
+        #if air_gap_vol != 0:
+        #    pipet.aspirate(air_gap_vol, dest.top(z=-2),
+        #                   rate=reagent.flow_rate_aspirate)  # air gap
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -272,7 +273,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         wash_buffer_vol = [170,170,170,170,170,150]
         x_offset = 0
-        rinse = True  # Only first time
+        rinse = False  # Only first time
 
         ########
         # Wash buffer dispense
@@ -280,12 +281,16 @@ def run(ctx: protocol_api.ProtocolContext):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
             for j, transfer_vol in enumerate(wash_buffer_vol):
-                if i != 0 and j!=0:
+                if (i == 0 and j == 0):
+                    rinse = True
+                else:
                     rinse = False
                 move_vol_multi(m300, reagent=WashBuffer, source=WashBuffer.reagent_reservoir,
                                dest = washbuffer_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
+                ctx.delay(seconds=5)  # 5 sec to let the liquid download
+                m300.touch_tip(speed=20, v_offset=-5)        
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -306,15 +311,17 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ethanol_vol = [170,170,170,170,170,150]
         x_offset = 0
-        rinse = True  # Only first time
+        rinse = False  # Only first time
 
         ########
         # Ethanol dispense
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in wash_buffer_vol:
-                if i != 0:
+            for j, transfer_vol in enumerate(ethanol_vol):
+                if (i == 0 and j == 0):
+                    rinse = True
+                else:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir,
                                dest=ethanol1000_destination[i], vol=transfer_vol,
@@ -341,15 +348,17 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ethanol_vol = [170,170,160]
         x_offset = 0
-        rinse = True  # Only first time
+        rinse = False  # Only first time
 
         ########
         # Ethanol dispense
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
                 pick_up(m300)
-            for transfer_vol in wash_buffer_vol:
-                if i != 0:
+            for j, transfer_vol in enumerate(ethanol_vol):
+                if (i == 0 and j == 0):
+                    rinse = True
+                else:
                     rinse = False
                 move_vol_multi(m300, reagent=Ethanol, source=Ethanol.reagent_reservoir,
                                dest=ethanol500_destination[i], vol=transfer_vol,

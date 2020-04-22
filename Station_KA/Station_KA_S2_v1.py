@@ -24,9 +24,9 @@ NUM_SAMPLES = 4
 air_gap_vol = 5
 
 volume_protk = 10
-volume_buffer = 550
 volume_control = 10
-volume_sample = 330
+volume_sample = 300
+volume_buffer = 550 #(530ul buffer + 20ul beads)
 height_protk = 10
 height_control = 20
 temperature = 25
@@ -35,17 +35,23 @@ temperature = 25
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
+#falcon
+diameter_falcon = 27
+h_cone_falcon = 17.4
+
 # Calculated variables
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
-screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screcap cross secion area
+screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cross secion area
+falcon_cross_section_area = math.pi * diameter_falcon**2 / 4
+v_cone_falcon = 1/3*h_cone_falcon * falcon_cross_section_area
 
 def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': '1: Add proteinase K (10ul)'},
-        2: {'Execute': True, 'description': '2: Add internal control (10ul)'},
-        3: {'Execute': True, 'description': '3: Add samples (300ul)'},
+        1: {'Execute': False, 'description': '1: Add proteinase K (10ul)'},
+        2: {'Execute': False, 'description': '2: Add internal control (10ul)'},
+        3: {'Execute': False, 'description': '3: Add samples (300ul)'},
         4: {'Execute': True, 'description': '4: Add binding buffer (550ul)'}
     }
     for s in STEPS:  # Create an empty wait_time
@@ -81,9 +87,10 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_dispense = 1,
                       rinse = False,
                       reagent_reservoir_volume = 58300,
-                      num_wells = 1,  # num_Wells max is 4
-                      h_cono = 0,
-                      v_fondo = 0)
+                      num_wells = 2,  # num_Wells max is 4
+                      h_cono = h_cone_falcon,
+                      v_fondo = v_cone_falcon
+                      )
 
     ProtK = Reagent(name = 'Proteinase K',
                        flow_rate_aspirate = 1,
@@ -92,7 +99,8 @@ def run(ctx: protocol_api.ProtocolContext):
                        reagent_reservoir_volume = 1500,
                        num_wells = 1,  # num_Wells max is 4
                        h_cono = (volume_cone * 3 / area_section_screwcap),
-                       v_fondo = 50)
+                       v_fondo = 50
+                       )
 
     Control_I = Reagent(name = 'Internal Control',
                      flow_rate_aspirate = 1,
@@ -101,7 +109,8 @@ def run(ctx: protocol_api.ProtocolContext):
                      reagent_reservoir_volume = 1500,
                      num_wells = 1,  # num_Wells max is 4
                      h_cono = (volume_cone * 3 / area_section_screwcap),
-                     v_fondo = 50)
+                     v_fondo = 50
+                     )
 
     Samples = Reagent(name = 'Samples',
                       flow_rate_aspirate = 1,
@@ -110,7 +119,8 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent_reservoir_volume = 700*24,
                       num_wells = 24,  # num_cols comes from available columns
                       h_cono = 4,
-                      v_fondo = 4 * math.pi * 4**3 / 3)  # Sphere
+                      v_fondo = 4 * math.pi * 4**3 / 3
+                      )  # Sphere
 
     Buffer.vol_well = Buffer.vol_well_original
     ProtK.vol_well = ProtK.vol_well_original
@@ -251,7 +261,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################
     # Buffer reservoir
     buffer_res = ctx.load_labware(
-        'nalgene_1_reservoir_300000ul', '1', 'buffer reservoir')
+        'opentrons_6_tuberack_nest_50ml_conical', '1', 'buffer falcons')
 
     ####################################
     # Load tip_racks
@@ -263,10 +273,10 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-
     Buffer.reagent_reservoir = buffer_res.wells()[0]
-    Control_I.reagent_reservoir = reagents.wells()[0]
-    ProtK.reagent_reservoir = reagents.wells()[4]
+    ProtK.reagent_reservoir = reagents.wells()[0]
+    Control_I.reagent_reservoir = reagents.wells()[4]
+
     # setup samples and destinations
     sample_sources_full = generate_source_table(source_racks)
     sample_sources = sample_sources_full[:NUM_SAMPLES]
@@ -310,7 +320,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
         ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-
 
     ############################################################################
     # STEP 2: Add Internal Control
@@ -368,7 +377,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-
     ############################################################################
     # STEP 4: Add Buffer
     ############################################################################
@@ -383,9 +391,10 @@ def run(ctx: protocol_api.ProtocolContext):
         for d in destinations:
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
+            [pickup_height, change_col] = calc_height(Buffer, falcon_cross_section_area, volume_buffer)
             move_vol_multi(p1000, reagent = Buffer, source = Buffer.reagent_reservoir, dest = d,
             vol = volume_buffer, air_gap_vol = air_gap_vol, x_offset = 0,
-                   pickup_height = 1, drop_height = 0, rinse = False)
+                   pickup_height = pickup_height, drop_height = 0, rinse = False)
         #Drop tip and update counter
         p1000.drop_tip()
         tip_track['counts'][p1000]+=1
