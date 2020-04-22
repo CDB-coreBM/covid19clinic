@@ -28,7 +28,7 @@ mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
 temperature = 4
 D_deepwell = 6.9  # Deepwell diameter (ABGENE deepwell)
 # D_deepwell = 8.35 # Deepwell diameter (NUNC deepwell)
-multi_well_rack_area = 8 * 71  # Cross section of the 12 well reservoir
+multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
 x_offset_rs = 1 #Offset of the pickup when magnet is ON
 
 #Calculated variables
@@ -93,7 +93,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent_reservoir_volume=38400,
                       num_wells=4,  # num_Wells max is 4
                       h_cono=1.95,
-                      v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
+                      v_fondo=695,  # Prismatic
                       tip_recycling='A1')
 
     Beads = Reagent(name='Magnetic beads',
@@ -103,7 +103,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume=29760,
                     num_wells=4,
                     h_cono=1.95,
-                    v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
+                    v_fondo=695,  # Prismatic
                     tip_recycling='A2')
 
     Isopropanol = Reagent(name='Isopropanol',
@@ -113,7 +113,7 @@ def run(ctx: protocol_api.ProtocolContext):
                           reagent_reservoir_volume=14400,
                           num_wells=2,  # num_Wells max is 2
                           h_cono=1.95,
-                          v_fondo=1.95 * multi_well_rack_area / 2,  # Prismatic
+                          v_fondo=695,  # Prismatic
                           tip_recycling='A3')
 
     Water = Reagent(name='Water',
@@ -123,7 +123,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume=4800,
                     num_wells=1,  # num_Wells max is 1
                     h_cono=1.95,
-                    v_fondo=1.95 * multi_well_rack_area / 2)  # Prismatic
+                    v_fondo=695)  # Prismatic
 
     Elution = Reagent(name='Elution',
                       flow_rate_aspirate=0.5,
@@ -172,16 +172,15 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(str('After change: ' + str(reagent.col)))
             reagent.vol_well = reagent.vol_well_original
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+                    #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
             if height < 0:
                 height = 0.5
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
             if height < 0:
@@ -266,8 +265,8 @@ def run(ctx: protocol_api.ProtocolContext):
 ####################################
     # Load tip_racks
     tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-               for slot in [ '11', '1', '4', '7', '10']]
-    tips300r = ctx.load_labware('opentrons_96_tiprack_300ul', '5', '200µl filter tiprack')
+               for slot in [ '11', '1', '4', '7']]
+    tips300r = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack') for slot in ['5','10']]
     tips300ri = ctx.load_labware('opentrons_96_tiprack_300ul', '8', '200µl filter tiprack')
 
     # tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
@@ -476,7 +475,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=rinse)
                 custom_mix(m300, reagent=Isopropanol, location=work_destinations[i], vol=transfer_vol,
-                           rounds=6, blow_out=True, mix_height=1)
+                           rounds=2, blow_out=True, mix_height=1)
                 #m300.drop_tip(home_after=True)
             m300.return_tip(tips300ri.rows()[0][i])
             #tip_track['counts'][m300] += 8
@@ -556,7 +555,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             #if not m300.hw_pipette['has_tip']:
             #    pick_up(m300)
-            m300.pick_up_tip(tips300r.rows()[0][i])
+            m300.pick_up_tip(tips300r[0].rows()[0][i])
             for j, transfer_vol in enumerate(ethanol_wash_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
@@ -571,7 +570,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                pickup_height=pickup_height, rinse=rinse)
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1)
-            m300.return_tip(tips300r.rows()[0][i])
+            m300.return_tip(tips300r[0].rows()[0][i])
         #tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
@@ -613,7 +612,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
             #if not m300.hw_pipette['has_tip']:
-            m300.pick_up_tip(tips300r.rows()[0][i])
+            m300.pick_up_tip(tips300r[0].rows()[0][i])
             for transfer_vol in supernatant_vol:
                 # Pickup_height is fixed here
                 pickup_height = 0.1
@@ -623,8 +622,9 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multi(m300, reagent=Elution, source=work_destinations[i],
                                dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=False)
-            m300.return_tip(tips300r.rows()[0][i])
-            #tip_track['counts'][m300] += 8
+            #m300.return_tip(tips300r[0].rows()[0][i])
+            m300.drop_tip(home_after=True)
+            tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -650,7 +650,7 @@ def run(ctx: protocol_api.ProtocolContext):
         # 70% EtOH washes
         for i in range(num_cols):
             #if not m300.hw_pipette['has_tip']:
-            m300.pick_up_tip(tips300r.rows()[0][i])
+            m300.pick_up_tip(tips300r[1].rows()[0][i])
             for j, transfer_vol in enumerate(ethanol_wash_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
@@ -665,7 +665,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                pickup_height=pickup_height, rinse=rinse)
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1)
-            m300.return_tip(tips300r.rows()[0][i])
+            m300.return_tip(tips300r[1].rows()[0][i])
         #m300.drop_tip(home_after=True)
         #tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -709,7 +709,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(num_cols):
             x_offset = find_side(i) * x_offset_rs
             #if not m300.hw_pipette['has_tip']:
-            m300.pick_up_tip(tips300r.rows()[0][i])
+            m300.pick_up_tip(tips300r[1].rows()[0][i])
             for transfer_vol in supernatant_vol:
                 # Pickup_height is fixed here
                 pickup_height = 0.1
