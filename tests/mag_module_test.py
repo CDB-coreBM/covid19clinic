@@ -1,7 +1,7 @@
 from opentrons import protocol_api
 
 metadata = {'apiLevel': '2.0'}
-height = 13
+height = 17
 
 def run(protocol):
   magdeck = protocol.load_module('magdeck','4')
