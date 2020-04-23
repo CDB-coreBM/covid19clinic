@@ -20,7 +20,7 @@ metadata = {
 #Defined variables
 ##################
 NUM_SAMPLES = 4
-air_gap_vol = 15
+air_gap_vol = 5
 
 volume_control = 10
 volume_sample = 300
@@ -29,11 +29,13 @@ height_control = 20
 temperature = 25
 
 #Screwcap variables
+diameter_sample = 8.25  # Diameter of the screwcap
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
 # Calculated variables
 area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
+area_section_sample = (math.pi * diameter_sample**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cross secion area, cross_section_area = 63.61
 
@@ -48,10 +50,11 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/data/log_times/'
-    if not os.path.isdir(folder_path):
-        os.mkdir(folder_path)
-    file_path = folder_path + '/StationA_time_log.txt'
+    if not ctx.is_simulating():
+        folder_path = '/data/log_times/'
+        if not os.path.isdir(folder_path):
+            os.mkdir(folder_path)
+        file_path = folder_path + '/StationA_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -88,7 +91,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent_reservoir_volume = 700*24,
                       num_wells = 24,  # num_cols comes from available columns
                       h_cono = 4,
-                      v_fondo = 4 * math.pi * 4**3 / 3
+                      v_fondo = 4 * area_section_sample / 3
                       )  # Sphere
 
     Control_I.vol_well = Control_I.vol_well_original
@@ -137,19 +140,18 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(str('After change: ' + str(reagent.col)))
             reagent.vol_well = reagent.vol_well_original
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+                    #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             ctx.comment('Used height is ' + str(height))
             col_change = False
@@ -266,8 +268,8 @@ def run(ctx: protocol_api.ProtocolContext):
             pick_up(p20)
         for d in destinations:
             # Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_protk)
-            move_vol_multi(p20, reagent = ProtK, source = Control_I.reagent_reservoir,
+            [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_control)
+            move_vol_multi(p20, reagent = Control_I, source = Control_I.reagent_reservoir,
             dest = d, vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = pickup_height, drop_height = height_control, rinse = False)
         #Drop tip and update counter
