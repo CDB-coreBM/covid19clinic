@@ -23,17 +23,24 @@ REAGENT SETUP:
 """
 
 # Initial variables
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
 
 # Tune variables
-size_transfer = 7  # Number of wells the distribute function will fill
-volume_mmix = 24.6  # Volume of transfered master mix
-volume_sample = 5.4  # Volume of the sample
-volume_screw_one = 450  # Total volume of first screwcap
-volume_screw_two = 0  # Total volume of second screwcap
+size_transfer = 12  # Number of wells the distribute function will fill
+
+#ROCHE MMIX
+volume_mmix = 15 #24.6  # Volume of transfered master mix
+volume_sample = 5 #5.4  # Volume of the sample
+
+#SUPERSCRIPT MMIX
+#volume_mmix = 24.6  # Volume of transfered master mix
+#volume_sample = 5.4  # Volume of the sample
+
+volume_screw_one = 1500  # Total volume of first screwcap
+volume_screw_two = 1500  # Total volume of second screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 25  # Temperature of temp module
+temperature = 4  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
 # Calculated variables
@@ -81,7 +88,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': True, 'description': 'Transfer elution'}
+        2: {'Execute': False, 'description': 'Transfer elution'}
     }
 
     for s in STEPS:  # Create an empty wait_time
@@ -105,7 +112,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Load labware
     source_plate = ctx.load_labware(
-        'transparent_96_wellplate_250ul', '1',
+        'pcr_transparent_96_wellplate_200ul_alum_covid', '1',
         'chilled RNA elution plate from station B')
 
     tuberack = ctx.load_labware(
@@ -115,15 +122,15 @@ def run(ctx: protocol_api.ProtocolContext):
     tempdeck = ctx.load_module('tempdeck', '4')
 
     # Define temperature of module. Should be 4. 25 for testing purposes
-    #tempdeck.set_temperature(temperature)
+    tempdeck.set_temperature(temperature)
 
     pcr_plate = tempdeck.load_labware(
-        'roche_96_wellplate_100ul', 'PCR plate')
+        'roche_96_wellplate_100ul_alum_covid', 'PCR plate')
 
     # Load Tipracks
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
-        for slot in ['5']
+        for slot in ['5']s
     ]
 
     tips200 = [
@@ -221,7 +228,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Set light color to green
     gpio.set_button_light(0, 1, 0)
-    os.system('mpg123 -f -20000 /var/lib/jupyter/notebooks/lionking.mp3')
+    os.system('mpg123 -f -20000 /var/lib/jupyter/notebooks/lionking.mp3 &')
     # Print the values of master mix used and remaining theoretical volume
     if STEPS[1]['Execute'] == True:
         total_used_vol = np.sum(used_vol)

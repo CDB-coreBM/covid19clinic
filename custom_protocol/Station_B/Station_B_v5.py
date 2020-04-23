@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 16
 air_gap_vol = 15
 
 # mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
@@ -245,7 +245,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ##################################
     # Elution plate - final plate, goes to C
     elution_plate = tempdeck.load_labware(
-        'transparent_96_wellplate_250ul',
+        'pcr_transparent_96_wellplate_200ul_alum_covid',
         'cooled elution plate')
 
 ############################################
