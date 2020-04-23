@@ -23,7 +23,7 @@ REAGENT SETUP:
 """
 
 # Initial variables
-NUM_SAMPLES = 96
+NUM_SAMPLES = 16
 
 # Tune variables
 size_transfer = 12  # Number of wells the distribute function will fill
@@ -36,8 +36,8 @@ volume_sample = 5 #5.4  # Volume of the sample
 #volume_mmix = 24.6  # Volume of transfered master mix
 #volume_sample = 5.4  # Volume of the sample
 
-volume_screw_one = 1500  # Total volume of first screwcap
-volume_screw_two = 1500  # Total volume of second screwcap
+volume_screw_one = 285  # Total volume of first screwcap
+volume_screw_two = 0  # Total volume of second screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 4  # Temperature of temp module
@@ -88,7 +88,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': False, 'description': 'Transfer elution'}
+        2: {'Execute': True, 'description': 'Transfer elution'}
     }
 
     for s in STEPS:  # Create an empty wait_time
@@ -130,7 +130,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Load Tipracks
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
-        for slot in ['5']s
+        for slot in ['5']
     ]
 
     tips200 = [
