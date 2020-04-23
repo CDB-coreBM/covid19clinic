@@ -15,7 +15,7 @@ metadata = {
     'author': 'Aitor & JL (jlvillanueva@clinic.cat)',
     'source': 'Custom Protocol',
     'apiLevel': '2.0'
-}
+
 
 """
 REAGENT SETUP:
@@ -213,7 +213,7 @@ def run(ctx: protocol_api.ProtocolContext):
     #tempdeck.set_temperature(temperature)
 
     pcr_plate = tempdeck.load_labware(
-        'roche_96_wellplate_100ul', 'PCR plate')
+        'roche_96_wellplate_100ul_alum_covid', 'PCR plate')
 
     # Load Tipracks
     tips20 = [

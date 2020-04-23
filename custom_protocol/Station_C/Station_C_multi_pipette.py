@@ -69,7 +69,6 @@ def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_heigh
         pipette.blow_out(waste_pool.bottom(pickup_height + 3))
     return (len(dest) * volume_mmix)
 
-
 def run(ctx: protocol_api.ProtocolContext):
     global volume_screw_one
     global volume_screw_two
