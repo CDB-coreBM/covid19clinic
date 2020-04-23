@@ -14,7 +14,7 @@ metadata = {
     'protocolName': 'S2 Station C ROCHE Master Mix Version 1',
     'author': 'Aitor & JL (jlvillanueva@clinic.cat)',
     'source': 'Custom Protocol',
-    'apiLevel': '2.0'
+    'apiLevel': '2.0'}
 
 
 """
@@ -25,15 +25,17 @@ REAGENT SETUP:
 
 # Initial variables
 NUM_SAMPLES = 16
-air_gap_vol=5
+air_gap_vol = 5
 # Tune variables
 volume_mmix = 15  # Volume of transfered master mix
 height_mmix = 15  # Height to dispense mmix
+MMIX_initial_volume = 300 #Initial volume of mmix screwcap
+
 volume_sample = 5  # Volume of the sample
-diameter_screwcap = 8.25  # Diameter of the screwcap
+
 temperature = 25  # Temperature of temp module
+diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
-MMIX_initial_volume=300
 
 # Calculated variables
 area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
@@ -49,7 +51,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': True, 'description': 'Transfer elution'}
+        2: {'Execute': False, 'description': 'Transfer elution'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -81,9 +83,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Reagents and their characteristics
     MasterMix = Reagent(name = 'MasterMix',
-                     flow_rate_aspirate = 1,
+                     flow_rate_aspirate = 0.5,
                      flow_rate_dispense = 1,
-                     rinse = True,
+                     rinse = False,
                      reagent_reservoir_volume = MMIX_initial_volume,
                      num_wells = 1,  # num_Wells max is 4
                      h_cono = (volume_cone * 3 / area_section_screwcap),
@@ -154,7 +156,7 @@ def run(ctx: protocol_api.ProtocolContext):
         return height, col_change
 
     def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                       pickup_height, drop_height, rinse, multi = False):
+                       pickup_height, drop_height, rinse, multi):
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location = source, vol = vol,
@@ -232,12 +234,12 @@ def run(ctx: protocol_api.ProtocolContext):
     # pipettes
     p20 = ctx.load_instrument(
         'p20_single_gen2', mount='right', tip_racks=tips20)
-    p300 = ctx.load_instrument(
-        'p300_single_gen2', mount='left', tip_racks=tips200)
+    #p300 = ctx.load_instrument(
+    #    'p300_single_gen2', mount='left', tip_racks=tips200)
 
     tip_track = {
-        'counts': {p20: 0,p300: 0},
-        'maxes': {p20: 10000,p300: 0}
+        'counts': {p20: 0},
+        'maxes': {p20: 10000}
     }
     # setup up sample sources and destinations
     elution_sources = source_plate.wells()[:NUM_SAMPLES]
@@ -292,7 +294,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 pick_up(p20)
             move_vol_multi(p20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
-                   pickup_height = 1, drop_height = 10, rinse = False)
+                   pickup_height = 1, drop_height = 10, rinse = False, multi = False)
             custom_mix(p20, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 10)
             p20.aspirate(5, d.top(2))
             #Drop tip and update counter
