@@ -1,6 +1,6 @@
 from opentrons import protocol_api
 from opentrons.drivers.rpi_drivers import gpio
-import numpy as np
+import math
 from timeit import default_timer as timer
 import json
 from datetime import datetime
@@ -27,41 +27,165 @@ NUM_SAMPLES = 16
 # Tune variables
 volume_mmix = 15  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_screw_one = 1600  # Total volume of first screwcap
-extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 25  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
 # Calculated variables
-area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
+area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 
 def check_door():
     return gpio.read_window_switches()
 
 def run(ctx: protocol_api.ProtocolContext):
-    global volume_screw_one
     global volume_screw
-    volume_screw = volume_screw_one
     unused_volume_one = 0
 
-    STEP = 0
-    STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': True, 'description': 'Transfer elution'}
-    }
+        STEP = 0
+        STEPS = {  # Dictionary with STEP activation, description, and times
+            1: {'Execute': True, 'description': 'Transfer MMIX'},
+            2: {'Execute': True, 'description': 'Transfer elution'}
+        }
+        for s in STEPS:  # Create an empty wait_time
+            if 'wait_time' not in STEPS[s]:
+                STEPS[s]['wait_time'] = 0
 
-    for s in STEPS:  # Create an empty wait_time
-        if 'wait_time' not in STEPS[s]:
-            STEPS[s]['wait_time'] = 0
+        #Folder and file_path for log time
+        folder_path = '/var/lib/jupyter/notebooks'
+        if not ctx.is_simulating():
+            if not os.path.isdir(folder_path):
+                os.mkdir(folder_path)
+            file_path = folder_path + '/StationC_time_log.txt'
 
-    #Folder and file_path for log time
-    folder_path = '/var/lib/jupyter/notebooks'
-    if not ctx.is_simulating():
-        if not os.path.isdir(folder_path):
-            os.mkdir(folder_path)
-        file_path = folder_path + '/StationC_time_log.txt'
+    # Define Reagents as objects with their properties
+    class Reagent:
+        def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
+                     reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling='none'):
+            self.name = name
+            self.flow_rate_aspirate = flow_rate_aspirate
+            self.flow_rate_dispense = flow_rate_dispense
+            self.rinse = bool(rinse)
+            self.reagent_reservoir_volume = reagent_reservoir_volume
+            self.num_wells = num_wells
+            self.col = 0
+            self.vol_well = 0
+            self.h_cono = h_cono
+            self.v_cono = v_fondo
+            self.tip_recycling = tip_recycling
+            self.vol_well_original = reagent_reservoir_volume / num_wells
+
+    # Reagents and their characteristics
+    MasterMix = Reagent(name = 'MasterMix',
+                     flow_rate_aspirate = 1,
+                     flow_rate_dispense = 1,
+                     rinse = True,
+                     reagent_reservoir_volume = 1600,
+                     num_wells = 1,  # num_Wells max is 4
+                     h_cono = (volume_cone * 3 / area_section_screwcap),
+                     v_fondo = 50
+                     )
+
+    Samples = Reagent(name = 'Samples',
+                      flow_rate_aspirate = 1,
+                      flow_rate_dispense = 1,
+                      rinse = False,
+                      reagent_reservoir_volume = 45*96,
+                      num_wells = 96,
+                      h_cono = 0,
+                      v_fondo = 0
+                      )
+
+    MasterMix.vol_well = MasterMix.vol_well_original
+    Samples.vol_well = 45
+
+    ##################
+    # Custom functions
+    def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
+        '''
+        Function for mix in the same location a certain number of rounds. Blow out optional
+        '''
+        if mix_height == 0:
+            mix_height = 3
+        pipet.aspirate(1, location=location.bottom(
+            z=3), rate=reagent.flow_rate_aspirate)
+        for _ in range(rounds):
+            pipet.aspirate(vol, location=location.bottom(
+                z=3), rate=reagent.flow_rate_aspirate)
+            pipet.dispense(vol, location=location.bottom(
+                z=mix_height), rate=reagent.flow_rate_dispense)
+        pipet.dispense(1, location=location.bottom(
+            z=mix_height), rate=reagent.flow_rate_dispense)
+        if blow_out == True:
+            pipet.blow_out(location.top(z=-2))  # Blow out
+
+    def calc_height(reagent, cross_section_area, aspirate_volume):
+        nonlocal ctx
+        ctx.comment('Remaining volume ' + str(reagent.vol_well) +
+                    '< needed volume ' + str(aspirate_volume) + '?')
+        if reagent.vol_well < aspirate_volume:
+            ctx.comment('Next column should be picked')
+            ctx.comment('Previous to change: ' + str(reagent.col))
+            # column selector position; intialize to required number
+            reagent.col = reagent.col + 1
+            ctx.comment(str('After change: ' + str(reagent.col)))
+            reagent.vol_well = reagent.vol_well_original
+            ctx.comment('New volume:' + str(reagent.vol_well))
+            height = (reagent.vol_well - aspirate_volume -
+                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            reagent.vol_well = reagent.vol_well - aspirate_volume
+            ctx.comment('Remaining volume:' + str(reagent.vol_well))
+            if height < 0:
+                height = 0.5
+            col_change = True
+        else:
+            height = (reagent.vol_well - aspirate_volume -
+                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            reagent.vol_well = reagent.vol_well - aspirate_volume
+            ctx.comment('Calculated height is ' + str(height))
+            if height < 0:
+                height = 0.5
+            ctx.comment('Used height is ' + str(height))
+            col_change = False
+        return height, col_change
+
+    def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
+                       pickup_height, drop_height, rinse, multi = False):
+        # Rinse before aspirating
+        if rinse == True:
+            custom_mix(pipet, reagent, location = source, vol = vol,
+                       rounds = 2, blow_out = True, mix_height = 0)
+        # SOURCE
+        s = source.bottom(pickup_height).move(Point(x = x_offset))
+        pipet.aspirate(vol, s)  # aspirate liquid
+        if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
+            pipet.aspirate(air_gap_vol, source.top(z = -2),
+                           rate = reagent.flow_rate_aspirate)  # air gap
+        # GO TO DESTINATION
+        if drop_height!=0:
+            drop = dest.bottom(z = drop_height)
+        else:
+            drop = dest.top(z = -2)
+        pipet.dispense(vol + air_gap_vol, drop,
+                       rate = reagent.flow_rate_dispense)  # dispense all
+        pipet.blow_out(dest.top(z = -2))
+        if multi == True:
+            if air_gap_vol != 0: #Air gap for multidispense
+                pipet.aspirate(air_gap_vol, dest.top(z = -2),
+                               rate = reagent.flow_rate_aspirate)  # air gap
+
+    ##########
+    # pick up tip and if there is none left, prompt user for a new rack
+    def pick_up(pip):
+        nonlocal tip_track
+        if not ctx.is_simulating():
+            if tip_track['counts'][pip] == tip_track['maxes'][pip]:
+                ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
+                resuming.')
+                pip.reset_tipracks()
+                tip_track['counts'][pip] = 0
+        pip.pick_up_tip()
+
 
     # Check if door is opened
     if check_door() == True:
@@ -110,71 +234,68 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
-    pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
-
-    # Divide destination wells in small groups for P300 pipette
-    dests = list(divide_destinations(pcr_wells, size_transfer))
+    destinations = pcr_plate.wells()[:NUM_SAMPLES]
 
     # Set mmix source to first screwcap
     mmix = tuberack.wells()[0]
 
-    # transfer mastermix with P300
+    ############################################################################
+    # STEP 1: Add Master Mix
+    ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-        p300.pick_up_tip()
-        pickup_height = ((volume_screw - volume_cone) /
-                         area_section_screwcap - h_cone)
-        used_vol = []
-        volume_screw = volume_screw_one
-        for dest in dests:
-            # We make sure there is enough volume in screwcap one or we switch
-            ctx.comment('Needed volume is: '+str(volume_mmix * len(dest) + extra_dispensal + 35)
-                +'\u03BCl., available is '+str(volume_screw)+'\u03BCl.')
-            if volume_screw < (volume_mmix * len(dest) + extra_dispensal + 35):
-                unused_volume_one = volume_screw
-                mmix = tuberack.wells()[4]
-                volume_screw = volume_screw_two  # New tube is full now
-                pickup_height = ((volume_screw - volume_cone) /
-                                 area_section_screwcap - h_cone)
-            if pickup_height<=0:
-                pickup_height=0.5
-            # Distribute the mmix in different wells
-            ctx.comment('height is '+str(pickup_height))
-            used_vol_temp = distribute_custom(
-                p300, volume_mmix, mmix, dest, mmix, pickup_height, extra_dispensal)
-            used_vol.append(used_vol_temp)
-            # Update volume left in screwcap
-            volume_screw = volume_screw - \
-                (volume_mmix * len(dest) + extra_dispensal)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
 
-            # Update pickup_height according to volume left
-            pickup_height = ((volume_screw - volume_cone) /
-                             area_section_screwcap - h_cone)
-
-        p300.drop_tip()
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    # transfer samples to corresponding locations with p20
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
         # Transfer parameters
         start = datetime.now()
-        for s, d in zip(samples, pcr_wells):
-            p20.pick_up_tip()
-            p20.transfer(volume_sample, s, d, new_tip='never')
-            p20.mix(1, 10, d)
-            p20.aspirate(5, d.top(2))
-            p20.drop_tip()
+        if not p20.hw_pipette['has_tip']:
+            pick_up(p20)
+        for d in destinations:
+            # Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(MasterMix, screwcap_cross_section_area, volume_mmix)
+            move_vol_multi(p20, reagent = MasterMix, source = MasterMix.reagent_reservoir,
+            dest = d, vol = volume_mmix, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = pickup_height, drop_height = height_mmix, rinse = False)
+        #Drop tip and update counter
+        p20.drop_tip()
+        tip_track['counts'][p20]+=1
+
+        #Time statistics
         end = datetime.now()
         time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+        ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
+    ############################################################################
+    # STEP 2: Add Samples
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        # Transfer parameters
+        start = datetime.now()
+        for s, d in zip(sample_sources, destinations):
+            if not p20.hw_pipette['has_tip']:
+                pick_up(p20)
+            move_vol_multi(p20, reagent = Samples, source = s, dest = d,
+            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
+                   pickup_height = 1, drop_height = 10, rinse = False)
+            custom_mix(p20, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            p20.aspirate(5, d.top(2))
+            #Drop tip and update counter
+            p20.drop_tip()
+            tip_track['counts'][p20]+=1
+
+        #Time statistics
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+        ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
 
     # Export the time log to a tsv file
     if not ctx.is_simulating():
