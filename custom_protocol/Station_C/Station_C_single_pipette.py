@@ -9,7 +9,7 @@ import os
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station C Version 7',
+    'protocolName': 'S2 Station C ROCHE Master Mix Version 1',
     'author': 'Aitor & JL (jlvillanueva@clinic.cat)',
     'source': 'Custom Protocol',
     'apiLevel': '2.0'
@@ -26,6 +26,7 @@ NUM_SAMPLES = 16
 
 # Tune variables
 volume_mmix = 15  # Volume of transfered master mix
+height_mmix = 15  # Height to dispense mmix
 volume_sample = 5  # Volume of the sample
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 25  # Temperature of temp module
@@ -186,7 +187,6 @@ def run(ctx: protocol_api.ProtocolContext):
                 tip_track['counts'][pip] = 0
         pip.pick_up_tip()
 
-
     # Check if door is opened
     if check_door() == True:
         # Set light color to purple
@@ -233,7 +233,7 @@ def run(ctx: protocol_api.ProtocolContext):
         'p300_single_gen2', mount='left', tip_racks=tips200)
 
     # setup up sample sources and destinations
-    samples = source_plate.wells()[:NUM_SAMPLES]
+    elution_sources = source_plate.wells()[:NUM_SAMPLES]
     destinations = pcr_plate.wells()[:NUM_SAMPLES]
 
     # Set mmix source to first screwcap
@@ -267,6 +267,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
         ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
+
     ############################################################################
     # STEP 2: Add Samples
     ############################################################################
@@ -277,13 +278,13 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        for s, d in zip(sample_sources, destinations):
+        for s, d in zip(elution_sources, destinations):
             if not p20.hw_pipette['has_tip']:
                 pick_up(p20)
             move_vol_multi(p20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 1, drop_height = 10, rinse = False)
-            custom_mix(p20, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            custom_mix(p20, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 10)
             p20.aspirate(5, d.top(2))
             #Drop tip and update counter
             p20.drop_tip()
@@ -295,7 +296,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
         ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-
 
     # Export the time log to a tsv file
     if not ctx.is_simulating():
