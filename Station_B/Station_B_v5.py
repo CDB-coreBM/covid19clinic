@@ -132,7 +132,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent_reservoir_volume=800,
                       num_wells=num_cols,  # num_cols comes from available columns
                       h_cono=4,
-                      v_fondo=4 * math.pi * 4**3 / 3)  # Sphere
+                      v_fondo=self.h_cono * math.pi * D_deepwell**2/4 /3)  # Sphere
 
     Ethanol.vol_well = Ethanol.vol_well_original
     Beads.vol_well = Beads.vol_well_original
