@@ -128,7 +128,7 @@
         ]
     },
     "metadata": {
-        "displayName": "transparent 96 Well Plate 250 µL",
+        "displayName": "transparent 96 Well PCR Plate 200 µL",
         "displayCategory": "wellPlate",
         "displayVolumeUnits": "µL",
         "tags": []
@@ -136,7 +136,7 @@
     "dimensions": {
         "xDimension": 127.9,
         "yDimension": 85.65,
-        "zDimension": 34.8
+        "zDimension": 33.3
     },
     "wells": {
         "A1": {
@@ -1122,7 +1122,7 @@
         "quirks": [],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "transparent_96_wellplate_250ul"
+        "loadName": "pcr_transparent_96_wellplate_200ul_alum_covid"
     },
     "namespace": "custom_beta",
     "version": 1,
