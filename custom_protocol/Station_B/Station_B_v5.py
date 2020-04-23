@@ -94,7 +94,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       num_wells=4,  # num_Wells max is 4
                       h_cono=1.95,
                       v_fondo=695,  # Prismatic
-                      tip_recycling='A1')
+                      tip_recycling=['5','10'])
 
     Beads = Reagent(name='Magnetic beads',
                     flow_rate_aspirate=1,
@@ -103,8 +103,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     reagent_reservoir_volume=29760,
                     num_wells=4,
                     h_cono=1.95,
-                    v_fondo=695,  # Prismatic
-                    tip_recycling='A2')
+                    v_fondo=695 ) # Prismatic)
 
     Isopropanol = Reagent(name='Isopropanol',
                           flow_rate_aspirate=1,
@@ -114,7 +113,7 @@ def run(ctx: protocol_api.ProtocolContext):
                           num_wells=2,  # num_Wells max is 2
                           h_cono=1.95,
                           v_fondo=695,  # Prismatic
-                          tip_recycling='A3')
+                          tip_recycling='8')
 
     Water = Reagent(name='Water',
                     flow_rate_aspirate=1,
@@ -132,7 +131,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent_reservoir_volume=800,
                       num_wells=num_cols,  # num_cols comes from available columns
                       h_cono=4,
-                      v_fondo=self.h_cono * math.pi * D_deepwell**2/4 /3)  # Sphere
+                      v_fondo=4 * math.pi * D_deepwell**2/4 /3)  # Sphere
 
     Ethanol.vol_well = Ethanol.vol_well_original
     Beads.vol_well = Beads.vol_well_original
@@ -180,7 +179,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 height = 0.5
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
             if height < 0.5:
@@ -266,8 +265,8 @@ def run(ctx: protocol_api.ProtocolContext):
     # Load tip_racks
     tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
                for slot in [ '11', '1', '4', '7']]
-    tips300r = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack') for slot in ['5','10']]
-    tips300ri = ctx.load_labware('opentrons_96_tiprack_300ul', '8', '200µl filter tiprack')
+    tips300r = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack') for slot in Ethanol.tip_recycling]
+    tips300ri = ctx.load_labware('opentrons_96_tiprack_300ul', Isopropanol.tip_recycling, '200µl filter tiprack')
 
     # tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
     #    for slot in ['10']]
