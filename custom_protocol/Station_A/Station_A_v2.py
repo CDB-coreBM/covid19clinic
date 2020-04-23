@@ -214,14 +214,12 @@ def run(ctx: protocol_api.ProtocolContext):
     dest_plate = ctx.load_labware(
         'abgenestorage_96_wellplate_1200ul', '5',
         'ABGENE STORAGE 96 Well Plate 1200 µL')
-<<<<<<< HEAD
-=======
+
 
     ############################################
     # tempdeck
     #tempdeck = ctx.load_module('tempdeck', '1')
     #tempdeck.set_temperature(temperature)
->>>>>>> 865a8444a412036d3ab4f54df849a513d9ef2ff8
 
     ##################################
     # Cooled reagents in tempdeck
@@ -308,6 +306,7 @@ def run(ctx: protocol_api.ProtocolContext):
                    pickup_height = 1, drop_height = 0, rinse = False)
             #if STEPS[0]['Execute'] == True:
             custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            p1000.touch_tip(speed=20, v_offset=-5)
             #Drop tip and update counter
             p1000.drop_tip()
             tip_track['counts'][p1000]+=1

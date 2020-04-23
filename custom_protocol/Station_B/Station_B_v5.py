@@ -476,7 +476,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 custom_mix(m300, reagent=Isopropanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1)
                 #m300.drop_tip(home_after=True)
-            m300.return_tip(tips300ri.rows()[0][i])
+            m300.return_tip(tips300ri.rows()[0][i], home_after=False)
             #tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
@@ -569,7 +569,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                pickup_height=pickup_height, rinse=rinse)
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1)
-            m300.return_tip(tips300r[0].rows()[0][i])
+            m300.return_tip(tips300r[0].rows()[0][i], home_after=False)
         #tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
@@ -665,7 +665,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                pickup_height=pickup_height, rinse=rinse)
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1)
-            m300.return_tip(tips300r[1].rows()[0][i])
+            m300.return_tip(tips300r[1].rows()[0][i], home_after=False)
         #m300.drop_tip(home_after=True)
         #tip_track['counts'][m300] += 8
         end = datetime.now()
