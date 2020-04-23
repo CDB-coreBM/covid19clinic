@@ -19,8 +19,9 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 4
-air_gap_vol = 5
+NUM_SAMPLES = 16
+air_gap_vol_ci = 2
+air_gap_vol_sample = 5
 
 volume_control = 10
 volume_sample = 300
@@ -78,7 +79,7 @@ def run(ctx: protocol_api.ProtocolContext):
                      flow_rate_aspirate = 1,
                      flow_rate_dispense = 1,
                      rinse = True,
-                     reagent_reservoir_volume = 1500,
+                     reagent_reservoir_volume = 200,
                      num_wells = 1,  # num_Wells max is 4
                      h_cono = (volume_cone * 3 / area_section_screwcap),
                      v_fondo = 50
@@ -213,10 +214,6 @@ def run(ctx: protocol_api.ProtocolContext):
     dest_plate = ctx.load_labware(
         'abgenestorage_96_wellplate_1200ul', '5',
         'ABGENE STORAGE 96 Well Plate 1200 µL')
-    ############################################
-    # tempdeck
-    #tempdeck = ctx.load_module('tempdeck', '1')
-    #tempdeck.set_temperature(temperature)
 
     ##################################
     # Cooled reagents in tempdeck
@@ -224,7 +221,7 @@ def run(ctx: protocol_api.ProtocolContext):
         #'bloquealuminio_24_screwcap_wellplate_1500ul',
         #'cooled reagent tubes')
     reagents = ctx.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
+        'bloquealuminio_24_screwcap_wellplate_1500ul','7',
         'cooled reagent tubes')
 
     ####################################
@@ -237,7 +234,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    Control_I.reagent_reservoir = reagents.wells()[4]
+    Control_I.reagent_reservoir = reagents.wells()[0]
 
     # setup samples and destinations
     sample_sources_full = generate_source_table(source_racks)
@@ -270,7 +267,7 @@ def run(ctx: protocol_api.ProtocolContext):
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_control)
             move_vol_multi(p20, reagent = Control_I, source = Control_I.reagent_reservoir,
-            dest = d, vol = volume_control, air_gap_vol = air_gap_vol, x_offset = 0,
+            dest = d, vol = volume_control, air_gap_vol = air_gap_vol_ci, x_offset = 0,
                    pickup_height = pickup_height, drop_height = height_control, rinse = False)
         #Drop tip and update counter
         p20.drop_tip()
@@ -299,8 +296,9 @@ def run(ctx: protocol_api.ProtocolContext):
             #Mix the sample before dispensing
             custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
             move_vol_multi(p1000, reagent = Samples, source = s, dest = d,
-            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
+            vol = volume_sample, air_gap_vol = air_gap_vol_sample, x_offset = 0,
                    pickup_height = 1, drop_height = 0, rinse = False)
+            #if STEPS[0]['Execute'] == True:
             custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
             #Drop tip and update counter
             p1000.drop_tip()
@@ -327,6 +325,8 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
+    if not ctx.is_simulating():
+        os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/lionking.mp3')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
