@@ -112,7 +112,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Load labware
     source_plate = ctx.load_labware(
-        'transparent_96_wellplate_250ul', '1',
+        'pcr_transparent_96_wellplate_200ul_alum_covid', '1',
         'chilled RNA elution plate from station B')
 
     tuberack = ctx.load_labware(
@@ -130,7 +130,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Load Tipracks
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
-        for slot in ['5']
+        for slot in ['5']s
     ]
 
     tips200 = [
