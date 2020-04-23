@@ -83,7 +83,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Reagents and their characteristics
     MasterMix = Reagent(name = 'MasterMix',
-                     flow_rate_aspirate = 0.5,
+                     flow_rate_aspirate = 0,
                      flow_rate_dispense = 1,
                      rinse = False,
                      reagent_reservoir_volume = MMIX_initial_volume,
@@ -202,7 +202,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Load labware
     source_plate = ctx.load_labware(
-        'transparent_96_wellplate_250ul', '1',
+        'pcr_transparent_96_wellplate_200ul_alum_covid', '1',
         'chilled RNA elution plate from station B')
 
     tuberack = ctx.load_labware(
@@ -321,7 +321,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Set light color to green
     gpio.set_button_light(0, 1, 0)
-    os.system('mpg123 -f -20000 /var/lib/jupyter/notebooks/lionking.mp3')
+    os.system('mpg123 -f -20000 /var/lib/jupyter/notebooks/lionking.mp3 &')
     # Print the values of master mix used and remaining theoretical volume
     if STEPS[1]['Execute'] == True:
         total_used_vol = np.sum(used_vol)
