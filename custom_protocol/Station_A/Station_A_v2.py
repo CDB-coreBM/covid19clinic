@@ -3,7 +3,6 @@ from opentrons.types import Point
 from opentrons import protocol_api
 import time
 import os
-import numpy as np
 from timeit import default_timer as timer
 import json
 from datetime import datetime
@@ -11,22 +10,20 @@ import csv
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station Kingfisher Version 1',
+    'protocolName': 'S2 Station A Version 2',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
-    'description': 'Protocol for Kingfisher sample setup (A)'
+    'description': 'Protocol for sample setup (A)'
 }
 
 #Defined variables
 ##################
 NUM_SAMPLES = 4
-air_gap_vol = 5
+air_gap_vol = 15
 
-volume_protk = 10
 volume_control = 10
 volume_sample = 300
-volume_buffer = 550 #(530ul buffer + 20ul beads)
 height_protk = 10
 height_control = 20
 temperature = 25
@@ -35,24 +32,16 @@ temperature = 25
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
-#falcon
-diameter_falcon = 27
-h_cone_falcon = 17.4
-
 # Calculated variables
-area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
+area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
-screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cross secion area
-falcon_cross_section_area = math.pi * diameter_falcon**2 / 4
-v_cone_falcon = 1/3*h_cone_falcon * falcon_cross_section_area
+screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cross secion area, cross_section_area = 63.61
 
 def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': '1: Add proteinase K (10ul)'},
-        2: {'Execute': False, 'description': '2: Add internal control (10ul)'},
-        3: {'Execute': False, 'description': '3: Add samples (300ul)'},
-        4: {'Execute': True, 'description': '4: Add binding buffer (550ul)'}
+        1: {'Execute': True, 'description': '1: Add internal control (10ul)'},
+        2: {'Execute': True, 'description': '2: Add samples (300ul)'},
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -82,26 +71,6 @@ def run(ctx: protocol_api.ProtocolContext):
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
     # Reagents and their characteristics
-    Buffer = Reagent(name = 'Buffer',
-                      flow_rate_aspirate = 1,
-                      flow_rate_dispense = 1,
-                      rinse = False,
-                      reagent_reservoir_volume = 58300,
-                      num_wells = 2,  # num_Wells max is 4
-                      h_cono = h_cone_falcon,
-                      v_fondo = v_cone_falcon
-                      )
-
-    ProtK = Reagent(name = 'Proteinase K',
-                       flow_rate_aspirate = 1,
-                       flow_rate_dispense = 1,
-                       rinse = False,
-                       reagent_reservoir_volume = 1500,
-                       num_wells = 1,  # num_Wells max is 4
-                       h_cono = (volume_cone * 3 / area_section_screwcap),
-                       v_fondo = 50
-                       )
-
     Control_I = Reagent(name = 'Internal Control',
                      flow_rate_aspirate = 1,
                      flow_rate_dispense = 1,
@@ -122,8 +91,6 @@ def run(ctx: protocol_api.ProtocolContext):
                       v_fondo = 4 * math.pi * 4**3 / 3
                       )  # Sphere
 
-    Buffer.vol_well = Buffer.vol_well_original
-    ProtK.vol_well = ProtK.vol_well_original
     Control_I.vol_well = Control_I.vol_well_original
     Samples.vol_well = 700
 

@@ -93,7 +93,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/Station_C_time_log.txt'
+        file_path = folder_path + '/StationC_time_log.txt'
 
     # Check if door is opened
     if check_door() == True:
