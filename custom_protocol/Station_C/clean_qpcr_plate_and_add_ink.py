@@ -21,11 +21,11 @@ TRANSFER_INK = False
 TRANSFER_WATER = True
 
 #Tune variables
-size_transfer=5 #Number of wells the distribute function will fill
-volume_ink=20 #Volume of transfered master mix
-volume_sample=20 #Volume of the sample
-volume_screw=1500 #Total volume of screwcap
-extra_dispensal=5 #Extra volume for master mix in each distribute transfer
+size_transfer = 4 #Number of wells the distribute function will fill
+volume_ink = 20 #Volume of transfered master mix
+volume_sample = 45 #Volume of the sample
+volume_screw = 1500 #Total volume of screwcap
+extra_dispensal = 5 #Extra volume for master mix in each distribute transfer
 
 def divide_destinations(l, n):
     # Divide the list of destinations in size n lists.
@@ -121,6 +121,6 @@ def run(ctx: protocol_api.ProtocolContext):
         p300.pick_up_tip()
         for dest in dests:
             #Distribute the mmix in different wells
-            distribute_custom(p300, volume_sample, water    , size_transfer, dest, ink_reservoir, 1, extra_dispensal)
+            distribute_custom(p300, volume_sample, water , size_transfer, dest, ink_reservoir, 1, extra_dispensal)
         p300.drop_tip()
     gpio.set_button_light(0,1,0)

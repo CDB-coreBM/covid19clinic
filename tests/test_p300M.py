@@ -29,7 +29,9 @@ def run(ctx: protocol_api.ProtocolContext):
     reagent_res = ctx.load_labware('nest_12_reservoir_15ml', '2',
                                        'reagent deepwell plate 1')
 
-    deepwell = ctx.load_labware('nunc_96_wellplate_2000ul', '3','96-deepwell sample plate')
+    alu_block = ctx.load_module('alu_block', '3')
+
+    deepwell2=reagent_res.load_labware('nest_12_reservoir_15ml','96-deepwell sample plate')
 
     # Load tip_racks
     tips300 = [
@@ -46,10 +48,10 @@ def run(ctx: protocol_api.ProtocolContext):
     beads = reagent_res.wells('A7')
 
     m300.pick_up_tip()
-    m300.transfer(transfer_volume, beads, deepwell.wells()[0].top(), new_tip='never', air_gap=10)
+    m300.transfer(transfer_volume, beads, deepwell2.wells()[0].top(), new_tip='never', air_gap=10)
     m300.touch_tip(speed=20, v_offset=-5,radius=1.05)
     m300.blow_out(deepwell.wells()[0].top())
-    m300.transfer(transfer_volume, beads, deepwell.wells()[8].top(), new_tip='never', air_gap=10)
+    m300.transfer(transfer_volume, beads, deepwell2.wells()[8].top(), new_tip='never', air_gap=10)
     m300.touch_tip(speed=20, v_offset=-5,radius=1.05)
     m300.blow_out(deepwell.wells()[8].top())
     m300.drop_tip()
