@@ -43,14 +43,14 @@ screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cro
 def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Add internal control (10ul)'},
-        2: {'Execute': True, 'description': 'Add samples (300ul)'},
+        1: {'Execute': True, 'description': 'Add samples (300ul)'},
+        2: {'Execute': True, 'description': 'Add internal control (10ul)'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
 
-    #Folder and file_path for log time
+    #Fo     lder and file_path for log time
     if not ctx.is_simulating():
         folder_path = '/dvar/lib/jupyter/notebooks'
         if not os.path.isdir(folder_path):
@@ -257,8 +257,40 @@ def run(ctx: protocol_api.ProtocolContext):
         'maxes': {p20: len(tips20)*96, p1000: len(tips1000)*96}
     }
 
+
     ############################################################################
-    # STEP 1: Add Internal Control
+    # STEP 1: Add Samples
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        # Transfer parameters
+        start = datetime.now()
+        for s, d in zip(sample_sources, destinations):
+            if not p1000.hw_pipette['has_tip']:
+                pick_up(p1000)
+            #Mix the sample before dispensing
+            custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            move_vol_multi(p1000, reagent = Samples, source = s, dest = d,
+            vol = volume_sample, air_gap_vol = air_gap_vol_sample, x_offset = 0,
+                   pickup_height = 1, drop_height = 0, rinse = False)
+            custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            p1000.touch_tip(speed=20, v_offset=-5)
+            #Drop tip and update counter
+            p1000.drop_tip()
+            tip_track['counts'][p1000]+=1
+
+        #Time statistics
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+        ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    ############################################################################
+    # STEP 2: Add Internal Control
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -278,38 +310,6 @@ def run(ctx: protocol_api.ProtocolContext):
         #Drop tip and update counter
         p20.drop_tip()
         tip_track['counts'][p20]+=1
-
-        #Time statistics
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
-        ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 2: Add Samples
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        # Transfer parameters
-        start = datetime.now()
-        for s, d in zip(sample_sources, destinations):
-            if not p1000.hw_pipette['has_tip']:
-                pick_up(p1000)
-            #Mix the sample before dispensing
-            custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
-            move_vol_multi(p1000, reagent = Samples, source = s, dest = d,
-            vol = volume_sample, air_gap_vol = air_gap_vol_sample, x_offset = 0,
-                   pickup_height = 1, drop_height = 0, rinse = False)
-            #if STEPS[0]['Execute'] == True:
-            custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
-            p1000.touch_tip(speed=20, v_offset=-5)
-            #Drop tip and update counter
-            p1000.drop_tip()
-            tip_track['counts'][p1000]+=1
 
         #Time statistics
         end = datetime.now()
