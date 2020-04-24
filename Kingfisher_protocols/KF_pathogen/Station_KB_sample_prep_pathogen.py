@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 8
+NUM_SAMPLES = 96
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
@@ -340,7 +340,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Mixing
         custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol=180,
-                   rounds=10, blow_out=True, mix_height=0, x_offset= [0,0])
+                   rounds=10, blow_out=True, mix_height=0, x_offset= x_offset)
         ctx.comment('Finished premixing!')
         ctx.comment('Now, reagents will be transferred to deepwell plate.')
 
@@ -372,7 +372,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
                     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                               vol=180, rounds=10, blow_out=True, mix_height=0)
+                               vol=180, rounds=10, blow_out=True, mix_height=0, x_offset=x_offset)
                 ctx.comment(
                     'Aspirate from reservoir column: ' + str(Beads.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
@@ -380,7 +380,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse = False
                 move_vol_multichannel(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
                                dest=work_destinations[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset = [0,0],
+                               air_gap_vol=air_gap_vol, x_offset = x_offset,
                                pickup_height=pickup_height, rinse=rinse)
 
             ctx.comment('Mixing sample with beads ')
