@@ -116,21 +116,27 @@ def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offs
     pipet.blow_out(dest.top(z = -2))
     pipet.touch_tip(speed=20, v_offset=-5)
 
-def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
+
+def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
+x_offset, source_height = 3):
     '''
-    Function for mix in the same location a certain number of rounds. Blow out optional
+    Function for mixing a given [vol] in the same [location] a x number of [rounds].
+    blow_out: Blow out optional [True,False]
+    x_offset = [source, destination]
+    source_height: height from bottom to aspirate
+    mix_height: height from bottom to dispense
     '''
     if mix_height == 0:
         mix_height = 3
     pipet.aspirate(1, location=location.bottom(
-        z=3), rate=reagent.flow_rate_aspirate)
+        z=source_height).move(Point(x=x_offset[0])), rate=reagent.flow_rate_aspirate)
     for _ in range(rounds):
         pipet.aspirate(vol, location=location.bottom(
-            z=3), rate=reagent.flow_rate_aspirate)
+            z=source_height).move(Point(x=x_offset[0])), rate=reagent.flow_rate_aspirate)
         pipet.dispense(vol, location=location.bottom(
-            z=mix_height), rate=reagent.flow_rate_dispense)
+            z=mix_height).move(Point(x=x_offset[1])), rate=reagent.flow_rate_dispense)
     pipet.dispense(1, location=location.bottom(
-        z=mix_height), rate=reagent.flow_rate_dispense)
+        z=mix_height).move(Point(x=x_offset[1])), rate=reagent.flow_rate_dispense)
     if blow_out == True:
         pipet.blow_out(location.top(z=-2))  # Blow out
 
