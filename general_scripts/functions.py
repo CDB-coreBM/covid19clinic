@@ -78,13 +78,6 @@ Isopropanol.vol_well=Isopropanol.vol_well_original()
 Water.vol_well=Water.vol_well_original()
 Elution.vol_well=350
 
-def custom_mix(pipet, reagent, location, vol, rounds, blow_out):
-    for _ in range(rounds):
-        pipet.aspirate(vol, location, rate = reagent.flow_rate_aspirate)
-        pipet.dispense(vol, location, rate = reagent.flow_rate_dispense)
-    if blow_out == True:
-        pipet.blow_out(location.top(z = -2)) # Blow out
-
 beads = reagent_res.rows()[0][:Beads.num_wells] # 1 row, 4 columns (first ones)
 isoprop = reagent_res.rows()[0][4:(4 + Isopropanol.num_wells)] # 1 row, 2 columns (from 5 to 6)
 etoh = reagent_res.rows()[0][6:Ethanol.num_wells] # 1 row, 2 columns (from 7 to 10)
@@ -92,29 +85,12 @@ water = reagent_res.rows()[0][-1] # 1 row, 1 column (last one) full of water
 work_destinations = deepwell_plate.rows()[0][:Elution.num_wells]
 final_destinations = elution_plate.rows()[0][:Elution.num_wells]
 
-def calc_height(reagent, cross_section_area, aspirate_volume):
-    if reagent.vol_well < aspirate_volume:
-        reagent.vol_well = reagent.vol_well_original() - aspirate_volume
-        height = (reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
-        reagent.col = reagent.col + 1 # column selector position; intialize to required number
-        if height < 0:
-            height = 0.1
-        col_change = True
-    else:
-        height=(reagent.vol_well - reagent.v_cono)/cross_section_area - reagent.h_cono
-        reagent.col = 0 + reagent.col
-        reagent.vol_well = reagent.vol_well - aspirate_volume
-        if height < 0:
-            height = 0.1
-        col_change = False
-    return height, col_change
-
 tip_recycle = [ctx.load_labware('opentrons_96_tiprack_300ul', '5', '200µl filter tiprack')]
 
 pipette.pick_up_tip(tip_recycle[reagent.tip_recycling])
 pipette.return_tip()
 
-def move_vol_multipipette(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
+def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                    pickup_height, rinse, disp_height = -2):
     '''
     x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
@@ -134,13 +110,29 @@ def move_vol_multipipette(pipet, reagent, source, dest, vol, air_gap_vol, x_offs
                        rate = reagent.flow_rate_aspirate)  # air gap
     # GO TO DESTINATION
     drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
-    pipet.dispense(vol + air_gapf_vol, drop,
+    pipet.dispense(vol + air_gap_vol, drop,
                    rate = reagent.flow_rate_dispense)  # dispense all
     protocol.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
     pipet.blow_out(dest.top(z = -2))
-    if air_gap_vol != 0:
-        pipet.aspirate(air_gap_vol, dest.top(z = -2),
-                       rate = reagent.flow_rate_aspirate)  # air gap
+    pipet.touch_tip
+
+def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
+    '''
+    Function for mix in the same location a certain number of rounds. Blow out optional
+    '''
+    if mix_height == 0:
+        mix_height = 3
+    pipet.aspirate(1, location=location.bottom(
+        z=3), rate=reagent.flow_rate_aspirate)
+    for _ in range(rounds):
+        pipet.aspirate(vol, location=location.bottom(
+            z=3), rate=reagent.flow_rate_aspirate)
+        pipet.dispense(vol, location=location.bottom(
+            z=mix_height), rate=reagent.flow_rate_dispense)
+    pipet.dispense(1, location=location.bottom(
+        z=mix_height), rate=reagent.flow_rate_dispense)
+    if blow_out == True:
+        pipet.blow_out(location.top(z=-2))  # Blow out
 
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
