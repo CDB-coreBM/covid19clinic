@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
 air_gap_vol = 15
 
 volume_sample = 460
@@ -44,7 +44,7 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/dvar/lib/jupyter/notebooks'
+    folder_path = '/var/lib/jupyter/notebooks'
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
     file_path = folder_path + '/KA_time_log.txt'
@@ -125,7 +125,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent.v_cono) / cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             col_change = True
         else:
@@ -133,7 +133,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       reagent.v_cono) / cross_section_area - reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height < 0:
+            if height < 0.5:
                 height = 0.5
             ctx.comment('Used height is ' + str(height))
             col_change = False
