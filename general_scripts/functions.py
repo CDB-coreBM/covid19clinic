@@ -16,6 +16,7 @@ class Reagent:
         self.vol_well = 0
         self.h_cono = h_cono
         self.v_cono = v_fondo
+        self.unused=[]
         self.tip_recycling = tip_recycling
         self.vol_well_original = reagent_reservoir_volume / num_wells
 
@@ -112,7 +113,7 @@ def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offs
     drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
     pipet.dispense(vol + air_gap_vol, drop,
                    rate = reagent.flow_rate_dispense)  # dispense all
-    protocol.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
+    ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
     pipet.blow_out(dest.top(z = -2))
     pipet.touch_tip(speed=20, v_offset=-5)
 
@@ -134,6 +135,35 @@ def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
     if blow_out == True:
         pipet.blow_out(location.top(z=-2))  # Blow out
 
+def calc_height(reagent, cross_section_area, aspirate_volume,min_height=0.5):
+    nonlocal ctx
+    ctx.comment('Remaining volume ' + str(reagent.vol_well) +
+                '< needed volume ' + str(aspirate_volume) + '?')
+    if reagent.vol_well < aspirate_volume:
+        reagent.unused.append(reagent.vol_well)
+        ctx.comment('Next column should be picked')
+        ctx.comment('Previous to change: ' + str(reagent.col))
+        # column selector position; intialize to required number
+        reagent.col = reagent.col + 1
+        ctx.comment(str('After change: ' + str(reagent.col)))
+        reagent.vol_well = reagent.vol_well_original
+        ctx.comment('New volume:' + str(reagent.vol_well))
+        height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+                #- reagent.h_cono
+        reagent.vol_well = reagent.vol_well - aspirate_volume
+        ctx.comment('Remaining volume:' + str(reagent.vol_well))
+        if height < min_height:
+            height = min_height
+        col_change = True
+    else:
+        height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area #- reagent.h_cono
+        reagent.vol_well = reagent.vol_well - aspirate_volume
+        ctx.comment('Calculated height is ' + str(height))
+        if height < min_height:
+            height = min_height
+        ctx.comment('Used height is ' + str(height))
+        col_change = False
+    return height, col_change
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
 m300.flow_rate.dispense = 300
