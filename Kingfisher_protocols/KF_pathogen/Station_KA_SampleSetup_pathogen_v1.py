@@ -188,7 +188,7 @@ def run(ctx: protocol_api.ProtocolContext):
         rack_num=4
     source_racks = [ctx.load_labware(
             'opentrons_24_tuberack_generic_2ml_screwcap', slot,
-            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['7','4','9','6'][:rack_num])
+            'source tuberack with screwcap' + str(i+1)) for i, slot in enumerate(['4','1','6','3'][:rack_num])
         ]
 
     ##################################
@@ -215,7 +215,7 @@ def run(ctx: protocol_api.ProtocolContext):
     #tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
                #for slot in ['2', '8']]
     tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-        for slot in ['10','11']]
+        for slot in ['8','11']]
 
 
     ################################################################################
@@ -254,9 +254,9 @@ def run(ctx: protocol_api.ProtocolContext):
             #Mix the sample before dispensing
             custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
             move_vol_multi(p1000, reagent = Samples, source = s, dest = d,
-            vol = volume_sample, air_gap_vol = air_gap_vol_sample, x_offset = 0,
+            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 1, drop_height = 0, rinse = False)
-            custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            #custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
             p1000.touch_tip(speed=20, v_offset=-5)
             #Drop tip and update counter
             p1000.drop_tip()
@@ -296,5 +296,5 @@ def run(ctx: protocol_api.ProtocolContext):
         'Finished! \nMove deepwell plate (slot 5) to Station C for MMIX addition and qPCR preparation.')
     ctx.comment('Used p1000 tips in total: ' + str(tip_track['counts'][p1000]))
     ctx.comment('Used p1000 racks in total: ' + str(tip_track['counts'][p1000] / 96))
-    ctx.comment('Used p20 tips in total: ' + str(tip_track['counts'][p20]))
-    ctx.comment('Used p20 racks in total: ' + str(tip_track['counts'][p20] / 96))
+    #ctx.comment('Used p20 tips in total: ' + str(tip_track['counts'][p20]))
+    #ctx.comment('Used p20 racks in total: ' + str(tip_track['counts'][p20] / 96))
