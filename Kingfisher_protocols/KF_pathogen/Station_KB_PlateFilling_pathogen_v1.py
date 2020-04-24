@@ -32,12 +32,11 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
 
-        1: {'Execute': True, 'description': '1: Add 300 ul Wash Buffer 1 - Round 1'},
-        2: {'Execute': True, 'description': '2: Add 300 ul Wash Buffer 1 - Round 2'},
-        3: {'Execute': True, 'description': '3: Add 500 ul Wash Buffer 2 - Round 1'},
-        4: {'Execute': True, 'description': '4: Add 450 ul Wash Buffer 2 - Round 2'},
-        5: {'Execute': True, 'description': '5: Add 50 ul Elution Buffer'},
-
+        1: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 1'},
+        2: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 2'},
+        3: {'Execute': True, 'description': 'Add 500 ul Wash Buffer 2 - Round 1'},
+        4: {'Execute': True, 'description': 'Add 450 ul Wash Buffer 2 - Round 2'},
+        5: {'Execute': True, 'description': 'Add 50 ul Elution Buffer'},
     }
 
     for s in STEPS:  # Create an empty wait_time
@@ -47,7 +46,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/KB_time_log.txt'
+        file_path = folder_path + '/KB_PlateFilling_pathogen_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:

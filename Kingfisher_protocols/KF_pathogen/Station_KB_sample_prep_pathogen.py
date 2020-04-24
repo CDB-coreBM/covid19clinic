@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 8
 air_gap_vol = 15
 temperature = 25  # Temperature of temp module
 MS_vol=5
@@ -48,9 +48,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': 'Mix beads'},
-        2: {'Execute': False, 'description': 'Transfer beads'},
-        3: {'Execute': True, 'description': 'Add MS2'}
+        1: {'Execute': True, 'description': 'Add MS2'},
+        2: {'Execute': True, 'description': 'Mix beads'},
+        3: {'Execute': True, 'description': 'Transfer beads'}
+
     }
 
     """
@@ -256,7 +257,34 @@ def run(ctx: protocol_api.ProtocolContext):
     MS.reagent_reservoir = tuberack.rows()[0] # 1 row, 2 columns (first ones)
 
     ############################################################################
-    # STEP 1: PREMIX BEADS
+    # STEP 1: Transfer MS
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        start = datetime.now()
+
+        tip_track['counts'][p20]+=1
+        used_vol=[]
+        for dest in dests:
+            p20.pick_up_tip()
+            [pickup_height,col_change]=calc_height(MS, area_section_screwcap, MS_vol)
+            # source MMIX_reservoir[col_change]
+            used_vol_temp = distribute_custom(p20, MS_vol, MS.reagent_reservoir[MS.col],
+                dest,pickup_height, extra_dispensal=0, waste_pool=None)
+
+            used_vol.append(used_vol_temp)
+
+            p20.drop_tip()
+        MS.unused_two = 0
+
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' +
+                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    ############################################################################
+    # STEP 2: PREMIX BEADS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -282,7 +310,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 2: TRANSFER BEADS
+    # STEP 3: TRANSFER BEADS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -319,33 +347,6 @@ def run(ctx: protocol_api.ProtocolContext):
             m300.drop_tip(home_after=False)
             # m300.return_tip()
             tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 3: Transfer MS
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        tip_track['counts'][p20]+=1
-        used_vol=[]
-        for dest in dests:
-            p20.pick_up_tip()
-            [pickup_height,col_change]=calc_height(MS, area_section_screwcap, MS_vol)
-            # source MMIX_reservoir[col_change]
-            used_vol_temp = distribute_custom(p20, MS_vol, MS.reagent_reservoir[MS.col],
-                dest,pickup_height, extra_dispensal=0, waste_pool=None)
-
-            used_vol.append(used_vol_temp)
-
-            p20.drop_tip()
-        MS.unused_two = 0
-
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
