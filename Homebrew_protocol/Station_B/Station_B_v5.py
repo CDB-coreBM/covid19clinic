@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 32
 air_gap_vol = 15
 
 # mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
@@ -116,8 +116,8 @@ def run(ctx: protocol_api.ProtocolContext):
                           tip_recycling=['8'])
 
     Water = Reagent(name='Water',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=2,
+                    flow_rate_aspirate=2,
+                    flow_rate_dispense=4,
                     rinse=False,
                     reagent_reservoir_volume=4800,
                     num_wells=1,  # num_Wells max is 1
@@ -240,7 +240,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ############################################
     # tempdeck
     tempdeck = ctx.load_module('tempdeck', '3')
-    tempdeck.set_temperature(temperature)
+    #tempdeck.set_temperature(temperature)
 
 ##################################
     # Elution plate - final plate, goes to C
@@ -758,12 +758,14 @@ def run(ctx: protocol_api.ProtocolContext):
         # Water elution
         water_wash_vol = [50]
         air_gap_vol_water = 10
-        x_offset_w = -1
+        x_offset_w = 1
 
         ########
         # Water or elution buffer
         for i in range(num_cols):
-            x_offset_w = find_side(i) * x_offset_w
+            x_offset = find_side(i)*x_offset_w
+            ctx.comment('Side is : '+ str(x_offset*-1))
+            x_offset=x_offset*-1
             #if not m300.hw_pipette['has_tip']:
             pick_up(m300)
             for transfer_vol in water_wash_vol:
@@ -774,13 +776,13 @@ def run(ctx: protocol_api.ProtocolContext):
                     'Aspirate from Reservoir column: ' + str(Water.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
                 move_vol_multi(m300, reagent=Water, source=Water.reagent_reservoir,
-                               dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol_water, x_offset=x_offset_w,
+                               dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol_water, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=False)
 
             ctx.comment('Mixing sample with Water and LTA')
             # Mixing
             custom_mix(m300, Elution, work_destinations[i], vol=40, rounds=4,
-                       blow_out=True, mix_height=0,x_offset=x_offset_w)
+                       blow_out=True, mix_height=5,x_offset=x_offset)
             m300.drop_tip(home_after=True)
             tip_track['counts'][m300] += 8
         end = datetime.now()
