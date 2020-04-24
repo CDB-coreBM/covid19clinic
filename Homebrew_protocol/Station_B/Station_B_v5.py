@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 32
 air_gap_vol = 15
 
 # mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
@@ -39,34 +39,34 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Mix beads'},
-        2: {'Execute': True, 'description': 'Transfer beads'},
-        3: {'Execute': True, 'description': 'Wait with magnet OFF after beads', 'wait_time': 120},  # 60
-        4: {'Execute': True, 'description': 'Wait with magnet ON after beads', 'wait_time': 900},  # 900
-        5: {'Execute': True, 'description': 'Remove supernatant'},
-        6: {'Execute': True, 'description': 'Add Isopropanol and mix'},
-        7: {'Execute': True, 'description': 'Wait for 30s after isopropanol'},
-        8: {'Execute': True, 'description': 'Remove isopropanol'},
-        9: {'Execute': True, 'description': 'Wash with ethanol and mix 1'},
-        10: {'Execute': True, 'description': 'Wait for 30s after ethanol 1'},
-        11: {'Execute': True, 'description': 'Remove supernatant'},
-        12: {'Execute': True, 'description': 'Wash with ethanol and mix 2'},
-        13: {'Execute': True, 'description': 'Wait 30s after ethanol 2'},
-        14: {'Execute': True, 'description': 'Remove supernatant'},
-        15: {'Execute': True, 'description': 'Allow to dry', 'wait_time': 300},
+        1: {'Execute': False, 'description': 'Mix beads'},
+        2: {'Execute': False, 'description': 'Transfer beads'},
+        3: {'Execute': False, 'description': 'Wait with magnet OFF after beads', 'wait_time': 120},  # 60
+        4: {'Execute': False, 'description': 'Wait with magnet ON after beads', 'wait_time': 900},  # 900
+        5: {'Execute': False, 'description': 'Remove supernatant'},
+        6: {'Execute': False, 'description': 'Add Isopropanol and mix'},
+        7: {'Execute': False, 'description': 'Wait for 30s after isopropanol'},
+        8: {'Execute': False, 'description': 'Remove isopropanol'},
+        9: {'Execute': False, 'description': 'Wash with ethanol and mix 1'},
+        10: {'Execute': False, 'description': 'Wait for 30s after ethanol 1'},
+        11: {'Execute': False, 'description': 'Remove supernatant'},
+        12: {'Execute': False, 'description': 'Wash with ethanol and mix 2'},
+        13: {'Execute': False, 'description': 'Wait 30s after ethanol 2'},
+        14: {'Execute': False, 'description': 'Remove supernatant'},
+        15: {'Execute': False, 'description': 'Allow to dry', 'wait_time': 300},
         16: {'Execute': True, 'description': 'Add water and LTA'},
-        17: {'Execute': True, 'description': 'Wait with magnet OFF after water', 'wait_time': 60},  # 60
-        18: {'Execute': True, 'description': 'Wait with magnet ON after water', 'wait_time': 120},  # 300
-        19: {'Execute': True, 'description': 'Transfer to final elution plate'}
+        17: {'Execute': False, 'description': 'Wait with magnet OFF after water', 'wait_time': 60},  # 60
+        18: {'Execute': False, 'description': 'Wait with magnet ON after water', 'wait_time': 120},  # 300
+        19: {'Execute': False, 'description': 'Transfer to final elution plate'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
-    folder_path = '/data/log_times/'
+    folder_path = '/var/lib/jupyter/notebooks'
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/time_log.txt'
+        file_path = folder_path + '/StationB_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -113,11 +113,11 @@ def run(ctx: protocol_api.ProtocolContext):
                           num_wells=2,  # num_Wells max is 2
                           h_cono=1.95,
                           v_fondo=695,  # Prismatic
-                          tip_recycling='8')
+                          tip_recycling=['8'])
 
     Water = Reagent(name='Water',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=1,
+                    flow_rate_aspirate=2,
+                    flow_rate_dispense=4,
                     rinse=False,
                     reagent_reservoir_volume=4800,
                     num_wells=1,  # num_Wells max is 1
@@ -141,21 +141,21 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ##################
     # Custom functions
-    def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
+    def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,x_offset):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
         '''
         if mix_height == 0:
             mix_height = 3
         pipet.aspirate(1, location=location.bottom(
-            z=3), rate=reagent.flow_rate_aspirate)
+            z=3).move(Point(x=x_offset)), rate=reagent.flow_rate_aspirate)
         for _ in range(rounds):
             pipet.aspirate(vol, location=location.bottom(
-                z=3), rate=reagent.flow_rate_aspirate)
+                z=3).move(Point(x=x_offset)), rate=reagent.flow_rate_aspirate)
             pipet.dispense(vol, location=location.bottom(
-                z=mix_height), rate=reagent.flow_rate_dispense)
+                z=mix_height).move(Point(x=x_offset)), rate=reagent.flow_rate_dispense)
         pipet.dispense(1, location=location.bottom(
-            z=mix_height), rate=reagent.flow_rate_dispense)
+            z=mix_height).move(Point(x=x_offset)), rate=reagent.flow_rate_dispense)
         if blow_out == True:
             pipet.blow_out(location.top(z=-2))  # Blow out
 
@@ -193,7 +193,7 @@ def run(ctx: protocol_api.ProtocolContext):
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location=source, vol=vol,
-                       rounds=2, blow_out=True, mix_height=0)
+                       rounds=2, blow_out=True, mix_height=0,x_offset=0)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x=x_offset))
         pipet.aspirate(vol, s)  # aspirate liquid
@@ -240,7 +240,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ############################################
     # tempdeck
     tempdeck = ctx.load_module('tempdeck', '3')
-    tempdeck.set_temperature(temperature)
+    #tempdeck.set_temperature(temperature)
 
 ##################################
     # Elution plate - final plate, goes to C
@@ -264,9 +264,9 @@ def run(ctx: protocol_api.ProtocolContext):
 ####################################
     # Load tip_racks
     tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
-               for slot in [ '11', '1', '4', '7']]
+               for slot in ['1', '4', '7', '11']]
     tips300r = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack') for slot in Ethanol.tip_recycling]
-    tips300ri = ctx.load_labware('opentrons_96_tiprack_300ul', Isopropanol.tip_recycling, '200µl filter tiprack')
+    tips300ri = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack') for slot in Isopropanol.tip_recycling]
 
     # tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
     #    for slot in ['10']]
@@ -312,7 +312,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Mixing
         custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol=180,
-                   rounds=10, blow_out=True, mix_height=0)
+                   rounds=10, blow_out=True, mix_height=0,x_offset=0)
         ctx.comment('Finished premixing!')
         ctx.comment('Now, reagents will be transferred to deepwell plate.')
 
@@ -345,7 +345,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
                     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                               vol=180, rounds=10, blow_out=True, mix_height=0)
+                               vol=180, rounds=10, blow_out=True, mix_height=0,x_offset=0)
                 ctx.comment(
                     'Aspirate from reservoir column: ' + str(Beads.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
@@ -357,7 +357,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
             ctx.comment('Mixing sample with beads ')
             custom_mix(m300, Beads, location=work_destinations[i], vol=180,
-                       rounds=6, blow_out=True, mix_height=16)
+                       rounds=6, blow_out=True, mix_height=16,x_offset=0)
             m300.drop_tip(home_after=False)
             # m300.return_tip()
             tip_track['counts'][m300] += 8
@@ -460,7 +460,7 @@ def run(ctx: protocol_api.ProtocolContext):
         # isoprop washes
         for i in range(num_cols):
             #if not m300.hw_pipette['has_tip']:
-            m300.pick_up_tip(tips300ri.rows()[0][i])
+            m300.pick_up_tip(tips300ri[0].rows()[0][i])
             for j, transfer_vol in enumerate(isoprop_wash_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
@@ -474,7 +474,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest=work_destinations[i], vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=rinse)
                 custom_mix(m300, reagent=Isopropanol, location=work_destinations[i], vol=transfer_vol,
-                           rounds=2, blow_out=True, mix_height=1)
+                           rounds=2, blow_out=True, mix_height=1,x_offset=0)
                 #m300.drop_tip(home_after=True)
             m300.return_tip(tips300ri.rows()[0][i], home_after=False)
             #tip_track['counts'][m300] += 8
@@ -569,7 +569,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                pickup_height=pickup_height, rinse=rinse)
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1)
-            m300.return_tip(tips300r[0].rows()[0][i], home_after=False)
+            m300.return_tip(tips300r[0].rows()[0][i], home_after=False,x_offset=0)
         #tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
@@ -665,7 +665,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                pickup_height=pickup_height, rinse=rinse)
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1)
-            m300.return_tip(tips300r[1].rows()[0][i], home_after=False)
+            m300.return_tip(tips300r[1].rows()[0][i], home_after=False,x_offset=0)
         #m300.drop_tip(home_after=True)
         #tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -758,11 +758,14 @@ def run(ctx: protocol_api.ProtocolContext):
         # Water elution
         water_wash_vol = [50]
         air_gap_vol_water = 10
-        x_offset = 0
+        x_offset_w = 1
 
         ########
         # Water or elution buffer
         for i in range(num_cols):
+            x_offset = find_side(i)*x_offset_w
+            ctx.comment('Side is : '+ str(x_offset*-1))
+            x_offset=x_offset*-1
             #if not m300.hw_pipette['has_tip']:
             pick_up(m300)
             for transfer_vol in water_wash_vol:
@@ -779,7 +782,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Mixing sample with Water and LTA')
             # Mixing
             custom_mix(m300, Elution, work_destinations[i], vol=40, rounds=4,
-                       blow_out=True, mix_height=0)
+                       blow_out=True, mix_height=5,x_offset=x_offset)
             m300.drop_tip(home_after=True)
             tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -875,7 +878,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
-    os.system('mpg123 -f -14000 lionking.mp3')
+    #os.system('mpg123 -f -14000 BH.mp3 &')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
