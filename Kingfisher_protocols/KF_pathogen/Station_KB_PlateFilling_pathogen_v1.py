@@ -260,7 +260,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     WashBuffer1.reagent_reservoir = WashBuffer1_reservoir.wells()[0]
-    WashBuffer2.reagent_reservoir = WashBuffer2_reservoir.wells()[0]
+    WashBuffer2.reagent_reservoir = WashBuffer2_reservoir.wells()[1]
     ElutionBuffer.reagent_reservoir = reagent_res.rows()[0][0]
     #Ethanol.reagent_reservoir = Ethanol_reservoir.wells()[0]
 
