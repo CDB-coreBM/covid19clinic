@@ -114,7 +114,7 @@ def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offs
                    rate = reagent.flow_rate_dispense)  # dispense all
     protocol.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
     pipet.blow_out(dest.top(z = -2))
-    pipet.touch_tip
+    pipet.touch_tip(speed=20, v_offset=-5)
 
 def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
     '''
