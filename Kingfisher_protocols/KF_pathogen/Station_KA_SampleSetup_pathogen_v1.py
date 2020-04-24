@@ -44,10 +44,10 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/data/log_times/'
+    folder_path = '/dvar/lib/jupyter/notebooks'
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
-    file_path = folder_path + '/time_log.json'
+    file_path = folder_path + '/KA_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -275,9 +275,9 @@ def run(ctx: protocol_api.ProtocolContext):
         with open(file_path, 'w') as f:
             f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
             for key in STEPS.keys():
-                row = str(key) + '\t'
+                row = str(key)
                 for key2 in STEPS[key].keys():
-                    row += format(STEPS[key][key2]) + '\t'
+                    row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
 
