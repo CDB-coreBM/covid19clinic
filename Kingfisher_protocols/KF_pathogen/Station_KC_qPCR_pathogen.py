@@ -58,7 +58,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/KFC_time_log.json'
+        file_path = folder_path + '/KC_time_log.json'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -288,13 +288,14 @@ def run(ctx: protocol_api.ProtocolContext):
 
 
     # Export the time log to a tsv file
+    # Export the time log to a tsv file
     if not ctx.is_simulating():
         with open(file_path, 'w') as f:
             f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
             for key in STEPS.keys():
-                row = str(key) + '\t'
+                row = str(key)
                 for key2 in STEPS[key].keys():
-                    row += format(STEPS[key][key2]) + '\t'
+                    row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
 
@@ -304,7 +305,7 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_rail_lights(False)
     time.sleep(2)
     gpio.set_rail_lights(True)
-    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/toreador.mp3')
+    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/toreador.mp3 &')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
@@ -334,4 +335,4 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][p20] / 96))
 
     if ctx.is_simulating():
-        os.system('afplay /Users/covid19warriors/Downloads/lionking.mp3 ')
+        os.system('afplay -f -14000 /Users/covid19warriors/Downloads/lionking.mp3 &')
