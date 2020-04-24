@@ -63,36 +63,42 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Define Reagents as objects with their properties
     class Reagent:
-        def __init__(self, name, rinse,h_cono, v_fondo,
-                     reagent_reservoir_volume,
-                      num_wells,flow_rate_aspirate = 1,flow_rate_dispense = 1):
+        def __init__(self, name, rinse,flow_rate_aspirate,flow_rate_dispense,
+                     reagent_reservoir_volume, delay, num_wells, h_cono, v_fondo,
+                     tip_recycling='none'):
             self.name = name
             self.rinse = bool(rinse)
-            self.flow_rate_aspirate = flow_rate_aspirate
-            self.flow_rate_dispense = flow_rate_dispense
+            self.flow_rate_aspirate = 1
+            self.flow_rate_dispense = 1
             self.reagent_reservoir_volume = reagent_reservoir_volume
             self.col = 0
             self.num_wells = num_wells
-            self.vol_well = reagent_reservoir_volume
+            self.vol_well = 0
             self.h_cono = h_cono
             self.v_cono = v_fondo
-            self.unused_one=0
-            self.unused_two=0
             self.unused=[]
             self.vol_well_original = reagent_reservoir_volume / num_wells
+            self.delay = delay
+            self.tip_recycling = tip_recycling
 
     # Reagents and their characteristics
     MMIX = Reagent(name='Master Mix',
                       rinse=False,
+                      flow_rate_aspirate = 1,
+                      flow_rate_dispense = 1,
                       reagent_reservoir_volume=volume_mmix_available,
-                      num_wells= 2 ,
+                      num_wells= 2,
+                      delay=2,
                       h_cono=h_cone,
                       v_fondo=volume_cone  # V cono
                       )
 
     Samples = Reagent(name='Samples',
                       rinse=False,
+                      flow_rate_aspirate = 1,
+                      flow_rate_dispense = 1,
                       reagent_reservoir_volume=50,
+                      delay=2,
                       num_wells=num_cols,  # num_cols comes from available columns
                       h_cono=0,
                       v_fondo=0
@@ -104,10 +110,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ##################
     # Custom functions
 
-    def calc_height(reagent, cross_section_area, aspirate_volume):
+    def calc_height(reagent, cross_section_area, aspirate_volume,min_height=0.2):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
-                    '< needed volume ' + str(aspirate_volume) + ', is that okay?')
+                    '< needed volume ' + str(aspirate_volume) + '?')
         if reagent.vol_well < aspirate_volume:
             reagent.unused.append(reagent.vol_well)
             ctx.comment('Next column should be picked')
@@ -115,25 +121,21 @@ def run(ctx: protocol_api.ProtocolContext):
             # column selector position; intialize to required number
             reagent.col = reagent.col + 1
             ctx.comment(str('After change: ' + str(reagent.col)))
-
             reagent.vol_well = reagent.vol_well_original
-
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+                    #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            ctx.comment('Calculated height is ' + str(height))
-            if height <= 0.2:
-                height = 0.2
+            if height < min_height:
+                height = min_height
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height <= 0.2:
-                height = 0.2
+            if height < min_height:
+                height = min_height
             ctx.comment('Used height is ' + str(height))
             col_change = False
         return height, col_change
@@ -161,26 +163,31 @@ def run(ctx: protocol_api.ProtocolContext):
             pipette.blow_out(waste_pool.bottom(pickup_height + 3))
         return (len(dest) * volume)
 
-    def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                       pickup_height, drop_height, rinse):
+    def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
+                       pickup_height, rinse, disp_height = -2):
+        '''
+        x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
+        pickup_height: height from bottom where volume
+        disp_height: dispense height; by default it's close to the top (z=-2), but in case it is needed it can be lowered
+        rinse: if True it will do 2 rounds of aspirate and dispense before the tranfer
+        '''
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location = source, vol = vol,
                        rounds = 2, blow_out = True, mix_height = 0)
         # SOURCE
-        s = source.bottom(pickup_height).move(Point(x = x_offset))
+        s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
         pipet.aspirate(vol, s)  # aspirate liquid
         if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
             pipet.aspirate(air_gap_vol, source.top(z = -2),
                            rate = reagent.flow_rate_aspirate)  # air gap
         # GO TO DESTINATION
-        if drop_height!=0:
-            drop = dest.bottom(z = drop_height)
-        else:
-            drop = dest.top(z = -2)
+        drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
         pipet.dispense(vol + air_gap_vol, drop,
                        rate = reagent.flow_rate_dispense)  # dispense all
+        protocol.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
         pipet.blow_out(dest.top(z = -2))
+        pipet.touch_tip(speed=20, v_offset=-5)
 
 ####################################
     # load labware and modules
@@ -284,7 +291,7 @@ def run(ctx: protocol_api.ProtocolContext):
             p20.pick_up_tip()
 
             #Source samples
-            move_vol_multi(p20, reagent = Samples, source = s, dest = d,
+            move_vol_multichannel(p20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
                    pickup_height = 0.2, drop_height = 0, rinse = False)
 
@@ -330,8 +337,8 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Needed Master Mix volume is ' +
                     str(total_needed_volume + extra_dispensal*len(dests)) +'\u03BCl')
         ctx.comment('Used Master Mix volumes per run are: ' + str(used_vol) + '\u03BCl.')
-        ctx.comment('Master Mix Volume remaining in tubes is:' +
-                    format((MMIX.unused)) + '\u03BCl. Total of '+str(np.sum((MMIX.unused))))
+        ctx.comment('Master Mix Volume remaining in tubes is: ' +
+                    format(np.sum(MMIX.unused)+extra_dispensal*len(dests)+MMIX.vol_well) + '\u03BCl.')
         ctx.comment('200 ul Used tips in total: ' + str(tip_track['counts'][p300]))
         ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
 
