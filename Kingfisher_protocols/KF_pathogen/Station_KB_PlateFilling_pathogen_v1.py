@@ -43,11 +43,11 @@ def run(ctx: protocol_api.ProtocolContext):
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
-    folder_path = '/data/log_times/'
+    folder_path = '/dvar/lib/jupyter/notebooks'
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/time_log.json'
+        file_path = folder_path + '/KB_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -478,9 +478,9 @@ def run(ctx: protocol_api.ProtocolContext):
         with open(file_path, 'w') as f:
             f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
             for key in STEPS.keys():
-                row = str(key) + '\t'
+                row = str(key)
                 for key2 in STEPS[key].keys():
-                    row += format(STEPS[key][key2]) + '\t'
+                    row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
 
