@@ -111,24 +111,32 @@ pipette.pick_up_tip(tip_recycle[reagent.tip_recycling])
 pipette.return_tip()
 
 def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-pickup_height, rinse):
+                   pickup_height, rinse, disp_height = -2, multi = False):
+    '''
+    x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
+    pickup_height: height from bottom where volume
+    disp_height: dispense height; by default it's close to the top, but in case it is needed it can be lowered
+    rinse: if True it will do 2 rounds of aspirate and dispense before the tranfer
+    '''
     # Rinse before aspirating
     if rinse == True:
-        custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
+        custom_mix(pipet, reagent, location = source, vol = vol,
+                   rounds = 2, blow_out = True, mix_height = 0)
     # SOURCE
-    s = source.bottom(pickup_height).move(Point(x = x_offset))
-    pipet.move_to(s) # go to source
-    pipet.aspirate(vol, s) # aspirate liquid
-    if air_gap_vol !=0: #If there is air_gap_vol, switch pipette to slow speed
-        pipet.move_to(source.top(z = -2), speed = 20)
-        pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
+    s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
+    pipet.aspirate(vol, s)  # aspirate liquid
+    if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
+        pipet.aspirate(air_gap_vol, source.top(z = -2),
+                       rate = reagent.flow_rate_aspirate)  # air gap
     # GO TO DESTINATION
-    pipet.move_to(dest.top())
-    pipet.dispense(vol + air_gap_vol + 20, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
-    pipet.blow_out(dest.top(z = -1)) # Blow out
-    if air_gap_vol != 0:
-        pipet.move_to(dest.top(z = -2), speed = 20)
-        pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
+    drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
+    pipet.dispense(vol + air_gap_vol, drop,
+                   rate = reagent.flow_rate_dispense)  # dispense all
+    pipet.blow_out(dest.top(z = -2))
+    if multi == True:
+        if air_gap_vol != 0: #Air gap for multidispense
+            pipet.aspirate(air_gap_vol, dest.top(z = -2),
+                           rate = reagent.flow_rate_aspirate)  # air gap
 
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
