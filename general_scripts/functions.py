@@ -1,23 +1,24 @@
 #How to activate simulator
 #opentrons_simulate /Users/covid19warriors/Documents/covid19clinic/Station\ B/Station_B_S2_Aitor_JL_v1.py -L /Users/covid19warriors/Desktop/labware2
 
-
 class Reagent:
-    def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse, reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling = 'none'):
+    def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
+                 reagent_reservoir_volume, delay, num_wells, h_cono, v_fondo,
+                  tip_recycling='none'):
         self.name = name
         self.flow_rate_aspirate = flow_rate_aspirate
         self.flow_rate_dispense = flow_rate_dispense
         self.rinse = bool(rinse)
         self.reagent_reservoir_volume = reagent_reservoir_volume
-        self.reagent_reservoir = 'none'
+        self.delay = delay
         self.num_wells = num_wells
         self.col = 0
         self.vol_well = 0
         self.h_cono = h_cono
         self.v_cono = v_fondo
         self.tip_recycling = tip_recycling
-    def vol_well_original(self):
-        return self.reagent_reservoir_volume/self.num_wells
+        self.vol_well_original = reagent_reservoir_volume / num_wells
+
 
 #Reagents and their characteristics
 Ethanol = Reagent(name = 'Ethanol',
@@ -25,6 +26,7 @@ Ethanol = Reagent(name = 'Ethanol',
                 flow_rate_dispense = 1,
                 rinse = True,
                 reagent_reservoir_volume = 12000,
+                delay = 2,
                 num_wells = 4, #num_Wells max is 4
                 h_cono = 1.95,
                 v_fondo = 1.95*7*71/2, #Prismatic
@@ -35,6 +37,7 @@ Beads = Reagent(name = 'Magnetic beads',
                 flow_rate_dispense = 1,
                 rinse = True,
                 reagent_reservoir_volume = 12000,
+                delay = 2,
                 num_wells = 4,
                 h_cono = 1.95,
                 v_fondo = 1.95*7*71/2, #Prismatic
@@ -45,6 +48,7 @@ Isopropanol = Reagent(name = 'Isopropanol',
                 flow_rate_dispense = 1,
                 rinse = True,
                 reagent_reservoir_volume = 5000,
+                delay = 2,
                 num_wells = 2, #num_Wells max is 2
                 h_cono = 1.95,
                 v_fondo = 1.95*7*71/2, #Prismatic
@@ -110,25 +114,33 @@ tip_recycle = [ctx.load_labware('opentrons_96_tiprack_300ul', '5', '200µl filte
 pipette.pick_up_tip(tip_recycle[reagent.tip_recycling])
 pipette.return_tip()
 
-def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-pickup_height, rinse):
+def move_vol_multipipette(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
+                   pickup_height, rinse, disp_height = -2):
+    '''
+    x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
+    pickup_height: height from bottom where volume
+    disp_height: dispense height; by default it's close to the top (z=-2), but in case it is needed it can be lowered
+    rinse: if True it will do 2 rounds of aspirate and dispense before the tranfer
+    '''
     # Rinse before aspirating
     if rinse == True:
-        custom_mix(pipet, reagent, location = source, vol = vol, rounds = 2, blow_out = True)
+        custom_mix(pipet, reagent, location = source, vol = vol,
+                   rounds = 2, blow_out = True, mix_height = 0)
     # SOURCE
-    s = source.bottom(pickup_height).move(Point(x = x_offset))
-    pipet.move_to(s) # go to source
-    pipet.aspirate(vol, s) # aspirate liquid
-    if air_gap_vol !=0: #If there is air_gap_vol, switch pipette to slow speed
-        pipet.move_to(source.top(z = -2), speed = 20)
-        pipet.aspirate(air_gap_vol, source.top(z = -2), rate = reagent.flow_rate_aspirate) #air gap
+    s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
+    pipet.aspirate(vol, s)  # aspirate liquid
+    if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
+        pipet.aspirate(air_gap_vol, source.top(z = -2),
+                       rate = reagent.flow_rate_aspirate)  # air gap
     # GO TO DESTINATION
-    pipet.move_to(dest.top())
-    pipet.dispense(vol + air_gap_vol + 20, dest.top(z = -1), rate = reagent.flow_rate_dispense) #dispense all
-    pipet.blow_out(dest.top(z = -1)) # Blow out
+    drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
+    pipet.dispense(vol + air_gapf_vol, drop,
+                   rate = reagent.flow_rate_dispense)  # dispense all
+    protocol.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
+    pipet.blow_out(dest.top(z = -2))
     if air_gap_vol != 0:
-        pipet.move_to(dest.top(z = -2), speed = 20)
-        pipet.aspirate(air_gap_vol,dest.top(z = -2),rate = reagent.flow_rate_aspirate) #air gap
+        pipet.aspirate(air_gap_vol, dest.top(z = -2),
+                       rate = reagent.flow_rate_aspirate)  # air gap
 
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
