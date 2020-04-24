@@ -304,7 +304,7 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_rail_lights(False)
     time.sleep(2)
     gpio.set_rail_lights(True)
-    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/toreador.mp3')
+    os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/toreador.mp3 &')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
@@ -334,4 +334,4 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][p20] / 96))
 
     if ctx.is_simulating():
-        os.system('afplay /Users/covid19warriors/Downloads/lionking.mp3 ')
+        os.system('afplay -f -14000 /Users/covid19warriors/Downloads/lionking.mp3 &')
