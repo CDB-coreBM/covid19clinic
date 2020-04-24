@@ -3,12 +3,14 @@
 
 class Reagent:
     def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
-                 reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling='none'):
+                 reagent_reservoir_volume, delay, num_wells, h_cono, v_fondo,
+                  tip_recycling='none'):
         self.name = name
         self.flow_rate_aspirate = flow_rate_aspirate
         self.flow_rate_dispense = flow_rate_dispense
         self.rinse = bool(rinse)
         self.reagent_reservoir_volume = reagent_reservoir_volume
+        self.delay = delay
         self.num_wells = num_wells
         self.col = 0
         self.vol_well = 0
