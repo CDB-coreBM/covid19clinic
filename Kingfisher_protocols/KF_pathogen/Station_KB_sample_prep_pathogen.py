@@ -34,11 +34,13 @@ volume_cone = 50  # Volume in ul that fit in the screwcap cone
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_screw_one = 2000  # Total volume of first screwcap
 volume_screw_two = 0  # Total volume of second screwcap
-area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
-h_cone = (volume_cone * 3 / area_section_screwcap)
+size_transfer = 1
 
 #Calculated variables
+multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
 deepwell_cross_section_area = L_deepwell**2  # deepwell cross secion area
+area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
+h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 # 'kf_96_wellplate_2400ul'
@@ -48,7 +50,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': False, 'description': 'Mix beads'},
         2: {'Execute': False, 'description': 'Transfer beads'},
-        3: {'Execute': False, 'description': 'Add MS2'}
+        3: {'Execute': True, 'description': 'Add MS2'}
     }
 
     """
@@ -66,30 +68,26 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define Reagents as objects with their properties
     class Reagent:
         def __init__(self, name, rinse,h_cono, v_fondo,
-                     reagent_reservoir_volume_1,reagent_reservoir_volume_2,
-                      num_wells= 1, tip_recycling=None):
+                     reagent_reservoir_volume,
+                      num_wells=1,flow_rate_aspirate = 1,flow_rate_dispense = 1):
             self.name = name
             self.rinse = bool(rinse)
-            self.flow_rate_aspirate = 1
-            self.flow_rate_dispense = 1
-            self.reagent_reservoir_volume_1 = reagent_reservoir_volume_1
-            self.reagent_reservoir_volume_2 = reagent_reservoir_volume_2
+            self.flow_rate_aspirate = flow_rate_aspirate
+            self.flow_rate_dispense = flow_rate_dispense
+            self.reagent_reservoir_volume = reagent_reservoir_volume
             self.col = 0
-            self.vol_well = self.reagent_reservoir_volume_1
+            self.num_wells = 1
+            self.vol_well = reagent_reservoir_volume
             self.h_cono = h_cono
             self.v_cono = v_fondo
-            self.tip_recycling = tip_recycling
             self.unused_one=0
             self.unused_two=0
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
     # Reagents and their characteristics
     Sample = Reagent(name='Sample',
-                      flow_rate_aspirate=0.5,
-                      flow_rate_dispense=1,
                       rinse=True,
-                      reagent_reservoir_volume_1=460*96,
-                      reagent_reservoir_volume_2=0,
+                      reagent_reservoir_volume=460*96,
                       h_cono=1.95,
                       v_fondo=35)
 
@@ -98,25 +96,23 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_dispense=1.5,
                     rinse=True,
                     num_wells=4,
-                    reagent_reservoir_volume_1=260*96*1.1,
-                    reagent_reservoir_volume_2=0,
+                    reagent_reservoir_volume=260*96*1.1,
                     h_cono=1.95,
                     v_fondo=695 ) # Prismatic)
 
     MS = Reagent(name='MS2',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=1.5,
                     rinse=False,
-                    reagent_reservoir_volume=2000,
+                    reagent_reservoir_volume=volume_screw_one,
+                    num_wells=1,
                     h_cono=h_cone,
                     v_fondo=volume_cone  # V cono
                     ) # Prismatic)
 
-    Sample.vol_well = Sample.reagent_reservoir_volume_1
+    Sample.vol_well = Sample.reagent_reservoir_volume
     Beads.vol_well = Beads.vol_well_original
-    MS.vol_well = MS.reagent_reservoir_volume_1
+    MS.vol_well = MS.reagent_reservoir_volume
 
-    def distribute_custom(pipette, volume, src, dest,  pickup_height, extra_dispensal,*waste_pool):
+    def distribute_custom(pipette, volume, src, dest,  pickup_height, extra_dispensal,waste_pool):
         # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
         pipette.aspirate((len(dest) * volume) +
                          extra_dispensal, src.bottom(pickup_height))
@@ -210,7 +206,10 @@ def run(ctx: protocol_api.ProtocolContext):
             if air_gap_vol != 0: #Air gap for multidispense
                 pipet.aspirate(air_gap_vol, dest.top(z = -2),
                                rate = reagent.flow_rate_aspirate)  # air gap
-
+    def divide_destinations(l, n):
+        # Divide the list of destinations in size n lists.
+        for i in range(0, len(l), n):
+            yield l[i:i + n]
 ####################################
     # load labware and modules
     # 12 well rack
@@ -218,7 +217,7 @@ def run(ctx: protocol_api.ProtocolContext):
         'nest_12_reservoir_15ml', '2', 'Reagent deepwell plate')
 
 ##################################
-    # Elution plate - final plate, goes to C
+    # Elution plate - final plate, goes to Kingfisher
     sample_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul','1',
         'Deepwell sample plate')
@@ -229,12 +228,6 @@ def run(ctx: protocol_api.ProtocolContext):
         'opentrons_24_aluminumblock_generic_2ml_screwcap', '3',
         'Bloque Aluminio 24 Screwcap')
 ##################################
-
-    # pipettes. P1000 currently deactivated
-    m300 = ctx.load_instrument(
-        'p300_multi_gen2', 'right', tip_racks=tips200)  # Load multi pipette
-    p20 = ctx.load_instrument('p20_single_gen2', 'left', tip_racks=tips20) # load P1000 pipette
-
     # Load Tipracks
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
@@ -246,10 +239,21 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in ['6']
     ]
 
+    # pipettes. P1000 currently deactivated
+    m300 = ctx.load_instrument(
+        'p300_multi_gen2', 'right', tip_racks=tips200)  # Load multi pipette
+    p20 = ctx.load_instrument('p20_single_gen2', 'left', tip_racks=tips20) # load P1000 pipette
+
+    tip_track = {
+        'counts': {m300: 0, p20: 0},
+        'maxes': {m300: 10000, p20: 0}
+    }
+    # Divide destination wells in small groups for P300 pipette
+    dests = list(divide_destinations(sample_plate.wells()[:NUM_SAMPLES], size_transfer))
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
-    work_destinations = sample_plate.rows()[0][:Elution.num_wells]
+    work_destinations = sample_plate.rows()[0][:num_cols]
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    MS.reagent_reservoir = tuberack.rows()[0][0] # 1 row, 2 columns (first ones)
+    MS.reagent_reservoir = tuberack.rows()[0] # 1 row, 2 columns (first ones)
 
     ############################################################################
     # STEP 1: PREMIX BEADS
@@ -261,7 +265,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
         if not m300.hw_pipette['has_tip']:
-            pick_up(m300)  # These tips are reused in the first transfer of beads
+            m300.pick_up_tip()  # These tips are reused in the first transfer of beads
             ctx.comment('Tip picked up')
         ctx.comment('Mixing ' + Beads.name)
 
@@ -291,7 +295,7 @@ def run(ctx: protocol_api.ProtocolContext):
         rinse = True
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
+                m300.pick_up_tip()
             for j, transfer_vol in enumerate(beads_transfer_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
@@ -321,28 +325,26 @@ def run(ctx: protocol_api.ProtocolContext):
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-        ctx.comment('Now incubation will start ')
-
     ############################################################################
     # STEP 3: Transfer MS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
         start = datetime.now()
-        p20.pick_up_tip()
+
         tip_track['counts'][p20]+=1
         used_vol=[]
-        for dest in sample_plate.wells():
-
+        for dest in dests:
+            p20.pick_up_tip()
             [pickup_height,col_change]=calc_height(MS, area_section_screwcap, MS_vol)
             # source MMIX_reservoir[col_change]
-            used_vol_temp = distribute_custom(p20, MS_vol, MS.reagent_reservoir,
-                dest,pickup_height, extra_dispensal=0)
+            used_vol_temp = distribute_custom(p20, MS_vol, MS.reagent_reservoir[MS.col],
+                dest,pickup_height, extra_dispensal=0, waste_pool=None)
 
             used_vol.append(used_vol_temp)
 
-        p300.drop_tip()
-        MMIX.unused_two = MMIX.vol_well
+            p20.drop_tip()
+        MS.unused_two = 0
 
         end = datetime.now()
         time_taken = (end - start)
