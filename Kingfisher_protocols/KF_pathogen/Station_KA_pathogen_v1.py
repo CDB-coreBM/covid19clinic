@@ -23,36 +23,21 @@ metadata = {
 NUM_SAMPLES = 4
 air_gap_vol = 5
 
-volume_protk = 10
-volume_control = 10
-volume_sample = 300
-volume_buffer = 550 #(530ul buffer + 20ul beads)
-height_protk = 10
-height_control = 20
-temperature = 25
+volume_sample = 460
 
 #Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
-#falcon
-diameter_falcon = 27
-h_cone_falcon = 17.4
-
 # Calculated variables
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cross secion area
-falcon_cross_section_area = math.pi * diameter_falcon**2 / 4
-v_cone_falcon = 1/3*h_cone_falcon * falcon_cross_section_area
 
 def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': '1: Add proteinase K (10ul)'},
-        2: {'Execute': False, 'description': '2: Add internal control (10ul)'},
-        3: {'Execute': False, 'description': '3: Add samples (300ul)'},
-        4: {'Execute': True, 'description': '4: Add binding buffer (550ul)'}
+        1: {'Execute': True, 'description': 'Add samples (300ul)'},
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:

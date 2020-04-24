@@ -43,8 +43,8 @@ screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cro
 def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': '1: Add internal control (10ul)'},
-        2: {'Execute': True, 'description': '2: Add samples (300ul)'},
+        1: {'Execute': True, 'description': 'Add internal control (10ul)'},
+        2: {'Execute': True, 'description': 'Add samples (300ul)'},
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
