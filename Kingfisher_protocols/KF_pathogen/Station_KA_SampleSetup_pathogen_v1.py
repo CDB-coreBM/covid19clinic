@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
 air_gap_vol = 15
 
 volume_sample = 460
@@ -44,7 +44,7 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/dvar/lib/jupyter/notebooks'
+    folder_path = '/var/lib/jupyter/notebooks'
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
     file_path = folder_path + '/KA_time_log.txt'
