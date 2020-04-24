@@ -58,7 +58,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/KFC_time_log.json'
+        file_path = folder_path + '/KC_time_log.json'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -288,13 +288,14 @@ def run(ctx: protocol_api.ProtocolContext):
 
 
     # Export the time log to a tsv file
+    # Export the time log to a tsv file
     if not ctx.is_simulating():
         with open(file_path, 'w') as f:
             f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
             for key in STEPS.keys():
-                row = str(key) + '\t'
+                row = str(key)
                 for key2 in STEPS[key].keys():
-                    row += format(STEPS[key][key2]) + '\t'
+                    row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
 
