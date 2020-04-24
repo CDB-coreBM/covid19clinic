@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 8
+NUM_SAMPLES = 96
 air_gap_vol = 15
 
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
@@ -32,22 +32,21 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
 
-        1: {'Execute': True, 'description': '1: Add 300 ul Wash Buffer 1 - Round 1'},
-        2: {'Execute': True, 'description': '2: Add 300 ul Wash Buffer 1 - Round 2'},
-        3: {'Execute': True, 'description': '3: Add 500 ul Wash Buffer 2 - Round 1'},
-        4: {'Execute': True, 'description': '4: Add 450 ul Wash Buffer 2 - Round 2'},
-        5: {'Execute': True, 'description': '5: Add 50 ul Elution Buffer'},
-
+        1: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 1'},
+        2: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 2'},
+        3: {'Execute': True, 'description': 'Add 500 ul Wash Buffer 2 - Round 1'},
+        4: {'Execute': True, 'description': 'Add 450 ul Wash Buffer 2 - Round 2'},
+        5: {'Execute': True, 'description': 'Add 50 ul Elution Buffer'},
     }
 
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
-    folder_path = '/dvar/lib/jupyter/notebooks'
+    folder_path = '/var/lib/jupyter/notebooks'
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/KB_time_log.txt'
+        file_path = folder_path + '/KB_PlateFilling_pathogen_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -311,7 +310,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest = wb1plate1_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=4)  # 5 sec to let the liquid download
+                ctx.delay(seconds=2)  # 5 sec to let the liquid download
                 m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
@@ -349,7 +348,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest = wb1plate2_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=4)  # 5 sec to let the liquid download
+                ctx.delay(seconds=2)  # 5 sec to let the liquid download
                 m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
@@ -387,7 +386,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest = wb2plate1_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=54)  # 5 sec to let the liquid download
+                ctx.delay(seconds=2)  # 5 sec to let the liquid download
                 m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
@@ -425,6 +424,8 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest=wb2plate2_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
+                ctx.delay(seconds=2)  # 5 sec to let the liquid download
+                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
