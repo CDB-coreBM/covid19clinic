@@ -1,26 +1,22 @@
 #How to activate simulator
 #opentrons_simulate /Users/covid19warriors/Documents/covid19clinic/Station\ B/Station_B_S2_Aitor_JL_v1.py -L /Users/covid19warriors/Desktop/labware2
 
-
 class Reagent:
     def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
-    reagent_reservoir_volume, num_wells, h_cono, v_fondo,
-    tip_recycling = 'none', delay = 0):
+                 reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling='none'):
         self.name = name
         self.flow_rate_aspirate = flow_rate_aspirate
         self.flow_rate_dispense = flow_rate_dispense
         self.rinse = bool(rinse)
         self.reagent_reservoir_volume = reagent_reservoir_volume
-        self.delay = delay
-        self.reagent_reservoir = 'none'
         self.num_wells = num_wells
         self.col = 0
         self.vol_well = 0
         self.h_cono = h_cono
         self.v_cono = v_fondo
         self.tip_recycling = tip_recycling
-    def vol_well_original(self):
-        return self.reagent_reservoir_volume/self.num_wells
+        self.vol_well_original = reagent_reservoir_volume / num_wells
+
 
 #Reagents and their characteristics
 Ethanol = Reagent(name = 'Ethanol',
@@ -136,7 +132,7 @@ def move_vol_multipipette(pipet, reagent, source, dest, vol, air_gap_vol, x_offs
                        rate = reagent.flow_rate_aspirate)  # air gap
     # GO TO DESTINATION
     drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
-    pipet.dispense(vol + air_gap_vol, drop,
+    pipet.dispense(vol + air_gapf_vol, drop,
                    rate = reagent.flow_rate_dispense)  # dispense all
     protocol.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
     pipet.blow_out(dest.top(z = -2))
