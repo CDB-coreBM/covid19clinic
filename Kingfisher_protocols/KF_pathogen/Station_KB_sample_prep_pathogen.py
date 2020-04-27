@@ -52,7 +52,6 @@ def run(ctx: protocol_api.ProtocolContext):
         1: {'Execute': True, 'description': 'Add MS2'},
         2: {'Execute': True, 'description': 'Mix beads'},
         3: {'Execute': True, 'description': 'Transfer beads'}
-
     }
 
     """
@@ -168,8 +167,6 @@ def run(ctx: protocol_api.ProtocolContext):
         pipet.blow_out(dest.top(z = -2))
         pipet.touch_tip(speed=20, v_offset=-5)
 
-
-
     def calc_height(reagent, cross_section_area, aspirate_volume):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
@@ -281,9 +278,9 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
             dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = [0,0],
                    pickup_height = pickup_height, disp_height = height_MS, rinse = False)
-        #Drop tip and update counter
-        p20.drop_tip()
-        tip_track['counts'][p20]+=1
+            #Drop tip and update counter
+            p20.drop_tip()
+            tip_track['counts'][p20]+=1
 
         #Time statistics
         end = datetime.now()
@@ -350,8 +347,9 @@ def run(ctx: protocol_api.ProtocolContext):
                                dest=work_destinations[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset = x_offset,
                                pickup_height=pickup_height, rinse=rinse)
-            ctx.comment('Mixing MS with beads ')
-            custom_mix(m300, Beads, location=work_destinations[i], vol=180, rounds=4, blow_out=True, mix_height=16)
+            #ctx.comment('Mixing MS with beads ')
+            #custom_mix(m300, Beads, location=work_destinations[i], vol=180,
+            rounds = 1, blow_out = True, mix_height = 16, x_offset = x_offset)
             m300.drop_tip(home_after=False)
             # m300.return_tip()
             tip_track['counts'][m300] += 8
