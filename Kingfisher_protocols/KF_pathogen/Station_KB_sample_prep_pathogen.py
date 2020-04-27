@@ -166,7 +166,7 @@ def run(ctx: protocol_api.ProtocolContext):
         #ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
         pipet.blow_out(dest.top(z = -2))
         if touch_tip==True:
-            pipet.touch_tip(speed=20, v_offset=-5)
+            pipet.touch_tip(speed=20, v_offset=-5, radius = 0.9)
 
     def calc_height(reagent, cross_section_area, aspirate_volume):
         nonlocal ctx
@@ -362,3 +362,29 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
+
+    # Export the time log to a tsv file
+    if not ctx.is_simulating():
+        with open(file_path, 'w') as f:
+            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
+            for key in STEPS.keys():
+                row = str(key)
+                for key2 in STEPS[key].keys():
+                    row += '\t' + format(STEPS[key][key2])
+                f.write(row + '\n')
+        f.close()
+
+    ############################################################################
+    # Light flash end of program
+    gpio.set_rail_lights(False)
+    time.sleep(2)
+    #os.system('mpg123 -f -8000 /var/lib/jupyter/notebooks/toreador.mp3 &')
+    for i in range(3):
+        gpio.set_rail_lights(False)
+        gpio.set_button_light(1, 0, 0)
+        time.sleep(0.3)
+        gpio.set_rail_lights(True)
+        gpio.set_button_light(0, 0, 1)
+        time.sleep(0.3)
+    gpio.set_button_light(0, 1, 0)
+    ctx.comment('Finished! \nMove plate to KingFisher')
