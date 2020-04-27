@@ -46,6 +46,7 @@ num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 # 'kf_96_wellplate_2400ul'
 def run(ctx: protocol_api.ProtocolContext):
+    from opentrons.drivers.rpi_drivers import gpio
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
@@ -53,13 +54,10 @@ def run(ctx: protocol_api.ProtocolContext):
         2: {'Execute': True, 'description': 'Mix beads'},
         3: {'Execute': True, 'description': 'Transfer beads'}
     }
-
-    """
-    # No wait time
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
-    """
+
     folder_path = '/var/lib/jupyter/notebooks'
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
@@ -142,7 +140,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.blow_out(location.top(z=-2))  # Blow out
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                       pickup_height, rinse, disp_height = -2, touch_tip):
+                       pickup_height, rinse, disp_height = -2, touch_tip = False):
         '''
         x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
         pickup_height: height from bottom where volume
