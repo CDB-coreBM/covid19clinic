@@ -159,9 +159,6 @@ def run(ctx: protocol_api.ProtocolContext):
         pipet.dispense(vol + air_gap_vol, drop,
                        rate = reagent.flow_rate_dispense)  # dispense all
         pipet.blow_out(dest.top(z = -2))
-        #if air_gap_vol != 0: #Air gap for multidispense
-        #    pipet.aspirate(air_gap_vol, dest.top(z = -2),
-        #                   rate = reagent.flow_rate_aspirate)  # air gap
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -196,20 +193,6 @@ def run(ctx: protocol_api.ProtocolContext):
     dest_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul', '5', 'KF 96well destination plate')
 
-    ############################################
-    # tempdeck
-    #tempdeck = ctx.load_module('tempdeck', '1')
-    #tempdeck.set_temperature(temperature)
-
-    ##################################
-    # Cooled reagents in tempdeck
-    #reagents = tempdeck.load_labware(
-        #'bloquealuminio_24_screwcap_wellplate_1500ul',
-        #'cooled reagent tubes')
-    #reagents = ctx.load_labware(
-    #    'opentrons_24_aluminumblock_generic_2ml_screwcap', '3',
-    #    'cooled reagent tubes')
-
     ####################################
     # Load tip_racks
     #tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
@@ -220,9 +203,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    #Buffer.reagent_reservoir = buffer_res.wells()[0]
-    #ProtK.reagent_reservoir = reagents.wells()[0]
-    #Control_I.reagent_reservoir = reagents.wells()[4]
+
 
     # setup samples and destinations
     sample_sources_full = generate_source_table(source_racks)
@@ -238,6 +219,7 @@ def run(ctx: protocol_api.ProtocolContext):
         'counts': {p1000: 0},# p1000: 0},
         'maxes': {p1000: len(tips1000)*96} #,p20: len(tips20)*96,
     }
+
     ############################################################################
     # STEP 1: Add Samples
     ############################################################################
