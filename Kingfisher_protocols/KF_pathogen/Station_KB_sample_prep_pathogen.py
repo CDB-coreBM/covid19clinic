@@ -24,18 +24,12 @@ NUM_SAMPLES = 96
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
-height_MS = -20
+height_MS = -35
 
 x_offset = [0,0]
-# mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-#mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
-#temperature = 4
 
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
-#x_offset_rs = 1 #Offset of the pickup when magnet is ON
 volume_screw_one = 500  # Total volume of first screwcap
-#volume_screw_two = 0  # Total volume of second screwcap
-#size_transfer = 1
 
 #Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
@@ -52,21 +46,18 @@ num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 # 'kf_96_wellplate_2400ul'
 def run(ctx: protocol_api.ProtocolContext):
+    from opentrons.drivers.rpi_drivers import gpio
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Add MS2'},
         2: {'Execute': True, 'description': 'Mix beads'},
         3: {'Execute': True, 'description': 'Transfer beads'}
-
     }
-
-    """
-    # No wait time
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
-    """
+
     folder_path = '/var/lib/jupyter/notebooks'
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
@@ -93,35 +84,35 @@ def run(ctx: protocol_api.ProtocolContext):
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
     # Reagents and their characteristics
-    Sample = Reagent(name='Sample',
-                      flow_rate_aspirate=1,
-                      flow_rate_dispense=1,
-                      rinse=True,
+    Sample = Reagent(name = 'Sample',
+                      flow_rate_aspirate = 1,
+                      flow_rate_dispense = 1,
+                      rinse = True,
                       delay = 0,
-                      reagent_reservoir_volume=460*96,
+                      reagent_reservoir_volume = 460*96,
                       num_wells = 96,
-                      h_cono=1.95,
-                      v_fondo=35)
+                      h_cono = 1.95,
+                      v_fondo = 35)
 
-    Beads = Reagent(name='Magnetic beads and Lysis',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=1.5,
-                    rinse=True,
-                    num_wells=4,
+    Beads = Reagent(name = 'Magnetic beads and Lysis',
+                    flow_rate_aspirate = 1,
+                    flow_rate_dispense = 3,
+                    rinse = True,
+                    num_wells = 4,
                     delay = 0,
-                    reagent_reservoir_volume=260*96*1.1,
-                    h_cono=1.95,
-                    v_fondo=695 ) # Prismatic)
+                    reagent_reservoir_volume = 260*96*1.1,
+                    h_cono = 1.95,
+                    v_fondo = 695 ) # Prismatic)
 
-    MS = Reagent(name='MS2',
-                  flow_rate_aspirate=1,
-                  flow_rate_dispense=1,
-                    rinse=False,
-                    reagent_reservoir_volume=volume_screw_one,
-                    num_wells=1,
+    MS = Reagent(name = 'MS2',
+                  flow_rate_aspirate = 1,
+                  flow_rate_dispense = 1,
+                    rinse = False,
+                    reagent_reservoir_volume = volume_screw_one,
+                    num_wells = 1,
                     delay = 0,
-                    h_cono=h_cone,
-                    v_fondo=volume_cone  # V cono
+                    h_cono = h_cone,
+                    v_fondo = volume_cone  # V cono
                     ) # Prismatic)
 
     Sample.vol_well = Sample.reagent_reservoir_volume
@@ -129,7 +120,7 @@ def run(ctx: protocol_api.ProtocolContext):
     MS.vol_well = MS.reagent_reservoir_volume
 
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
-    x_offset,source_height=3):
+    x_offset, source_height = 3):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
         x_offset=[source,destination]
@@ -149,7 +140,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.blow_out(location.top(z=-2))  # Blow out
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                       pickup_height, rinse, disp_height = -2):
+                       pickup_height, rinse, disp_height = -2, touch_tip = False):
         '''
         x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
         pickup_height: height from bottom where volume
@@ -172,9 +163,8 @@ def run(ctx: protocol_api.ProtocolContext):
                        rate = reagent.flow_rate_dispense)  # dispense all
         #ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
         pipet.blow_out(dest.top(z = -2))
-        pipet.touch_tip(speed=20, v_offset=-5)
-
-
+        if touch_tip==True:
+            pipet.touch_tip(speed=20, v_offset=-5, radius = 0.9)
 
     def calc_height(reagent, cross_section_area, aspirate_volume):
         nonlocal ctx
@@ -240,6 +230,7 @@ def run(ctx: protocol_api.ProtocolContext):
     tuberack = ctx.load_labware(
         'opentrons_24_aluminumblock_generic_2ml_screwcap', '3',
         'Bloque Aluminio 24 Screwcap')
+
     ##################################
     # Load Tipracks
     tips20 = [
@@ -259,13 +250,14 @@ def run(ctx: protocol_api.ProtocolContext):
 
     tip_track = {
         'counts': {m300: 0, p20: 0},
-        'maxes': {m300: 10000, p20: 10000}
+        'maxes': {m300: len(tips200)*96, p20: len(tips20)*96}
     }
 
     # Divide destination wells in small groups for P300 pipette
     #destinations = list(divide_destinations(sample_plate.wells()[:NUM_SAMPLES], size_transfer))
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
     work_destinations = sample_plate.wells()[:NUM_SAMPLES]
+    work_destinations_cols = sample_plate.rows()[0][:num_cols]
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     MS.reagent_reservoir = tuberack.rows()[0] # 1 row, 2 columns (first ones)
 
@@ -279,17 +271,18 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        if not p20.hw_pipette['has_tip']:
-            pick_up(p20)
         for d in work_destinations:
+            if not p20.hw_pipette['has_tip']:
+                pick_up(p20)
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(MS, screwcap_cross_section_area, MS_vol)
             move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
             dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = [0,0],
-                   pickup_height = pickup_height, disp_height = height_MS, rinse = False)
-        #Drop tip and update counter
-        p20.drop_tip()
-        tip_track['counts'][p20]+=1
+                   pickup_height = pickup_height, disp_height = height_MS,
+                   rinse = False, touch_tip = True)
+            #Drop tip and update counter
+            p20.drop_tip()
+            tip_track['counts'][p20]+=1
 
         #Time statistics
         end = datetime.now()
@@ -298,32 +291,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-
-    '''
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        tip_track['counts'][p20]+=1
-        used_vol=[]
-        for dest in dests:
-            p20.pick_up_tip()
-            [pickup_height,col_change]=calc_height(MS, area_section_screwcap, MS_vol)
-            # source MMIX_reservoir[col_change]
-            used_vol_temp = distribute_custom(p20, MS_vol, MS.reagent_reservoir[MS.col],
-                dest,pickup_height, extra_dispensal=0, waste_pool=None)
-
-            used_vol.append(used_vol_temp)
-
-            p20.drop_tip()
-        MS.unused_two = 0
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-        '''
     ############################################################################
     # STEP 2: PREMIX BEADS
     ############################################################################
@@ -379,12 +346,12 @@ def run(ctx: protocol_api.ProtocolContext):
                 if j != 0:
                     rinse = False
                 move_vol_multichannel(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
-                               dest=work_destinations[i], vol=transfer_vol,
+                               dest=work_destinations_cols[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset = x_offset,
-                               pickup_height=pickup_height, rinse=rinse)
-
-            ctx.comment('Mixing sample with beads ')
-            #custom_mix(m300, Beads, location=work_destinations[i], vol=180,rounds=6, blow_out=True, mix_height=16)
+                               pickup_height=pickup_height, rinse=rinse, touch_tip = False)
+            ctx.comment('Mixing MS with beads ')
+            custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
+            rounds = 1, blow_out = True, mix_height = 16, x_offset = x_offset)
             m300.drop_tip(home_after=False)
             # m300.return_tip()
             tip_track['counts'][m300] += 8
@@ -393,3 +360,29 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
+
+    # Export the time log to a tsv file
+    if not ctx.is_simulating():
+        with open(file_path, 'w') as f:
+            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
+            for key in STEPS.keys():
+                row = str(key)
+                for key2 in STEPS[key].keys():
+                    row += '\t' + format(STEPS[key][key2])
+                f.write(row + '\n')
+        f.close()
+
+    ############################################################################
+    # Light flash end of program
+    gpio.set_rail_lights(False)
+    time.sleep(2)
+    #os.system('mpg123 -f -8000 /var/lib/jupyter/notebooks/toreador.mp3 &')
+    for i in range(3):
+        gpio.set_rail_lights(False)
+        gpio.set_button_light(1, 0, 0)
+        time.sleep(0.3)
+        gpio.set_rail_lights(True)
+        gpio.set_button_light(0, 0, 1)
+        time.sleep(0.3)
+    gpio.set_button_light(0, 1, 0)
+    ctx.comment('Finished! \nMove plate to KingFisher')
