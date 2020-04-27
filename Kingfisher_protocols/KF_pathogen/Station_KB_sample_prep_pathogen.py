@@ -256,7 +256,8 @@ def run(ctx: protocol_api.ProtocolContext):
     # Divide destination wells in small groups for P300 pipette
     #destinations = list(divide_destinations(sample_plate.wells()[:NUM_SAMPLES], size_transfer))
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
-    work_destinations = sample_plate.rows()[0][:num_cols]
+    work_destinations = sample_plate.wells()[:NUM_SAMPLES]
+    work_destinations_cols = sample_plate.rows()[0][:num_cols]
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     MS.reagent_reservoir = tuberack.rows()[0] # 1 row, 2 columns (first ones)
 
@@ -270,9 +271,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        if not p20.hw_pipette['has_tip']:
-            pick_up(p20)
         for d in work_destinations:
+            if not p20.hw_pipette['has_tip']:
+                pick_up(p20)
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(MS, screwcap_cross_section_area, MS_vol)
             move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
@@ -344,11 +345,11 @@ def run(ctx: protocol_api.ProtocolContext):
                 if j != 0:
                     rinse = False
                 move_vol_multichannel(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
-                               dest=work_destinations[i], vol=transfer_vol,
+                               dest=work_destinations_cols[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset = x_offset,
                                pickup_height=pickup_height, rinse=rinse)
-            #ctx.comment('Mixing MS with beads ')
-            #custom_mix(m300, Beads, location=work_destinations[i], vol=180,
+            ctx.comment('Mixing MS with beads ')
+            custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
             rounds = 1, blow_out = True, mix_height = 16, x_offset = x_offset)
             m300.drop_tip(home_after=False)
             # m300.return_tip()
