@@ -142,7 +142,7 @@ def run(ctx: protocol_api.ProtocolContext):
             pipet.blow_out(location.top(z=-2))  # Blow out
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                       pickup_height, rinse, disp_height = -2):
+                       pickup_height, rinse, disp_height = -2, touch_tip):
         '''
         x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
         pickup_height: height from bottom where volume
@@ -165,7 +165,8 @@ def run(ctx: protocol_api.ProtocolContext):
                        rate = reagent.flow_rate_dispense)  # dispense all
         #ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
         pipet.blow_out(dest.top(z = -2))
-        pipet.touch_tip(speed=20, v_offset=-5)
+        if touch_tip==True:
+            pipet.touch_tip(speed=20, v_offset=-5)
 
     def calc_height(reagent, cross_section_area, aspirate_volume):
         nonlocal ctx
@@ -231,6 +232,7 @@ def run(ctx: protocol_api.ProtocolContext):
     tuberack = ctx.load_labware(
         'opentrons_24_aluminumblock_generic_2ml_screwcap', '3',
         'Bloque Aluminio 24 Screwcap')
+
     ##################################
     # Load Tipracks
     tips20 = [
@@ -250,7 +252,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     tip_track = {
         'counts': {m300: 0, p20: 0},
-        'maxes': {m300: 10000, p20: 10000}
+        'maxes': {m300: len(tips200)*96, p20: len(tips20)*96}
     }
 
     # Divide destination wells in small groups for P300 pipette
@@ -278,7 +280,8 @@ def run(ctx: protocol_api.ProtocolContext):
             [pickup_height, change_col] = calc_height(MS, screwcap_cross_section_area, MS_vol)
             move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
             dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = [0,0],
-                   pickup_height = pickup_height, disp_height = height_MS, rinse = False)
+                   pickup_height = pickup_height, disp_height = height_MS,
+                   rinse = False, touch_tip = True)
             #Drop tip and update counter
             p20.drop_tip()
             tip_track['counts'][p20]+=1
@@ -347,7 +350,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multichannel(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
                                dest=work_destinations_cols[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset = x_offset,
-                               pickup_height=pickup_height, rinse=rinse)
+                               pickup_height=pickup_height, rinse=rinse, touch_tip = False)
             ctx.comment('Mixing MS with beads ')
             custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
             rounds = 1, blow_out = True, mix_height = 16, x_offset = x_offset)
