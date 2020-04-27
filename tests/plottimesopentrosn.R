@@ -2,11 +2,8 @@ library(lubridate)
 library(tidyverse)
 #install.packages("kableExtra")
 
-
 data_A <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/Sample_tests/23_04_2020/StationA_23_04_2020.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
 data_A$station <- 'A'
-
-
 data_B <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/Sample_tests/23_04_2020/StationB_23_04_2020.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
 data_B$station <- 'B'
 data_C <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/Sample_tests/23_04_2020/StationC_23_04_2020.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
