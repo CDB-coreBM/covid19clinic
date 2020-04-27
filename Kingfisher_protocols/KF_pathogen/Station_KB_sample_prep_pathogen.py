@@ -24,18 +24,12 @@ NUM_SAMPLES = 96
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
-height_MS = -20
+height_MS = -35
 
 x_offset = [0,0]
-# mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
-#mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
-#temperature = 4
 
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
-#x_offset_rs = 1 #Offset of the pickup when magnet is ON
 volume_screw_one = 500  # Total volume of first screwcap
-#volume_screw_two = 0  # Total volume of second screwcap
-#size_transfer = 1
 
 #Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
@@ -93,35 +87,35 @@ def run(ctx: protocol_api.ProtocolContext):
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
     # Reagents and their characteristics
-    Sample = Reagent(name='Sample',
-                      flow_rate_aspirate=1,
-                      flow_rate_dispense=1,
-                      rinse=True,
+    Sample = Reagent(name = 'Sample',
+                      flow_rate_aspirate = 1,
+                      flow_rate_dispense = 1,
+                      rinse = True,
                       delay = 0,
-                      reagent_reservoir_volume=460*96,
+                      reagent_reservoir_volume = 460*96,
                       num_wells = 96,
-                      h_cono=1.95,
-                      v_fondo=35)
+                      h_cono = 1.95,
+                      v_fondo = 35)
 
-    Beads = Reagent(name='Magnetic beads and Lysis',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=1.5,
-                    rinse=True,
-                    num_wells=4,
+    Beads = Reagent(name = 'Magnetic beads and Lysis',
+                    flow_rate_aspirate = 1,
+                    flow_rate_dispense = 1.5,
+                    rinse = True,
+                    num_wells = 4,
                     delay = 0,
-                    reagent_reservoir_volume=260*96*1.1,
-                    h_cono=1.95,
-                    v_fondo=695 ) # Prismatic)
+                    reagent_reservoir_volume = 260*96*1.1,
+                    h_cono = 1.95,
+                    v_fondo = 695 ) # Prismatic)
 
-    MS = Reagent(name='MS2',
-                  flow_rate_aspirate=1,
-                  flow_rate_dispense=1,
-                    rinse=False,
-                    reagent_reservoir_volume=volume_screw_one,
-                    num_wells=1,
+    MS = Reagent(name = 'MS2',
+                  flow_rate_aspirate = 1,
+                  flow_rate_dispense = 1,
+                    rinse = False,
+                    reagent_reservoir_volume = volume_screw_one,
+                    num_wells = 1,
                     delay = 0,
-                    h_cono=h_cone,
-                    v_fondo=volume_cone  # V cono
+                    h_cono = h_cone,
+                    v_fondo = volume_cone  # V cono
                     ) # Prismatic)
 
     Sample.vol_well = Sample.reagent_reservoir_volume
@@ -129,7 +123,7 @@ def run(ctx: protocol_api.ProtocolContext):
     MS.vol_well = MS.reagent_reservoir_volume
 
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
-    x_offset,source_height=3):
+    x_offset, source_height = 3):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
         x_offset=[source,destination]
@@ -265,7 +259,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Divide destination wells in small groups for P300 pipette
     #destinations = list(divide_destinations(sample_plate.wells()[:NUM_SAMPLES], size_transfer))
     Beads.reagent_reservoir = reagent_res.rows()[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
-    work_destinations = sample_plate.wells()[:NUM_SAMPLES]
+    work_destinations = sample_plate.rows()[0][:num_cols]
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     MS.reagent_reservoir = tuberack.rows()[0] # 1 row, 2 columns (first ones)
 
@@ -298,32 +292,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-
-    '''
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        tip_track['counts'][p20]+=1
-        used_vol=[]
-        for dest in dests:
-            p20.pick_up_tip()
-            [pickup_height,col_change]=calc_height(MS, area_section_screwcap, MS_vol)
-            # source MMIX_reservoir[col_change]
-            used_vol_temp = distribute_custom(p20, MS_vol, MS.reagent_reservoir[MS.col],
-                dest,pickup_height, extra_dispensal=0, waste_pool=None)
-
-            used_vol.append(used_vol_temp)
-
-            p20.drop_tip()
-        MS.unused_two = 0
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-        '''
     ############################################################################
     # STEP 2: PREMIX BEADS
     ############################################################################
