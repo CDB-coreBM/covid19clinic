@@ -47,7 +47,7 @@ def run(ctx: protocol_api.ProtocolContext):
     folder_path = '/var/lib/jupyter/notebooks'
     if not os.path.isdir(folder_path):
         os.mkdir(folder_path)
-    file_path = folder_path + '/KA_time_log.txt'
+    file_path = folder_path + '/KA_SampleSetup_pathogen_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
