@@ -26,7 +26,7 @@ MS_vol = 5
 air_gap_vol_MS = 2
 height_MS = -35
 
-x_offset = [0,0]
+ = [0,0]
 
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
 volume_screw_one = 500  # Total volume of first screwcap
@@ -120,29 +120,29 @@ def run(ctx: protocol_api.ProtocolContext):
     MS.vol_well = MS.reagent_reservoir_volume
 
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
-    x_offset, source_height = 3):
+    , source_height = 3):
         '''
         Function for mix in the same location a certain number of rounds. Blow out optional
-        x_offset=[source,destination]
+        =[source,destination]
         '''
         if mix_height == 0:
             mix_height = 3
         pipet.aspirate(1, location=location.bottom(
-            z=source_height).move(Point(x=x_offset[0])), rate=reagent.flow_rate_aspirate)
+            z=source_height).move(Point(x=[0])), rate=reagent.flow_rate_aspirate)
         for _ in range(rounds):
             pipet.aspirate(vol, location=location.bottom(
-                z=source_height).move(Point(x=x_offset[0])), rate=reagent.flow_rate_aspirate)
+                z=source_height).move(Point(x=[0])), rate=reagent.flow_rate_aspirate)
             pipet.dispense(vol, location=location.bottom(
-                z=mix_height).move(Point(x=x_offset[1])), rate=reagent.flow_rate_dispense)
+                z=mix_height).move(Point(x=[1])), rate=reagent.flow_rate_dispense)
         pipet.dispense(1, location=location.bottom(
-            z=mix_height).move(Point(x=x_offset[1])), rate=reagent.flow_rate_dispense)
+            z=mix_height).move(Point(x=[1])), rate=reagent.flow_rate_dispense)
         if blow_out == True:
             pipet.blow_out(location.top(z=-2))  # Blow out
 
-    def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
+    def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, ,
                        pickup_height, rinse, disp_height = -2, touch_tip = False):
         '''
-        x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
+        : list with two values.  in source and  in destination i.e. [-1,1]
         pickup_height: height from bottom where volume
         disp_height: dispense height; by default it's close to the top (z=-2), but in case it is needed it can be lowered
         rinse: if True it will do 2 rounds of aspirate and dispense before the tranfer
@@ -150,15 +150,15 @@ def run(ctx: protocol_api.ProtocolContext):
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location = source, vol = vol,
-                       rounds = 2, blow_out = True, mix_height = 0, x_offset=[0,0])
+                       rounds = 2, blow_out = True, mix_height = 0, =[0,0])
         # SOURCE
-        s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
+        s = source.bottom(pickup_height).move(Point(x = [0]))
         pipet.aspirate(vol, s)  # aspirate liquid
         if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
             pipet.aspirate(air_gap_vol, source.top(z = -2),
                            rate = reagent.flow_rate_aspirate)  # air gap
         # GO TO DESTINATION
-        drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
+        drop = dest.top(z = disp_height).move(Point(x = [1]))
         pipet.dispense(vol + air_gap_vol, drop,
                        rate = reagent.flow_rate_dispense)  # dispense all
         #ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
@@ -277,7 +277,7 @@ def run(ctx: protocol_api.ProtocolContext):
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(MS, screwcap_cross_section_area, MS_vol)
             move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
-            dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = [0,0],
+            dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS,  = [0,0],
                    pickup_height = pickup_height, disp_height = height_MS,
                    rinse = False, touch_tip = True)
             #Drop tip and update counter
@@ -307,7 +307,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Mixing
         custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol=180,
-                   rounds=10, blow_out=True, mix_height=0, x_offset= x_offset)
+                   rounds=10, blow_out=True, mix_height=0, = )
         ctx.comment('Finished premixing!')
         ctx.comment('Now, reagents will be transferred to deepwell plate.')
 
@@ -339,7 +339,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
                     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                               vol=180, rounds=10, blow_out=True, mix_height=0, x_offset=x_offset)
+                               vol=180, rounds=10, blow_out=True, mix_height=0, =)
                 ctx.comment(
                     'Aspirate from reservoir column: ' + str(Beads.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
@@ -347,11 +347,11 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse = False
                 move_vol_multichannel(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
                                dest=work_destinations_cols[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset = x_offset,
+                               air_gap_vol=air_gap_vol,  = ,
                                pickup_height=pickup_height, rinse=rinse, touch_tip = False)
             ctx.comment('Mixing MS with beads ')
             custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
-            rounds = 1, blow_out = True, mix_height = 16, x_offset = x_offset)
+            rounds = 1, blow_out = True, mix_height = 16,  = )
             m300.drop_tip(home_after=False)
             # m300.return_tip()
             tip_track['counts'][m300] += 8
