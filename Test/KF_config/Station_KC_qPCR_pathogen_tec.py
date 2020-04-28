@@ -15,12 +15,14 @@ metadata = {
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
-    'description': 'Protocol for Kingfisher sample setup (C)'
+    'description': 'Protocol for Kingfisher sample setup (C)',
+    'technician': $technician,
+    'data': $date
 }
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = $num_samples
 air_gap_vol = 5
 
 # Tune variables
