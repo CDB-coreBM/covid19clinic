@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 17
 air_gap_vol = 15
 
 volume_sample = 460
@@ -198,7 +198,7 @@ def run(ctx: protocol_api.ProtocolContext):
     #tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
                #for slot in ['2', '8']]
     tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-        for slot in ['8','11']]
+        for slot in ['7','10']]
 
 
     ################################################################################
