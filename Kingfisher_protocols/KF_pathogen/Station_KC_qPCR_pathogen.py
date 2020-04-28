@@ -20,19 +20,19 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 17
 air_gap_vol = 5
 
 # Tune variables
 size_transfer = 7  # Number of wells the distribute function will fill
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_mmix_available = 2400  # Total volume of first screwcap
+volume_mmix_available = 400  # Total volume of first screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 25  # Temperature of temp module
+temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
-x_offset=0
+x_offset=[0,0]
 
 # Calculated variables
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
@@ -47,7 +47,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': False, 'description': 'Transfer elution'}
+        2: {'Execute': True, 'description': 'Transfer elution'}
     }
 
     for s in STEPS:  # Create an empty wait_time
@@ -87,7 +87,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume=volume_mmix_available,
-                      num_wells= 2,
+                      num_wells= 1,
                       delay=2,
                       h_cono=h_cone,
                       v_fondo=volume_cone  # V cono
@@ -185,7 +185,7 @@ def run(ctx: protocol_api.ProtocolContext):
         drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
         pipet.dispense(vol + air_gap_vol, drop,
                        rate = reagent.flow_rate_dispense)  # dispense all
-        protocol.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
+        ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
         pipet.blow_out(dest.top(z = -2))
         pipet.touch_tip(speed=20, v_offset=-5)
 
@@ -199,7 +199,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ############################################
     # tempdeck
     tempdeck = ctx.load_module('tempdeck', '4')
-    # tempdeck.set_temperature(temperature)
+    tempdeck.set_temperature(temperature)
 
 ##################################
     # Elution plate - final plate, goes to PCR
@@ -292,8 +292,8 @@ def run(ctx: protocol_api.ProtocolContext):
 
             #Source samples
             move_vol_multichannel(p20, reagent = Samples, source = s, dest = d,
-            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = 0,
-                   pickup_height = 0.2, drop_height = 0, rinse = False)
+            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = x_offset,
+                   pickup_height = 0.2, disp_height = 0, rinse = False)
 
             p20.drop_tip()
             tip_track['counts'][p20]+=1
@@ -327,6 +327,7 @@ def run(ctx: protocol_api.ProtocolContext):
         gpio.set_rail_lights(True)
         gpio.set_button_light(0, 0, 1)
         time.sleep(0.3)
+        gpio.set_rail_lights(False)
     gpio.set_button_light(0, 1, 0)
     ctx.comment('Finished! \nMove plate to PCR')
 
