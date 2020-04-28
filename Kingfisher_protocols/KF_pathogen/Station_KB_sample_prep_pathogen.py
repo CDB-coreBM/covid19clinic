@@ -96,7 +96,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     Beads = Reagent(name = 'Magnetic beads and Lysis',
                     flow_rate_aspirate = 1,
-                    flow_rate_dispense = 1.5,
+                    flow_rate_dispense = 3,
                     rinse = True,
                     num_wells = 4,
                     delay = 0,

@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 17
+NUM_SAMPLES = 8
 air_gap_vol = 15
 
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
@@ -31,12 +31,10 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-
-        1: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 1'},
-        2: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 2'},
-        3: {'Execute': True, 'description': 'Add 500 ul Wash Buffer 2 - Round 1'},
-        4: {'Execute': True, 'description': 'Add 450 ul Wash Buffer 2 - Round 2'},
-        5: {'Execute': True, 'description': 'Add 50 ul Elution Buffer'},
+        1: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Pathogen'},
+        2: {'Execute': False, 'description': 'Add 450 ul Wash Buffer 2 - Pathogen'},
+        3: {'Execute': False, 'description': 'Add 50 ul Elution Buffer'},
+        4: {'Execute': False, 'description': 'Add 260 ul BeadsKF - Pathogen'},
     }
 
     for s in STEPS:  # Create an empty wait_time
@@ -70,25 +68,34 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate=0.75,
                     flow_rate_dispense=1,
                     rinse=True,
-                    reagent_reservoir_volume=106000,
-                    num_wells=1,  # num_Wells max is 4
-                    h_cono=0,
-                    v_fondo=0)  # Flat surface
+                    reagent_reservoir_volume=7000,
+                    num_wells=1,  # num_Wells max is 1
+                    h_cono=1.95,
+                    v_fondo=695)  # Flat surface
 
-    WashBuffer2 = Reagent(name='Wash Buffer 1',
+    WashBuffer2 = Reagent(name='Wash Buffer 2',
                     flow_rate_aspirate=0.75,
                     flow_rate_dispense=1,
                     rinse=True,
-                    reagent_reservoir_volume=106000,
+                    reagent_reservoir_volume=7000,
                     num_wells=1,  # num_Wells max is 4
-                    h_cono=0,
-                    v_fondo=0)  # Flat surface
+                    h_cono=1.95,
+                    v_fondo=695)  # Flat surface
 
     ElutionBuffer = Reagent(name='Elution Buffer',
                     flow_rate_aspirate=1,
                     flow_rate_dispense=1,
                     rinse=False,
-                    reagent_reservoir_volume=4800,
+                    reagent_reservoir_volume=7000,
+                    num_wells=1,  # num_Wells max is 1
+                    h_cono=1.95,
+                    v_fondo=695)  # Prismatic
+
+    BeadsKF = Reagent(name='BeadsKF',
+                    flow_rate_aspirate=1,
+                    flow_rate_dispense=3,
+                    rinse=False,
+                    reagent_reservoir_volume=7000,
                     num_wells=1,  # num_Wells max is 1
                     h_cono=1.95,
                     v_fondo=695)  # Prismatic
@@ -194,48 +201,33 @@ def run(ctx: protocol_api.ProtocolContext):
         return side
 
 
-####################################
+    ####################################
     # load labware and modules
 
     # 12 well rack
     ####################################
     reagent_res = ctx.load_labware(
-        'nest_12_reservoir_15ml', '3', 'Reservoir 12 channel, column 1')
-
-    # WashBuffer1 reservoir
-    ####################################
-    WashBuffer1_reservoir = ctx.load_labware(
-        'nalgene_1_reservoir_300000ul', '2', 'Ethanol 80% reservoir')
-
-    # WashBuffer2 reservoir
-    ####################################
-    WashBuffer2_reservoir = ctx.load_labware(
-        'nalgene_1_reservoir_300000ul', '11', 'WashBuffer reservoir')
+    'nest_12_reservoir_15ml', '2', 'Reservoir 12 channel, column 1')
 
     # Wash Buffer 1 300ul Deepwell plate
     ############################################
-    WashBuffer1_300ul_plate1 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '1', 'Wash Buffer 1 Deepwell plate 1')
-
-    # Wash Buffer 1 300ul Deepwell plate
-    ############################################
-    WashBuffer1_300ul_plate2 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '4', 'Wash Buffer 1 Deepwell plate 2')
+    WashBuffer1_300ul_plate = ctx.load_labware(
+    'kf_96_wellplate_2400ul', '1', 'Wash Buffer 1 Deepwell plate')
 
     # Wash Buffer 2 450ul Deepwell plate
     ############################################
-    WashBuffer2_450ul_plate1 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '7', 'Wash Buffer 2 Deepwell plate 1')
+    WashBuffer2_450ul_plate = ctx.load_labware(
+    'kf_96_wellplate_2400ul', '4', 'Wash Buffer 2 Deepwell plate')
 
     # Wash Buffer 2 450ul Deepwell plate
     ############################################
-    WashBuffer2_450ul_plate2 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '10', 'Wash Buffer 2 Deepwell plate 2')
+    beads_260ul_plate = ctx.load_labware(
+    'kf_96_wellplate_2400ul', '7', 'Beads Deepwell plate')
 
-    # Elution Deepwell plate
+    # Elution standard plate
     ############################################
     ElutionBuffer_50ul_plate = ctx.load_labware(
-    'kf_96_wellplate_std_550ul', '6', 'Elution Buffer 50 ul STD plate')
+    'kf_96_wellplate_std_550ul', '3', 'Elution Buffer 50 ul STD plate')
 
 
     # Ethanol Deepwell 10000 ul deepwell plate
@@ -259,32 +251,36 @@ def run(ctx: protocol_api.ProtocolContext):
 
 ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    WashBuffer1.reagent_reservoir = WashBuffer1_reservoir.wells()[0]
-    WashBuffer2.reagent_reservoir = WashBuffer2_reservoir.wells()[0]
-    ElutionBuffer.reagent_reservoir = reagent_res.rows()[0][0]
-    #Ethanol.reagent_reservoir = Ethanol_reservoir.wells()[0]
+    WashBuffer1.reagent_reservoir = reagent_res.rows()[0][0]
+    WashBuffer2.reagent_reservoir = reagent_res.rows()[0][1]
+    ElutionBuffer.reagent_reservoir = reagent_res.rows()[0][2]
+    BeadsKF.reagent_reservoir = reagent_res.rows()[0][3]
+
 
     #columns in destination plates to be filled depending the number of samples
-    wb1plate1_destination = WashBuffer1_300ul_plate1.rows()[0][:num_cols]
-    wb1plate2_destination = WashBuffer1_300ul_plate2.rows()[0][:num_cols]
-    wb2plate1_destination = WashBuffer2_450ul_plate1.rows()[0][:num_cols]
-    wb2plate2_destination = WashBuffer2_450ul_plate2.rows()[0][:num_cols]
-    elutionbuffer_destination = ElutionBuffer_50ul_plate.rows()[0][:num_cols]
+    wb1_destination = WashBuffer1_300ul_plate.wells()[:NUM_SAMPLES]
+    wb2_destination = WashBuffer2_450ul_plate.wells()[:NUM_SAMPLES]
+    elutionbuffer_destination = ElutionBuffer_50ul_plate.wells()[:NUM_SAMPLES]
+    beads_destination = beads_260ul_plate.wells()[:NUM_SAMPLES]
     #washbuffer_destination = WashBuffer_1000ul_plate.rows()[0][:num_cols]
 
     # pipettes. P1000 currently deactivated
     m300 = ctx.load_instrument(
         'p300_multi_gen2', 'right', tip_racks=tips300)  # Load multi pipette
 
+    p300 = ctx.load_instrument(
+        'p300_single_gen2', 'left', tip_racks=tips300)
+
     # used tip counter and set maximum tips available
     tip_track = {
-        'counts': {m300: 0},
-        'maxes': {m300: 10000}
+        'counts': {p300: 0},
+        'maxes': {p300: 10000}
     }
 
     ############################################################################
     # STEP 1 Filling with WashBuffer1 plate 1
     ############################################################################
+
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
         start = datetime.now()
@@ -292,28 +288,28 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
 
-        wash_buffer_vol = [150,150]
+        wash_buffer_vol = [150]
         x_offset = 0
         rinse = False  # Only first time
 
         ########
         # Wash buffer dispense
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
+        for i, d in enumerate(wb1_destination):
+            if not p300.hw_pipette['has_tip']:
+                pick_up(p300)
             for j, transfer_vol in enumerate(wash_buffer_vol):
                 if (i == 0 and j == 0):
                     rinse = True
                 else:
                     rinse = False
-                move_vol_multi(m300, reagent=WashBuffer1, source=WashBuffer1.reagent_reservoir,
-                               dest = wb1plate1_destination[i], vol=transfer_vol,
+                move_vol_multi(p300, reagent=WashBuffer1, source=WashBuffer1.reagent_reservoir,
+                               dest = d, vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
                 ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
+                p300.touch_tip(radius=0.9, speed=20, v_offset=-5)
+        p300.drop_tip(home_after=True)
+        tip_track['counts'][p300] += 1
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -321,7 +317,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 2 Filling with WashBuffer1 plate 2
+    # STEP 2 Filling with WashBuffer2 plate
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -330,28 +326,28 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
 
-        wash_buffer_vol = [150,150]
+        wash_buffer_vol = [150]
         x_offset = 0
         rinse = False  # Only first time
 
         ########
         # Wash buffer dispense
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
+        for i, d in enumerate(wb2_destination):
+            if not p300.hw_pipette['has_tip']:
+                pick_up(p300)
             for j, transfer_vol in enumerate(wash_buffer_vol):
                 if (i == 0 and j == 0):
                     rinse = True
                 else:
                     rinse = False
-                move_vol_multi(m300, reagent=WashBuffer1, source=WashBuffer1.reagent_reservoir,
-                               dest = wb1plate2_destination[i], vol=transfer_vol,
+                move_vol_multi(p300, reagent=WashBuffer2, source=WashBuffer2.reagent_reservoir,
+                               dest = d, vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
                 ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
+                p300.touch_tip(radius=0.9, speed=20, v_offset=-5)
+        p300.drop_tip(home_after=True)
+        tip_track['counts'][p300] += 1
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -359,83 +355,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 3 Filling with WashBuffer2 plate 1
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        wash_buffer_vol = [150,150,150]
-        x_offset = 0
-        rinse = False  # Only first time
-
-        ########
-        # Wash buffer dispense
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for j, transfer_vol in enumerate(wash_buffer_vol):
-                if (i == 0 and j == 0):
-                    rinse = True
-                else:
-                    rinse = False
-                move_vol_multi(m300, reagent=WashBuffer2, source=WashBuffer2.reagent_reservoir,
-                               dest = wb2plate1_destination[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 4 Filling with WashBuffer2 plate 2
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        ethanol_vol = [150,150,150]
-        x_offset = 0
-        rinse = False  # Only first time
-
-        ########
-        # Ethanol dispense
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
-            for j, transfer_vol in enumerate(ethanol_vol):
-                if (i == 0 and j == 0):
-                    rinse = True
-                else:
-                    rinse = False
-                move_vol_multi(m300, reagent=WashBuffer2, source=WashBuffer2.reagent_reservoir,
-                               dest=wb2plate2_destination[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 5 Transfer Elution buffer
+    # STEP 3 Transfer Elution buffer
     ############################################################################
 
     STEP += 1
@@ -450,9 +370,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ########
         # Water or elution buffer
-        for i in range(num_cols):
-            if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
+        for d in elutionbuffer_destination:
+            if not p300.hw_pipette['has_tip']:
+                pick_up(p300)
             for transfer_vol in ElutionBuffer_vol:
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
@@ -460,13 +380,51 @@ def run(ctx: protocol_api.ProtocolContext):
                 ctx.comment(
                     'Aspirate from Reservoir column: ' + str(ElutionBuffer.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-                move_vol_multi(m300, reagent=ElutionBuffer, source=ElutionBuffer.reagent_reservoir,
-                               dest=elutionbuffer_destination[i], vol=transfer_vol,
+                move_vol_multi(p300, reagent=ElutionBuffer, source=ElutionBuffer.reagent_reservoir,
+                               dest = d, vol=transfer_vol,
                                air_gap_vol=air_gap_vol_elutionbuffer, x_offset=x_offset,
                                pickup_height=pickup_height, rinse=False)
 
-        m300.drop_tip(home_after=True)
-        tip_track['counts'][m300] += 8
+        p300.drop_tip(home_after=True)
+        tip_track['counts'][p300] += 1
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' +
+                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+
+    ############################################################################
+    # STEP 4 Filling with BeadsKF
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        start = datetime.now()
+
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        ethanol_vol = [130]
+        x_offset = 0
+        rinse = False  # Only first time
+
+        ########
+        # Ethanol dispense
+        for i, d in enumerate(beads_destination):
+            if not p300.hw_pipette['has_tip']:
+                pick_up(p300)
+            for j, transfer_vol in enumerate(ethanol_vol):
+                if (i == 0 and j == 0):
+                    rinse = True
+                else:
+                    rinse = False
+                move_vol_multi(p300, reagent=BeadsKF, source=BeadsKF.reagent_reservoir,
+                               dest = d, vol=transfer_vol,
+                               air_gap_vol=air_gap_vol, x_offset=x_offset,
+                               pickup_height=1, rinse=rinse)
+                ctx.delay(seconds=2)  # 5 sec to let the liquid download
+        p300.drop_tip(home_after=True)
+        tip_track['counts'][p300] += 1
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -498,5 +456,5 @@ def run(ctx: protocol_api.ProtocolContext):
     gpio.set_button_light(0, 1, 0)
     ctx.comment(
         'Finished! \nMove deepwell plates to KingFisher extractor.')
-    ctx.comment('Used tips in total: ' + str(tip_track['counts'][m300]))
-    ctx.comment('Used racks in total: ' + str(tip_track['counts'][m300] / 96))
+    ctx.comment('Used tips in total: ' + str(tip_track['counts'][p300]))
+    ctx.comment('Used racks in total: ' + str(tip_track['counts'][p300] / 96))
