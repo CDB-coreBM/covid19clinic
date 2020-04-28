@@ -15,12 +15,14 @@ metadata = {
     'author': 'Aitor Gastaminza, Eva Gonzalez, José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
-    'description': 'Protocol for RNA extraction preparation for ThermoFisher Pathogen kit'
+    'description': 'Protocol for RNA extraction preparation for ThermoFisher Pathogen kit',
+    'technician': $technician,
+    'data': $date
 }
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = $num_samples
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
