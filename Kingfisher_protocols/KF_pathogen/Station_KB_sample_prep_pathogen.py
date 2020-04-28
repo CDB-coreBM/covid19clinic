@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 17
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
@@ -50,7 +50,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Add MS2'},
+        1: {'Execute': False, 'description': 'Add MS2'},
         2: {'Execute': True, 'description': 'Mix beads'},
         3: {'Execute': True, 'description': 'Transfer beads'}
     }
