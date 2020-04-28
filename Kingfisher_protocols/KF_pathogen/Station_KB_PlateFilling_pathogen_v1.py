@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 17
 air_gap_vol = 15
 
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
@@ -260,7 +260,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     WashBuffer1.reagent_reservoir = WashBuffer1_reservoir.wells()[0]
-    WashBuffer2.reagent_reservoir = WashBuffer2_reservoir.wells()[1]
+    WashBuffer2.reagent_reservoir = WashBuffer2_reservoir.wells()[0]
     ElutionBuffer.reagent_reservoir = reagent_res.rows()[0][0]
     #Ethanol.reagent_reservoir = Ethanol_reservoir.wells()[0]
 
