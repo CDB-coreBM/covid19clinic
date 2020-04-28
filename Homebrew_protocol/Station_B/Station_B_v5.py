@@ -789,7 +789,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
             ctx.comment('Mixing sample with Water and LTA')
             # Mixing
-            custom_mix(m300, Elution, work_destinations[i], vol=40, rounds=4,
+            custom_mix(m300, Elution, work_destinations[i], vol=40, rounds=20,
                        blow_out=True, mix_height=5,x_offset=[0,x_offset],source_height=0.6)
             m300.drop_tip(home_after=True)
             tip_track['counts'][m300] += 8
