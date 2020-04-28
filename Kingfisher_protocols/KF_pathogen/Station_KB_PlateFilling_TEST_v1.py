@@ -31,9 +31,9 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': 'Add 300 ul Wash Buffer 1 - Pathogen'},
+        1: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Pathogen'},
         2: {'Execute': False, 'description': 'Add 450 ul Wash Buffer 2 - Pathogen'},
-        3: {'Execute': True, 'description': 'Add 50 ul Elution Buffer'},
+        3: {'Execute': False, 'description': 'Add 50 ul Elution Buffer'},
         4: {'Execute': False, 'description': 'Add 260 ul BeadsKF - Pathogen'},
     }
 
@@ -265,8 +265,8 @@ def run(ctx: protocol_api.ProtocolContext):
     #washbuffer_destination = WashBuffer_1000ul_plate.rows()[0][:num_cols]
 
     # pipettes. P1000 currently deactivated
-    #m300 = ctx.load_instrument(
-    #    'p300_multi_gen2', 'right', tip_racks=tips300)  # Load multi pipette
+    m300 = ctx.load_instrument(
+        'p300_multi_gen2', 'right', tip_racks=tips300)  # Load multi pipette
 
     p300 = ctx.load_instrument(
         'p300_single_gen2', 'left', tip_racks=tips300)
@@ -294,11 +294,11 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ########
         # Wash buffer dispense
-        for d in wb1_destination:
+        for i, d in enumerate(wb1_destination):
             if not p300.hw_pipette['has_tip']:
                 pick_up(p300)
             for j, transfer_vol in enumerate(wash_buffer_vol):
-                if (d == 0 and j == 0):
+                if (i == 0 and j == 0):
                     rinse = True
                 else:
                     rinse = False
@@ -332,11 +332,11 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ########
         # Wash buffer dispense
-        for d in wb2_destination:
+        for i, d in enumerate(wb2_destination):
             if not p300.hw_pipette['has_tip']:
                 pick_up(p300)
             for j, transfer_vol in enumerate(wash_buffer_vol):
-                if (d == 0 and j == 0):
+                if (i == 0 and j == 0):
                     rinse = True
                 else:
                     rinse = False
@@ -410,11 +410,11 @@ def run(ctx: protocol_api.ProtocolContext):
 
         ########
         # Ethanol dispense
-        for d in beads_destination:
+        for i, d in enumerate(beads_destination):
             if not p300.hw_pipette['has_tip']:
                 pick_up(p300)
             for j, transfer_vol in enumerate(ethanol_vol):
-                if (d == 0 and j == 0):
+                if (i == 0 and j == 0):
                     rinse = True
                 else:
                     rinse = False
