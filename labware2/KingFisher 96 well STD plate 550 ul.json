@@ -1220,7 +1220,7 @@
         "quirks": [],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "kf_96_wellplate_std_550ul"
+        "loadName": "kingfisher_96_wellplate_550ul"
     },
     "namespace": "custom_beta",
     "version": 1,
