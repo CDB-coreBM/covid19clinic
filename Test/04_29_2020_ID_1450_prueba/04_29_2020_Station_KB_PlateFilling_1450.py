@@ -11,16 +11,18 @@ import csv
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station B Version 1',
+    'protocolName': 'Kingfisher Pathogen Station B1 v2',
     'author': 'Aitor Gastaminza,  José Luis Villanueva & Eva González (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol to fill KingFisher Deepwell plates with reagents - Pathogen Kit (ref 4462359)'
+    'technician': 'jo',
+    'data': '04/29/2020, 17:11:51'
 }
 
 #Defined variables
 ##################
-NUM_SAMPLES = 17
+NUM_SAMPLES = 96
 air_gap_vol = 15
 
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
@@ -29,6 +31,7 @@ num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Actual used columns: ' + str(num_cols))
+    # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
 
@@ -51,47 +54,51 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define Reagents as objects with their properties
     class Reagent:
         def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
-                     reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling='none'):
+                     reagent_reservoir_volume, delay, num_wells, h_cono, v_fondo,
+                      tip_recycling = 'none'):
             self.name = name
             self.flow_rate_aspirate = flow_rate_aspirate
             self.flow_rate_dispense = flow_rate_dispense
             self.rinse = bool(rinse)
             self.reagent_reservoir_volume = reagent_reservoir_volume
+            self.delay = delay
             self.num_wells = num_wells
             self.col = 0
             self.vol_well = 0
             self.h_cono = h_cono
             self.v_cono = v_fondo
+            self.unused=[]
             self.tip_recycling = tip_recycling
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
+
     # Reagents and their characteristics
     WashBuffer1 = Reagent(name='Wash Buffer 1',
-                    flow_rate_aspirate=0.75,
-                    flow_rate_dispense=1,
-                    rinse=True,
-                    reagent_reservoir_volume=106000,
-                    num_wells=1,  # num_Wells max is 4
-                    h_cono=0,
-                    v_fondo=0)  # Flat surface
+                          flow_rate_aspirate=0.75,
+                          flow_rate_dispense=1,
+                          rinse=True,
+                          reagent_reservoir_volume=106000,
+                          num_wells=1,  # num_Wells max is 4
+                          h_cono=0,
+                          v_fondo=0)  # Flat surface
 
     WashBuffer2 = Reagent(name='Wash Buffer 1',
-                    flow_rate_aspirate=0.75,
-                    flow_rate_dispense=1,
-                    rinse=True,
-                    reagent_reservoir_volume=106000,
-                    num_wells=1,  # num_Wells max is 4
-                    h_cono=0,
-                    v_fondo=0)  # Flat surface
+                          flow_rate_aspirate=0.75,
+                          flow_rate_dispense=1,
+                          rinse=True,
+                          reagent_reservoir_volume=106000,
+                          num_wells=1,  # num_Wells max is 4
+                          h_cono=0,
+                          v_fondo=0)  # Flat surface
 
     ElutionBuffer = Reagent(name='Elution Buffer',
-                    flow_rate_aspirate=1,
-                    flow_rate_dispense=1,
-                    rinse=False,
-                    reagent_reservoir_volume=4800,
-                    num_wells=1,  # num_Wells max is 1
-                    h_cono=1.95,
-                    v_fondo=695)  # Prismatic
+                            flow_rate_aspirate=1,
+                            flow_rate_dispense=1,
+                            rinse=False,
+                            reagent_reservoir_volume=4800,
+                            num_wells=1,  # num_Wells max is 1
+                            h_cono=1.95,
+                            v_fondo=695)  # Prismatic
 
     WashBuffer1.vol_well = WashBuffer1.vol_well_original
     WashBuffer2.vol_well = WashBuffer2.vol_well_original
@@ -131,15 +138,17 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(str('After change: ' + str(reagent.col)))
             reagent.vol_well = reagent.vol_well_original
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
-                    #- reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume -
+                      reagent.v_cono) / cross_section_area
+            #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
             if height < 0.5:
                 height = 0.5
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+            height = (reagent.vol_well - aspirate_volume -
+                      reagent.v_cono) / cross_section_area
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
             if height < 0.5:
@@ -165,8 +174,8 @@ def run(ctx: protocol_api.ProtocolContext):
                        rate=reagent.flow_rate_dispense)  # dispense all
         pipet.blow_out(dest.top(z=-2))
 
-        #only for multidispensing purposes
-        #if air_gap_vol != 0:
+        # only for multidispensing purposes
+        # if air_gap_vol != 0:
         #    pipet.aspirate(air_gap_vol, dest.top(z=-2),
         #                   rate=reagent.flow_rate_aspirate)  # air gap
 
@@ -215,39 +224,37 @@ def run(ctx: protocol_api.ProtocolContext):
     # Wash Buffer 1 300ul Deepwell plate
     ############################################
     WashBuffer1_300ul_plate1 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '1', 'Wash Buffer 1 Deepwell plate 1')
+        'kf_96_wellplate_2400ul', '1', 'Wash Buffer 1 Deepwell plate 1')
 
     # Wash Buffer 1 300ul Deepwell plate
     ############################################
     WashBuffer1_300ul_plate2 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '4', 'Wash Buffer 1 Deepwell plate 2')
+        'kf_96_wellplate_2400ul', '4', 'Wash Buffer 1 Deepwell plate 2')
 
     # Wash Buffer 2 450ul Deepwell plate
     ############################################
     WashBuffer2_450ul_plate1 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '7', 'Wash Buffer 2 Deepwell plate 1')
+        'kf_96_wellplate_2400ul', '7', 'Wash Buffer 2 Deepwell plate 1')
 
     # Wash Buffer 2 450ul Deepwell plate
     ############################################
     WashBuffer2_450ul_plate2 = ctx.load_labware(
-    'kf_96_wellplate_2400ul', '10', 'Wash Buffer 2 Deepwell plate 2')
+        'kf_96_wellplate_2400ul', '10', 'Wash Buffer 2 Deepwell plate 2')
 
     # Elution Deepwell plate
     ############################################
     ElutionBuffer_50ul_plate = ctx.load_labware(
-    'kf_96_wellplate_std_550ul', '6', 'Elution Buffer 50 ul STD plate')
-
+        'kf_96_wellplate_std_550ul', '6', 'Elution Buffer 50 ul STD plate')
 
     # Ethanol Deepwell 10000 ul deepwell plate
 ############################################
-    #Ethanol_1000ul_plate = ctx.load_labware(
-    #'kf_96_wellplate_2400ul', '4', 'Ethanol 1000ul Deepwell plate')
+    # Ethanol_1000ul_plate = ctx.load_labware(
+    # 'kf_96_wellplate_2400ul', '4', 'Ethanol 1000ul Deepwell plate')
 
     # Wash Buffer Deepwell plate
 ############################################
-    #Ethanol_500ul_plate = ctx.load_labware(
-    #'kf_96_wellplate_2400ul', '7', 'Ethanol 500ul Deepwell plate')
-
+    # Ethanol_500ul_plate = ctx.load_labware(
+    # 'kf_96_wellplate_2400ul', '7', 'Ethanol 500ul Deepwell plate')
 
 
 ####################################
@@ -264,7 +271,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ElutionBuffer.reagent_reservoir = reagent_res.rows()[0][0]
     #Ethanol.reagent_reservoir = Ethanol_reservoir.wells()[0]
 
-    #columns in destination plates to be filled depending the number of samples
+    # columns in destination plates to be filled depending the number of samples
     wb1plate1_destination = WashBuffer1_300ul_plate1.rows()[0][:num_cols]
     wb1plate2_destination = WashBuffer1_300ul_plate2.rows()[0][:num_cols]
     wb2plate1_destination = WashBuffer2_450ul_plate1.rows()[0][:num_cols]
@@ -292,7 +299,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
 
-        wash_buffer_vol = [150,150]
+        wash_buffer_vol = [150, 150]
         x_offset = 0
         rinse = False  # Only first time
 
@@ -307,7 +314,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 else:
                     rinse = False
                 move_vol_multi(m300, reagent=WashBuffer1, source=WashBuffer1.reagent_reservoir,
-                               dest = wb1plate1_destination[i], vol=transfer_vol,
+                               dest=wb1plate1_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
                 ctx.delay(seconds=2)  # 5 sec to let the liquid download
@@ -330,7 +337,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
 
-        wash_buffer_vol = [150,150]
+        wash_buffer_vol = [150, 150]
         x_offset = 0
         rinse = False  # Only first time
 
@@ -345,7 +352,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 else:
                     rinse = False
                 move_vol_multi(m300, reagent=WashBuffer1, source=WashBuffer1.reagent_reservoir,
-                               dest = wb1plate2_destination[i], vol=transfer_vol,
+                               dest=wb1plate2_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
                 ctx.delay(seconds=2)  # 5 sec to let the liquid download
@@ -368,7 +375,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
 
-        wash_buffer_vol = [150,150,150]
+        wash_buffer_vol = [150, 150, 150]
         x_offset = 0
         rinse = False  # Only first time
 
@@ -383,7 +390,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 else:
                     rinse = False
                 move_vol_multi(m300, reagent=WashBuffer2, source=WashBuffer2.reagent_reservoir,
-                               dest = wb2plate1_destination[i], vol=transfer_vol,
+                               dest=wb2plate1_destination[i], vol=transfer_vol,
                                air_gap_vol=air_gap_vol, x_offset=x_offset,
                                pickup_height=1, rinse=rinse)
                 ctx.delay(seconds=2)  # 5 sec to let the liquid download
@@ -406,7 +413,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
 
-        ethanol_vol = [150,150,150]
+        ethanol_vol = [150, 150, 150]
         x_offset = 0
         rinse = False  # Only first time
 
@@ -472,7 +479,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-
 
     # Export the time log to a tsv file
     if not ctx.is_simulating():

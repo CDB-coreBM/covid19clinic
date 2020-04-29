@@ -4,7 +4,7 @@
 class Reagent:
     def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
                  reagent_reservoir_volume, delay, num_wells, h_cono, v_fondo,
-                  tip_recycling='none'):
+                  tip_recycling = 'none'):
         self.name = name
         self.flow_rate_aspirate = flow_rate_aspirate
         self.flow_rate_dispense = flow_rate_dispense
@@ -92,12 +92,13 @@ pipette.pick_up_tip(tip_recycle[reagent.tip_recycling])
 pipette.return_tip()
 
 def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                   pickup_height, rinse, disp_height = -2):
+                   pickup_height, rinse, disp_height, blow_out, touch_tip):
     '''
     x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
     pickup_height: height from bottom where volume
-    disp_height: dispense height; by default it's close to the top (z=-2), but in case it is needed it can be lowered
     rinse: if True it will do 2 rounds of aspirate and dispense before the tranfer
+    disp_height: dispense height; by default it's close to the top (z=-2), but in case it is needed it can be lowered
+    blow_out, touch_tip: if True they will be done after dispensing
     '''
     # Rinse before aspirating
     if rinse == True:
@@ -114,8 +115,10 @@ def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offs
     pipet.dispense(vol + air_gap_vol, drop,
                    rate = reagent.flow_rate_dispense)  # dispense all
     ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
-    pipet.blow_out(dest.top(z = -2))
-    pipet.touch_tip(speed=20, v_offset=-5)
+    if blow_out == True:
+        pipet.blow_out(dest.top(z = -2))
+    if touch_tip == True:
+        pipet.touch_tip(speed = 20, v_offset = -5)
 
 
 def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
@@ -141,7 +144,7 @@ x_offset, source_height = 3):
     if blow_out == True:
         pipet.blow_out(location.top(z=-2))  # Blow out
 
-def calc_height(reagent, cross_section_area, aspirate_volume,min_height=0.5):
+def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.5):
     nonlocal ctx
     ctx.comment('Remaining volume ' + str(reagent.vol_well) +
                 '< needed volume ' + str(aspirate_volume) + '?')
