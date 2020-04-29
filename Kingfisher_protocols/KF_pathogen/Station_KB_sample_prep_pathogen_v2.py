@@ -143,7 +143,8 @@ def run(ctx: protocol_api.ProtocolContext):
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location = source, vol = vol,
-                       rounds = 2, blow_out = True, mix_height = 0)
+                       rounds = 2, blow_out = True, mix_height = 0,
+                       x_offset = x_offset)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
         pipet.aspirate(vol, s)  # aspirate liquid
@@ -298,10 +299,11 @@ def run(ctx: protocol_api.ProtocolContext):
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(
                 MS, screwcap_cross_section_area, MS_vol)
-            move_vol_multichannel(p20, reagent=MS, source=MS.reagent_reservoir[MS.col],
-                                  dest=d, vol=MS_vol, air_gap_vol=air_gap_vol_MS,= [0, 0],
-                                  pickup_height=pickup_height, disp_height=height_MS,
-                                  rinse=False, touch_tip=True)
+            move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
+                                  dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS,
+                                  x_offset = x_offset, pickup_height = pickup_height,
+                                  rinse = False, disp_height = height_MS, blow_out = False,
+                                  touch_tip = True)
             # Drop tip and update counter
             p20.drop_tip()
             tip_track['counts'][p20] += 1

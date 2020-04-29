@@ -152,7 +152,8 @@ def run(ctx: protocol_api.ProtocolContext):
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location = source, vol = vol,
-                       rounds = 2, blow_out = True, mix_height = 0)
+                       rounds = 2, blow_out = True, mix_height = 0,
+                       x_offset = x_offset)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
         pipet.aspirate(vol, s)  # aspirate liquid

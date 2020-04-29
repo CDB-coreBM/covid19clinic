@@ -26,6 +26,7 @@ metadata = {
 ##################
 NUM_SAMPLES = 16
 air_gap_vol = 15
+air_gap_vol_elutionbuffer = 10
 
 x_offset = [0,0]
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
@@ -126,7 +127,8 @@ def run(ctx: protocol_api.ProtocolContext):
         # Rinse before aspirating
         if rinse == True:
             custom_mix(pipet, reagent, location = source, vol = vol,
-                       rounds = 2, blow_out = True, mix_height = 0)
+                       rounds = 2, blow_out = True, mix_height = 0,
+                       x_offset = x_offset)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
         pipet.aspirate(vol, s)  # aspirate liquid
@@ -462,7 +464,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
         # Elution buffer
         ElutionBuffer_vol = [50]
-        air_gap_vol_elutionbuffer = 10
 
         ########
         # Water or elution buffer
@@ -476,11 +477,11 @@ def run(ctx: protocol_api.ProtocolContext):
                 ctx.comment(
                     'Aspirate from Reservoir column: ' + str(ElutionBuffer.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-                move_vol_multi(m300, reagent=ElutionBuffer, source=ElutionBuffer.reagent_reservoir,
-                               dest=elutionbuffer_destination[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol_elutionbuffer, x_offset=x_offset,
-                               pickup_height=pickup_height, rinse=False)
-
+                move_vol_multichannel(m300, reagent = ElutionBuffer, source = ElutionBuffer.reagent_reservoir,
+                              dest = elutionbuffer_destination[i], vol = transfer_vol,
+                              air_gap_vol = air_gap_vol_elutionbuffer, x_offset = x_offset,
+                              pickup_height = pickup_height, rinse = False, disp_height = -2,
+                              blow_out = True, touch_tip = False)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
