@@ -16,13 +16,13 @@ metadata = {
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for Kingfisher sample setup (C) - Pathogen Kit (ref 4462359)'
-    'technician': $technician,
-    'data': $date
+    'technician': 'jo',
+    'data': '04/29/2020, 17:11:51'
 }
 
 #Defined variables
 ##################
-NUM_SAMPLES = $num_samples
+NUM_SAMPLES = 96
 air_gap_vol = 5
 
 # Tune variables
