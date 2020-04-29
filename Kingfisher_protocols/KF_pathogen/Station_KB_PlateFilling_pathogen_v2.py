@@ -27,6 +27,7 @@ metadata = {
 NUM_SAMPLES = 16
 air_gap_vol = 15
 
+x_offset = [0,0]
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
@@ -63,7 +64,7 @@ def run(ctx: protocol_api.ProtocolContext):
             self.flow_rate_dispense = flow_rate_dispense
             self.rinse = bool(rinse)
             self.reagent_reservoir_volume = reagent_reservoir_volume
-            self.delay = delay
+            self.delay = delay #Delay of reagent in dispense
             self.num_wells = num_wells
             self.col = 0
             self.vol_well = 0
@@ -140,7 +141,7 @@ def run(ctx: protocol_api.ProtocolContext):
         if blow_out == True:
             pipet.blow_out(dest.top(z = -2))
         if touch_tip == True:
-            pipet.touch_tip(speed = 20, v_offset = -5)
+            pipet.touch_tip(radius=0.9, speed = 20, v_offset = -5) #radius here is 0.9
 
 
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
@@ -317,7 +318,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
 
         wash_buffer_vol = [150, 150]
-        x_offset = 0
         rinse = False  # Only first time
 
         ########
@@ -327,15 +327,14 @@ def run(ctx: protocol_api.ProtocolContext):
                 pick_up(m300)
             for j, transfer_vol in enumerate(wash_buffer_vol):
                 if (i == 0 and j == 0):
-                    rinse = True
+                    rinse = True #Rinse only first transfer
                 else:
                     rinse = False
-                move_vol_multi(m300, reagent=WashBuffer1, source=WashBuffer1.reagent_reservoir,
-                               dest=wb1plate1_destination[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
+                move_vol_multichannel(m300, reagent = WashBuffer1, source = WashBuffer1.reagent_reservoir,
+                               dest = wb1plate1_destination[i], vol = transfer_vol,
+                               air_gap_vol = air_gap_vol, x_offset = x_offset,
+                               pickup_height = 1, rinse = rinse, disp_height = -2,
+                               blow_out = True, touch_tip = True)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -355,7 +354,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
 
         wash_buffer_vol = [150, 150]
-        x_offset = 0
         rinse = False  # Only first time
 
         ########
@@ -368,12 +366,11 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse = True
                 else:
                     rinse = False
-                move_vol_multi(m300, reagent=WashBuffer1, source=WashBuffer1.reagent_reservoir,
-                               dest=wb1plate2_destination[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
+                move_vol_multichannel(m300, reagent = WashBuffer1, source = WashBuffer1.reagent_reservoir,
+                               dest = wb1plate2_destination[i], vol = transfer_vol,
+                               air_gap_vol = air_gap_vol, x_offset = x_offset,
+                               pickup_height = 1, rinse = rinse, disp_height = -2,
+                               blow_out = True, touch_tip = True)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -393,7 +390,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
 
         wash_buffer_vol = [150, 150, 150]
-        x_offset = 0
         rinse = False  # Only first time
 
         ########
@@ -406,12 +402,11 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse = True
                 else:
                     rinse = False
-                move_vol_multi(m300, reagent=WashBuffer2, source=WashBuffer2.reagent_reservoir,
-                               dest=wb2plate1_destination[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
+                move_vol_multichannel(m300, reagent = WashBuffer2, source = WashBuffer2.reagent_reservoir,
+                               dest = wb2plate1_destination[i], vol = transfer_vol,
+                               air_gap_vol = air_gap_vol, x_offset = x_offset,
+                               pickup_height = 1, rinse = rinse, disp_height = -2,
+                               blow_out = True, touch_tip = True)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -431,7 +426,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('###############################################')
 
         ethanol_vol = [150, 150, 150]
-        x_offset = 0
         rinse = False  # Only first time
 
         ########
@@ -444,12 +438,11 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse = True
                 else:
                     rinse = False
-                move_vol_multi(m300, reagent=WashBuffer2, source=WashBuffer2.reagent_reservoir,
-                               dest=wb2plate2_destination[i], vol=transfer_vol,
-                               air_gap_vol=air_gap_vol, x_offset=x_offset,
-                               pickup_height=1, rinse=rinse)
-                ctx.delay(seconds=2)  # 5 sec to let the liquid download
-                m300.touch_tip(radius=0.9, speed=20, v_offset=-5)
+                move_vol_multichannel(m300, reagent = WashBuffer2, source = WashBuffer2.reagent_reservoir,
+                              dest = wb2plate2_destination[i], vol = transfer_vol,
+                              air_gap_vol = air_gap_vol, x_offset = x_offset,
+                              pickup_height = 1, rinse = rinse, disp_height = -2,
+                              blow_out = True, touch_tip = True)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -470,7 +463,6 @@ def run(ctx: protocol_api.ProtocolContext):
         # Elution buffer
         ElutionBuffer_vol = [50]
         air_gap_vol_elutionbuffer = 10
-        x_offset = 0
 
         ########
         # Water or elution buffer
