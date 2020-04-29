@@ -5,8 +5,8 @@ from datetime import datetime
 import os
 import pandas as pd
 import string
-KF_path='/Users/covid19warriors/Documents/covid19clinic/Test/KF_config/'
-OT_path='/Users/covid19warriors/Documents/covid19clinic/Test/OT_config/'
+KF_path='/home/jl/Documentos/code/covid19clinic/Test/KF_config/'
+OT_path='/home/jl/Documentos/code/covid19clinic/Test/OT_config/'
 
 # Funtion to distinguish between OT and KF protocols
 def select_protocol_type(p1,p2):
@@ -35,7 +35,7 @@ def rep_data(n,name,f,d):
 def main():
 
     #Read the excel file from the run and obtain the dictionary of samples
-    df = pd.read_excel (r'/Users/covid19warriors/Documents/covid19clinic/Test/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls',
+    df = pd.read_excel (r'/home/jl/Documentos/code/covid19clinic/Test/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls',
      sheet_name='Deepwell layout', header = None, index_col = 0)
     df = df.iloc[1:]
     df_dict = df.to_dict('index')
@@ -86,12 +86,12 @@ def main():
     # select the type of protocol to be run
     [protocol,protocol_path]=select_protocol_type(KF_path,OT_path)
     #determine output path
-    final_path=os.path.join('/Users/covid19warriors/Documents/covid19clinic/Test/',str(dia_registro)+'_ID_'+str(id)+'_prueba')
+    final_path=os.path.join('/home/jl/Documentos/code/covid19clinic/Test/',str(dia_registro)+'_ID_'+str(id)+'_prueba')
 
     # create folder in case it doesn't already exist and copy excel registry file there
     if not os.path.isdir(final_path):
         os.mkdir(final_path)
-        os.system('cp /Users/covid19warriors/Documents/covid19clinic/Test/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls '+final_path+'/2020_04_28_RUN_PROVA.xls')
+        os.system('cp /home/jl/Documentos/code/covid19clinic/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls '+final_path+'/2020_04_28_RUN_PROVA.xls')
 
     for file in os.listdir(protocol_path): # look for all protocols in folder
         if file.endswith('.py'):
