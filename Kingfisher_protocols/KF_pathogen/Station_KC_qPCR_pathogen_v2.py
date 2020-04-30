@@ -31,7 +31,7 @@ air_gap_vol = 5
 size_transfer = 7  # Number of wells the distribute function will fill
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_mmix_available = 400  # Total volume of first screwcap
+volume_mmix_available = NUM_SAMPLES*volume_mmix+50  # Total volume of first screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
@@ -94,7 +94,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume=volume_mmix_available,
                       num_wells= 1,
-                      delay=2,
+                      delay=0,
                       h_cono=h_cone,
                       v_fondo=volume_cone  # V cono
                       )
@@ -104,7 +104,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume=50,
-                      delay=2,
+                      delay=0,
                       num_wells=num_cols,  # num_cols comes from available columns
                       h_cono=0,
                       v_fondo=0
@@ -281,9 +281,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # used tip counter and set maximum tips available
     tip_track = {
-        'counts': {p300: 0,p20: 0}
+        'counts': {p300: 0,
+                   p20: 0}
     }
-    # , p1000: len(tips1000)*96}
 
     ############################################################################
     # STEP 1: Transfer Master MIX
@@ -300,13 +300,13 @@ def run(ctx: protocol_api.ProtocolContext):
             [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, aspirate_volume)
             # source MMIX_reservoir[col_change]
             used_vol_temp = distribute_custom(
-            p300, volume_mmix, MMIX.reagent_reservoir[MMIX.col], dest,
-            MMIX.reagent_reservoir[MMIX.col], pickup_height, extra_dispensal)
+            p300, volume = volume_mmix, src = MMIX.reagent_reservoir[MMIX.col], dest = dest,
+            waste_pool = MMIX.reagent_reservoir[MMIX.col], pickup_height = pickup_height,
+            extra_dispensal = extra_dispensal)
             used_vol.append(used_vol_temp)
-
         p300.drop_tip()
         tip_track['counts'][p300]+=1
-        MMIX.unused_two = MMIX.vol_well
+        #MMIX.unused_two = MMIX.vol_well
 
         end = datetime.now()
         time_taken = (end - start)
@@ -328,8 +328,8 @@ def run(ctx: protocol_api.ProtocolContext):
             #Source samples
             move_vol_multichannel(p20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = x_offset,
-                   pickup_height = 0.2, disp_height = 0, rinse = False,
-                   blow_out=True, touch_tip=True)
+                   pickup_height = 0.2, disp_height = -10, rinse = False,
+                   blow_out=True, touch_tip=False)
             p20.drop_tip()
             tip_track['counts'][p20]+=1
 
