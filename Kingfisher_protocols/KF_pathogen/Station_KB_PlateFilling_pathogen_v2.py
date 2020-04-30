@@ -26,7 +26,7 @@ metadata = {
 ##################
 NUM_SAMPLES = 16
 air_gap_vol = 15
-air_gap_vol_elutionbuffer = 10
+air_gap_vol_elutionbuffer = 5
 
 x_offset = [0,0]
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir
@@ -82,8 +82,8 @@ def run(ctx: protocol_api.ProtocolContext):
                           flow_rate_dispense=1,
                           rinse=True,
                           delay=0,
-                          reagent_reservoir_volume=106000,
-                          num_wells=1,  # num_Wells max is 4
+                          reagent_reservoir_volume=70000,
+                          num_wells=1,
                           h_cono=0,
                           v_fondo=0)  # Flat surface
 
@@ -92,8 +92,8 @@ def run(ctx: protocol_api.ProtocolContext):
                           flow_rate_dispense=1,
                           rinse=True,
                           delay=0,
-                          reagent_reservoir_volume=106000,
-                          num_wells=1,  # num_Wells max is 4
+                          reagent_reservoir_volume=100000,
+                          num_wells=1,
                           h_cono=0,
                           v_fondo=0)  # Flat surface
 
@@ -102,8 +102,8 @@ def run(ctx: protocol_api.ProtocolContext):
                             flow_rate_dispense=1,
                             rinse=False,
                             delay=0,
-                            reagent_reservoir_volume=4800,
-                            num_wells=1,  # num_Wells max is 1
+                            reagent_reservoir_volume=6000,
+                            num_wells=1,
                             h_cono=1.95,
                             v_fondo=695)  # Prismatic
 
