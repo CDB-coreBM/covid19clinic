@@ -111,7 +111,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_dispense=3,
                     rinse=True,
                     num_wells=4,
-                    delay=0,
+                    delay=2,
                     reagent_reservoir_volume=260 * 96 * 1.1,
                     h_cono=1.95,
                     v_fondo=695)  # Prismatic)
@@ -302,7 +302,7 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
                                   dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS,
                                   x_offset = x_offset, pickup_height = pickup_height,
-                                  rinse = False, disp_height = height_MS, blow_out = False,
+                                  rinse = False, disp_height = height_MS, blow_out = True,
                                   touch_tip = True)
             # Drop tip and update counter
             p20.drop_tip()
@@ -376,11 +376,10 @@ def run(ctx: protocol_api.ProtocolContext):
                                       pickup_height=pickup_height, disp_height = -2,
                                       rinse=rinse, blow_out = True, touch_tip=False)
             ctx.comment('Mixing MS with beads ')
-            custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
-                       rounds=1, blow_out=True, mix_height=16,
-                       x_offset = x_offset)
+            #custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
+                       #rounds=1, blow_out=True, mix_height=16,
+                       #x_offset = x_offset)
             m300.drop_tip(home_after=False)
-            # m300.return_tip()
             tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
