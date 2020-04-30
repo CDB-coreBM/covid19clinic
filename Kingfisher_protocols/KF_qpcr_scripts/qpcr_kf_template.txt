@@ -3,7 +3,7 @@
 * Experiment File Name = D:\Applied Biosystems\7500\experiments\COVID\TaqPath COVID-19 Kit Template v1-1.edt
 * Experiment Run End Time = Not Started
 * Instrument Type = sds7500fast
-* Passive Reference = ROX
+* Passive Reference = None
 
 [Sample Setup]
 Well	Sample Name	Sample Color	Biogroup Name	Biogroup Color	Target Name	Target Color	Task	Reporter	Quencher	Quantity	Comments
