@@ -1,7 +1,10 @@
-
-
 import pandas as pd
 import string
+import os
+
+input_file = "/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/TaqPath_v1-1_H12_data.txt"
+out_file = "/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/qpcr_kf_file_test2.txt"
+
 #Read the excel file from the run and obtain the dictionary of samples
 df = pd.read_excel (r'/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/COREBM/OPENTRONS/RUNS/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls',
  sheet_name='Deepwell layout', header = None, index_col = 0)
@@ -14,9 +17,9 @@ for key in df_dict:
 
 
 #input file
-fin = open("/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/qpcr_kf_template.txt", "rt")
+fin = open(input_file, "rt")
 #output file to write the result to
-fout = open("/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/COREBM/OPENTRONS/RUNS/2020_04_28_RUN_PROVA/qpcr_kf_file.txt", "wt")
+fout = open(out_file+'_temp', "wt")
 #for each line in the input file
 
 for line in fin:
@@ -33,3 +36,10 @@ for line in fin:
 #close input and output files
 fin.close()
 fout.close()
+
+#Transform into windows format
+WINDOWS_LINE_ENDING = b'\r\n'
+UNIX_LINE_ENDING = b'\n'
+contents = open(out_file+'_temp', 'rb').read()
+open(out_file, 'wb').write(contents.replace(UNIX_LINE_ENDING, WINDOWS_LINE_ENDING))
+os.system('rm '+out_file+'_temp')
