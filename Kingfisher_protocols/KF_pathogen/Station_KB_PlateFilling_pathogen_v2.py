@@ -81,7 +81,7 @@ def run(ctx: protocol_api.ProtocolContext):
                           flow_rate_aspirate=0.75,
                           flow_rate_dispense=1,
                           rinse=True,
-                          delay=0,
+                          delay=2,
                           reagent_reservoir_volume=70000,
                           num_wells=1,
                           h_cono=0,
@@ -91,7 +91,7 @@ def run(ctx: protocol_api.ProtocolContext):
                           flow_rate_aspirate=0.75,
                           flow_rate_dispense=1,
                           rinse=True,
-                          delay=0,
+                          delay=2,
                           reagent_reservoir_volume=100000,
                           num_wells=1,
                           h_cono=0,
@@ -110,8 +110,6 @@ def run(ctx: protocol_api.ProtocolContext):
     WashBuffer1.vol_well = WashBuffer1.vol_well_original
     WashBuffer2.vol_well = WashBuffer2.vol_well_original
     ElutionBuffer.vol_well = ElutionBuffer.vol_well_original
-    #Ethanol.vol_well = Ethanol.vol_well_original
-    #WashBuffer.vol_well = WashBuffer.vol_well_original
 
     ##################
     # Custom functions
@@ -266,30 +264,17 @@ def run(ctx: protocol_api.ProtocolContext):
     ElutionBuffer_50ul_plate = ctx.load_labware(
         'kf_96_wellplate_std_550ul', '6', 'Elution Buffer 50 ul STD plate')
 
-    # Ethanol Deepwell 10000 ul deepwell plate
-############################################
-    # Ethanol_1000ul_plate = ctx.load_labware(
-    # 'kf_96_wellplate_2400ul', '4', 'Ethanol 1000ul Deepwell plate')
-
-    # Wash Buffer Deepwell plate
-############################################
-    # Ethanol_500ul_plate = ctx.load_labware(
-    # 'kf_96_wellplate_2400ul', '7', 'Ethanol 500ul Deepwell plate')
-
 
 ####################################
     # Load tip_racks
     tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '200µl filter tiprack')
                for slot in ['8']]
-    # tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-    #    for slot in ['10']]
 
 ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     WashBuffer1.reagent_reservoir = WashBuffer1_reservoir.wells()[0]
     WashBuffer2.reagent_reservoir = WashBuffer2_reservoir.wells()[0]
     ElutionBuffer.reagent_reservoir = reagent_res.rows()[0][0]
-    #Ethanol.reagent_reservoir = Ethanol_reservoir.wells()[0]
 
     # columns in destination plates to be filled depending the number of samples
     wb1plate1_destination = WashBuffer1_300ul_plate1.rows()[0][:num_cols]
@@ -297,16 +282,15 @@ def run(ctx: protocol_api.ProtocolContext):
     wb2plate1_destination = WashBuffer2_450ul_plate1.rows()[0][:num_cols]
     wb2plate2_destination = WashBuffer2_450ul_plate2.rows()[0][:num_cols]
     elutionbuffer_destination = ElutionBuffer_50ul_plate.rows()[0][:num_cols]
-    #washbuffer_destination = WashBuffer_1000ul_plate.rows()[0][:num_cols]
 
-    # pipettes. P1000 currently deactivated
+    # pipette
     m300 = ctx.load_instrument(
         'p300_multi_gen2', 'right', tip_racks=tips300)  # Load multi pipette
 
     # used tip counter and set maximum tips available
     tip_track = {
         'counts': {m300: 0},
-        'maxes': {m300: 10000}
+        'maxes': {m300: len(tip300)*96}
     }
 
     ############################################################################
