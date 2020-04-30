@@ -262,7 +262,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Elution Deepwell plate
     ############################################
     ElutionBuffer_50ul_plate = ctx.load_labware(
-        'kf_96_wellplate_std_550ul', '6', 'Elution Buffer 50 ul STD plate')
+        'kingfisher_96_wellplate_550ul', '6', 'Elution Buffer 50 ul STD plate')
 
 
 ####################################
@@ -290,7 +290,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # used tip counter and set maximum tips available
     tip_track = {
         'counts': {m300: 0},
-        'maxes': {m300: len(tip300)*96}
+        'maxes': {m300: len(tips300)*96}
     }
 
     ############################################################################
