@@ -11,16 +11,18 @@ import csv
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station Kingfisher Version 1',
+    'protocolName': 'Station C Kingfisher Pathogen qPCR setup Version 2',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
-    'description': 'Protocol for Kingfisher sample setup (C)'
+    'description': 'Protocol for Kingfisher sample setup (C) - Pathogen Kit (ref 4462359)'
+    'technician': $technician,
+    'data': $date
 }
 
 #Defined variables
 ##################
-NUM_SAMPLES = 17
+NUM_SAMPLES = $num_samples
 air_gap_vol = 5
 
 # Tune variables
@@ -32,7 +34,7 @@ extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
-x_offset=[0,0]
+x_offset = [0,0]
 
 # Calculated variables
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
@@ -42,8 +44,10 @@ num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
-    gpio.set_rail_lights(False)
+    gpio.set_rail_lights(False) #Turn off lights (termosensible reagents)
     ctx.comment('Actual used columns: ' + str(num_cols))
+
+    # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
@@ -63,23 +67,23 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Define Reagents as objects with their properties
     class Reagent:
-        def __init__(self, name, rinse,flow_rate_aspirate,flow_rate_dispense,
+        def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
                      reagent_reservoir_volume, delay, num_wells, h_cono, v_fondo,
-                     tip_recycling='none'):
+                      tip_recycling = 'none'):
             self.name = name
+            self.flow_rate_aspirate = flow_rate_aspirate
+            self.flow_rate_dispense = flow_rate_dispense
             self.rinse = bool(rinse)
-            self.flow_rate_aspirate = 1
-            self.flow_rate_dispense = 1
             self.reagent_reservoir_volume = reagent_reservoir_volume
-            self.col = 0
+            self.delay = delay
             self.num_wells = num_wells
+            self.col = 0
             self.vol_well = 0
             self.h_cono = h_cono
             self.v_cono = v_fondo
             self.unused=[]
-            self.vol_well_original = reagent_reservoir_volume / num_wells
-            self.delay = delay
             self.tip_recycling = tip_recycling
+            self.vol_well_original = reagent_reservoir_volume / num_wells
 
     # Reagents and their characteristics
     MMIX = Reagent(name='Master Mix',
@@ -110,7 +114,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ##################
     # Custom functions
 
-    def calc_height(reagent, cross_section_area, aspirate_volume,min_height=0.2):
+    def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.2):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
                     '< needed volume ' + str(aspirate_volume) + '?')
