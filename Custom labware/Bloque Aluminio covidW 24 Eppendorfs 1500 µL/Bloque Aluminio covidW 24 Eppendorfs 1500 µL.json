@@ -40,11 +40,11 @@
     "brand": {
         "brand": "Bloque Aluminio",
         "brandId": [
-            "24 Screwcap 1.5mL"
+            "24 Eppendorf 1.5mL"
         ]
     },
     "metadata": {
-        "displayName": "Bloque Aluminio 24 Screwcap Well Plate 1500 µL",
+        "displayName": "Bloque Aluminio covidW 24 eppendorfs 1500 µL",
         "displayCategory": "wellPlate",
         "displayVolumeUnits": "µL",
         "tags": []
@@ -52,237 +52,237 @@
     "dimensions": {
         "xDimension": 128.3,
         "yDimension": 85.7,
-        "zDimension": 58.05
+        "zDimension": 48.1
     },
     "wells": {
         "A1": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 13.95,
             "y": 71.6,
-            "z": 14.65
+            "z": 10.1
         },
         "B1": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 13.95,
             "y": 50.2,
-            "z": 14.65
+            "z": 10.1
         },
         "C1": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 13.95,
             "y": 28.8,
-            "z": 14.65
+            "z": 10.1
         },
         "D1": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 13.95,
             "y": 7.4,
-            "z": 14.65
+            "z": 10.1
         },
         "A2": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 33.95,
             "y": 71.6,
-            "z": 14.65
+            "z": 10.1
         },
         "B2": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 33.95,
             "y": 50.2,
-            "z": 14.65
+            "z": 10.1
         },
         "C2": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 33.95,
             "y": 28.8,
-            "z": 14.65
+            "z": 10.1
         },
         "D2": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 33.95,
             "y": 7.4,
-            "z": 14.65
+            "z": 10.1
         },
         "A3": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 53.95,
             "y": 71.6,
-            "z": 14.65
+            "z": 10.1
         },
         "B3": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 53.95,
             "y": 50.2,
-            "z": 14.65
+            "z": 10.1
         },
         "C3": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 53.95,
             "y": 28.8,
-            "z": 14.65
+            "z": 10.1
         },
         "D3": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 53.95,
             "y": 7.4,
-            "z": 14.65
+            "z": 10.1
         },
         "A4": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 73.95,
             "y": 71.6,
-            "z": 14.65
+            "z": 10.1
         },
         "B4": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 73.95,
             "y": 50.2,
-            "z": 14.65
+            "z": 10.1
         },
         "C4": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 73.95,
             "y": 28.8,
-            "z": 14.65
+            "z": 10.1
         },
         "D4": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 73.95,
             "y": 7.4,
-            "z": 14.65
+            "z": 10.1
         },
         "A5": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 93.95,
             "y": 71.6,
-            "z": 14.65
+            "z": 10.1
         },
         "B5": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 93.95,
             "y": 50.2,
-            "z": 14.65
+            "z": 10.1
         },
         "C5": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 93.95,
             "y": 28.8,
-            "z": 14.65
+            "z": 10.1
         },
         "D5": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 93.95,
             "y": 7.4,
-            "z": 14.65
+            "z": 10.1
         },
         "A6": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 113.95,
             "y": 71.6,
-            "z": 14.65
+            "z": 10.1
         },
         "B6": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 113.95,
             "y": 50.2,
-            "z": 14.65
+            "z": 10.1
         },
         "C6": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 113.95,
             "y": 28.8,
-            "z": 14.65
+            "z": 10.1
         },
         "D6": {
-            "depth": 43.4,
+            "depth": 38,
             "totalLiquidVolume": 1500,
             "shape": "circular",
             "diameter": 9,
             "x": 113.95,
             "y": 7.4,
-            "z": 14.65
+            "z": 10.1
         }
     },
     "groups": [
         {
             "metadata": {
-                "displayName": "Bloque Aluminio 24 Screwcap Well Plate 1500 µL",
+                "displayName": "Bloque Aluminio 24 Eppendorf Well Plate 1500 µL",
                 "displayCategory": "wellPlate",
                 "wellBottomShape": "v"
             },
             "brand": {
                 "brand": "Bloque Aluminio",
                 "brandId": [
-                    "24 Screwcap 1.5mL"
+                    "24 Eppendorf 1.5mL"
                 ]
             },
             "wells": [
@@ -318,7 +318,7 @@
         "quirks": [],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "bloquealuminio_24_screwcap_wellplate_1500ul"
+        "loadName": "bloquealuminio_covidW_24_eppendorfs_1500ul"
     },
     "namespace": "custom_beta",
     "version": 1,
