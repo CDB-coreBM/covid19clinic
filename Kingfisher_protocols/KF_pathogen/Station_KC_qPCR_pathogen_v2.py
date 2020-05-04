@@ -229,8 +229,8 @@ def run(ctx: protocol_api.ProtocolContext):
     # load labware and modules
     # 12 well rack
     tuberack = ctx.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
-        'Bloque Aluminio 24 Screwcap Well Plate 1500 µL ')
+        'opentrons_24_aluminumblock_generic_2ml_screwcap', '2',
+        'Bloque Aluminio opentrons 24 screwcaps 2000 µL ')
 
     ############################################
     # tempdeck
@@ -238,16 +238,16 @@ def run(ctx: protocol_api.ProtocolContext):
     tempdeck.set_temperature(temperature)
 
     ##################################
-    # Elution plate - final plate, goes to PCR
-    elution_plate = tempdeck.load_labware(
-        'roche_96_wellplate_100ul_alum_covid',
-        'chilled RNA elution plate from station B ')
+    # qPCR plate - final plate, goes to PCR
+    qpcr_plate = tempdeck.load_labware(
+        'abi_fast_qpcr_96_alum_opentrons_100ul',
+        'chilled qPCR final plate')
 
     ##################################
     # Sample plate - comes from B
     source_plate = ctx.load_labware(
-        "kingfisher_96_wellplate_550ul", '1',
-        'Chilled RNA elution plate for PCR ')
+        "kingfisher_std_96_wellplate_550ul", '1',
+        'chilled KF plate with elutions (alum opentrons)')
     samples = source_plate.wells()[:NUM_SAMPLES]
 
     ##################################
@@ -268,7 +268,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Wells in: '+ str(tuberack.rows()[0][:MMIX.num_wells]) + ' element: '+str(MMIX.reagent_reservoir[MMIX.col]))
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
-    pcr_wells = elution_plate.wells()[:NUM_SAMPLES]
+    pcr_wells = qpcr_plate.wells()[:NUM_SAMPLES]
 
     # Divide destination wells in small groups for P300 pipette
     dests = list(divide_destinations(pcr_wells, size_transfer))
