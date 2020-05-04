@@ -262,7 +262,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Elution Deepwell plate
     ############################################
     ElutionBuffer_50ul_plate = ctx.load_labware(
-        'kingfisher_96_wellplate_550ul', '6', 'Elution Buffer 50 ul STD plate')
+        'kingfisher_std_96_wellplate_550ul', '6', 'Elution Buffer 50 ul STD plate')
 
 
 ####################################
