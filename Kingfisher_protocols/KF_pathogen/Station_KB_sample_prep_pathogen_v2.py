@@ -243,13 +243,14 @@ def run(ctx: protocol_api.ProtocolContext):
     # Elution plate - final plate, goes to Kingfisher
     sample_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul', '1',
-        'Deepwell sample plate')
+        'KF 96 Well 2400ul elution plate')
+
     ####################################
     # load labware and modules
-    # 12 well rack
+    # 24 well rack aluminium opentrons
     tuberack = ctx.load_labware(
         'opentrons_24_aluminumblock_generic_2ml_screwcap', '3',
-        'Bloque Aluminio 24 Screwcap')
+        'Bloque Aluminio opentrons 24 Screwcaps')
 
     ##################################
     # Load Tipracks
