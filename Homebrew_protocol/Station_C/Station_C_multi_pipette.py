@@ -24,6 +24,7 @@ REAGENT SETUP:
 
 # Initial variables
 NUM_SAMPLES = 16
+run = 'R001'
 
 # Tune variables
 size_transfer = 12  # Number of wells the distribute function will fill
@@ -96,12 +97,12 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/var/lib/jupyter/notebooks'
+    folder_path = '/var/lib/jupyter/notebooks'+run
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/StationC_time_log.txt'
-
+        file_path = folder_path + '/StationC_homebrew_time_log.txt'
+        file_path2 = folder_path + '/StationC_homebrew_tips_log.txt'
     # Check if door is opened
     if check_door() == True:
         # Set light color to purple
@@ -225,6 +226,12 @@ def run(ctx: protocol_api.ProtocolContext):
                     row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
+        with open(file_path2, 'w') as f2:
+            f2.write('pipette\ttip_count\n')
+            for key in tip_track['counts'].keys():
+                row=str(key)
+                f.write(str(key)+'\t'+format(tip_track['counts'][key]))
+        f2.close()
 
     # Set light color to green
     gpio.set_button_light(0, 1, 0)

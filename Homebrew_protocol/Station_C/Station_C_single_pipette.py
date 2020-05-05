@@ -24,8 +24,10 @@ REAGENT SETUP:
 
 # Initial variables
 NUM_SAMPLES = 16
-air_gap_vol = 5
+run = 'R001'
+
 # Tune variables
+air_gap_vol = 5 # General air gap volume
 volume_mmix = 15  # Volume of transfered master mix
 height_mmix = 15  # Height to dispense mmix
 MMIX_initial_volume = 300 #Initial volume of mmix screwcap
@@ -61,22 +63,26 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/StationC_time_log.txt'
+        file_path = folder_path + '/StationC_homebrew_time_log.txt'
+        file_path2 = folder_path + '/StationC_homebrew_tips_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
         def __init__(self, name, flow_rate_aspirate, flow_rate_dispense, rinse,
-                     reagent_reservoir_volume, num_wells, h_cono, v_fondo, tip_recycling='none'):
+                     reagent_reservoir_volume, delay, num_wells, h_cono, v_fondo,
+                      tip_recycling = 'none'):
             self.name = name
             self.flow_rate_aspirate = flow_rate_aspirate
             self.flow_rate_dispense = flow_rate_dispense
             self.rinse = bool(rinse)
             self.reagent_reservoir_volume = reagent_reservoir_volume
+            self.delay = delay
             self.num_wells = num_wells
             self.col = 0
             self.vol_well = 0
             self.h_cono = h_cono
             self.v_cono = v_fondo
+            self.unused=[]
             self.tip_recycling = tip_recycling
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
@@ -317,6 +323,13 @@ def run(ctx: protocol_api.ProtocolContext):
                     row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
+        with open(file_path2, 'w') as f2:
+            f2.write('pipette\ttip_count\n')
+            for key in tip_track['counts'].keys():
+                row=str(key)
+                f.write(str(key)+'\t'+format(tip_track['counts'][key]))
+        f2.close()
+
 
     # Set light color to green
     gpio.set_button_light(0, 1, 0)
