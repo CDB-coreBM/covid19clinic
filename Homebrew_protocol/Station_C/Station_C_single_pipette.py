@@ -24,7 +24,7 @@ REAGENT SETUP:
 
 # Initial variables
 NUM_SAMPLES = 16
-run = 'R001'
+run_id = 'R001'
 
 # Tune variables
 air_gap_vol = 5 # General air gap volume
@@ -59,7 +59,7 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/var/lib/jupyter/notebooks'
+    folder_path = '/var/lib/jupyter/notebooks'+run_id
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)

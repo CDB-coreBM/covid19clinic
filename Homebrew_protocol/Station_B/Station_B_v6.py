@@ -22,7 +22,7 @@ metadata = {
 ##################
 NUM_SAMPLES = 16
 air_gap_vol = 15
-run = 'R001'
+run_id = 'R001'
 
 # mag_height = 11 # Height needed for NUNC deepwell in magnetic deck
 mag_height = 17  # Height needed for ABGENE deepwell in magnetic deck
@@ -64,7 +64,7 @@ def run(ctx: protocol_api.ProtocolContext):
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
-    folder_path = '/var/lib/jupyter/notebooks/'+run
+    folder_path = '/var/lib/jupyter/notebooks/' + run_id
 
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
@@ -281,7 +281,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Elution plate - comes from A
     magdeck = ctx.load_module('magdeck', '6')
     deepwell_plate = magdeck.load_labware(
-        'abgenestorage_96_wellplate_1200ul', 'ABGENE 1200ul 96 well sample plate')
+        'abgene_96_wellplate_800ul', 'ABGENE 96 Well Plate 800 µL')
     magdeck.disengage()
 
 ####################################
@@ -341,7 +341,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Mixing
         custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol=180,
-                   rounds=10, blow_out=True, mix_height=0)
+                   rounds=10, blow_out=True, mix_height=0, x_offset = [0,0], source_height = 3)
         ctx.comment('Finished premixing!')
         ctx.comment('Now, reagents will be transferred to deepwell plate.')
 
@@ -361,7 +361,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
         beads_transfer_vol = [155, 155]  # Two rounds of 155
-        x_offset = 0
         rinse = True
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:

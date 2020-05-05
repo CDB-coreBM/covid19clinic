@@ -22,7 +22,7 @@ metadata = {
 NUM_SAMPLES = 96
 air_gap_vol_ci = 2
 air_gap_vol_sample = 5
-run='R001'
+run_id = 'R001'
 
 volume_control = 10
 volume_sample = 300
@@ -53,7 +53,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     #Folder and file_path for log time
     if not ctx.is_simulating():
-        folder_path = '/dvar/lib/jupyter/notebooks/'+run
+        folder_path = '/dvar/lib/jupyter/notebooks/'+run_id
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
         file_path = folder_path + '/StationA_homebrew_time_log.txt'

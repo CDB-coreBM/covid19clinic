@@ -24,7 +24,7 @@ REAGENT SETUP:
 
 # Initial variables
 NUM_SAMPLES = 16
-run = 'R001'
+run_id = 'R001'
 
 # Tune variables
 size_transfer = 12  # Number of wells the distribute function will fill
@@ -97,7 +97,7 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/var/lib/jupyter/notebooks'+run
+    folder_path = '/var/lib/jupyter/notebooks'+run_id
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
