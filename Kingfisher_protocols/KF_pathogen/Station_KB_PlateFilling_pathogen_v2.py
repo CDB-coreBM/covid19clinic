@@ -24,7 +24,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 48
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5
 
@@ -102,7 +102,7 @@ def run(ctx: protocol_api.ProtocolContext):
                             flow_rate_dispense=1,
                             rinse=False,
                             delay=0,
-                            reagent_reservoir_volume=6000,
+                            reagent_reservoir_volume=50*NUM_SAMPLES,
                             num_wells=1,
                             h_cono=1.95,
                             v_fondo=695)  # Prismatic
@@ -262,7 +262,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Elution Deepwell plate
     ############################################
     ElutionBuffer_50ul_plate = ctx.load_labware(
-        'kingfisher_96_wellplate_550ul', '6', 'Elution Buffer 50 ul STD plate')
+        'kingfisher_std_96_wellplate_550ul', '6', 'Elution Buffer 50 ul STD plate')
 
 
 ####################################
