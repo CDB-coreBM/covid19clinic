@@ -17,7 +17,6 @@ metadata = {
     'apiLevel': '2.0',
     'description': 'Protocol for RNA extraction preparation for ThermoFisher Pathogen kit (ref 4462359) \
     setup - sample + beads + buffer preparation'
-
 }
 
 '''
@@ -60,7 +59,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': 'Add MS2'},
+        1: {'Execute': True, 'description': 'Add MS2'},
         2: {'Execute': True, 'description': 'Mix beads'},
         3: {'Execute': True, 'description': 'Transfer beads'}
     }
