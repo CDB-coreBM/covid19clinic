@@ -117,8 +117,8 @@ def run(ctx: protocol_api.ProtocolContext):
         'chilled RNA elution plate from station B')
 
     tuberack = ctx.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
-        'Bloque Aluminio 24 Eppendorf Well Plate 1500 µL')
+        'opentrons_24_aluminumblock_generic_2ml_screwcap', '2',
+        'Bloque Aluminio opentrons 24 screwcaps 2000 µL ')
 
     tempdeck = ctx.load_module('tempdeck', '4')
 
@@ -126,7 +126,7 @@ def run(ctx: protocol_api.ProtocolContext):
     tempdeck.set_temperature(temperature)
 
     pcr_plate = tempdeck.load_labware(
-        'roche_96_wellplate_100ul_alum_covid', 'PCR plate')
+        'roche_96_wellplate_lightcycler_100ul_alum_opentrons', 'PCR plate')
 
     # Load Tipracks
     tips20 = [
