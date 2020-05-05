@@ -24,14 +24,15 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 47
 air_gap_vol = 5
+air_gap_sample = 2
 
 # Tune variables
 size_transfer = 7  # Number of wells the distribute function will fill
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_mmix_available = NUM_SAMPLES*volume_mmix+50  # Total volume of first screwcap
+volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
@@ -88,15 +89,15 @@ def run(ctx: protocol_api.ProtocolContext):
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
     # Reagents and their characteristics
-    MMIX = Reagent(name='Master Mix',
-                      rinse=False,
+    MMIX = Reagent(name = 'Master Mix',
+                      rinse = False,
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
-                      reagent_reservoir_volume=volume_mmix_available,
-                      num_wells= 1,
-                      delay=0,
-                      h_cono=h_cone,
-                      v_fondo=volume_cone  # V cono
+                      reagent_reservoir_volume = volume_mmix_available,
+                      num_wells = 1, #changes with num samples
+                      delay = 0,
+                      h_cono = h_cone,
+                      v_fondo = volume_cone  # V cono
                       )
 
     Samples = Reagent(name='Samples',
@@ -224,32 +225,32 @@ def run(ctx: protocol_api.ProtocolContext):
             col_change = False
         return height, col_change
 
-####################################
+    ####################################
     # load labware and modules
     # 12 well rack
     tuberack = ctx.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul', '2',
-        'Bloque Aluminio 24 Screwcap Well Plate 1500 µL ')
+        'opentrons_24_aluminumblock_generic_2ml_screwcap', '2',
+        'Bloque Aluminio opentrons 24 screwcaps 2000 µL ')
 
-############################################
+    ############################################
     # tempdeck
     tempdeck = ctx.load_module('tempdeck', '4')
     tempdeck.set_temperature(temperature)
 
-##################################
-    # Elution plate - final plate, goes to PCR
-    elution_plate = tempdeck.load_labware(
-        'roche_96_wellplate_100ul_alum_covid',
-        'chilled RNA elution plate from station B ')
+    ##################################
+    # qPCR plate - final plate, goes to PCR
+    qpcr_plate = tempdeck.load_labware(
+        'abi_fast_qpcr_96_alum_opentrons_100ul',
+        'chilled qPCR final plate')
 
-##################################
+    ##################################
     # Sample plate - comes from B
     source_plate = ctx.load_labware(
-        "kingfisher_96_wellplate_550ul", '1',
-        'Chilled RNA elution plate for PCR ')
+        "kingfisher_std_96_wellplate_550ul", '1',
+        'chilled KF plate with elutions (alum opentrons)')
     samples = source_plate.wells()[:NUM_SAMPLES]
 
-##################################
+    ##################################
     # Load Tipracks
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
@@ -261,13 +262,13 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in ['6']
     ]
 
-################################################################################
+    ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     MMIX.reagent_reservoir = tuberack.rows()[0][:MMIX.num_wells] # 1 row, 2 columns (first ones)
     ctx.comment('Wells in: '+ str(tuberack.rows()[0][:MMIX.num_wells]) + ' element: '+str(MMIX.reagent_reservoir[MMIX.col]))
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
-    pcr_wells = elution_plate.wells()[:NUM_SAMPLES]
+    pcr_wells = qpcr_plate.wells()[:NUM_SAMPLES]
 
     # Divide destination wells in small groups for P300 pipette
     dests = list(divide_destinations(pcr_wells, size_transfer))
@@ -295,7 +296,6 @@ def run(ctx: protocol_api.ProtocolContext):
 
         used_vol=[]
         for dest in dests:
-
             aspirate_volume=volume_mmix * len(dest) + extra_dispensal
             [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, aspirate_volume)
             # source MMIX_reservoir[col_change]
@@ -321,13 +321,13 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
         start = datetime.now()
+        ctx.comment('pcr_wells')
         #Loop over defined wells
         for s, d in zip(samples, pcr_wells):
             p20.pick_up_tip()
-
             #Source samples
             move_vol_multichannel(p20, reagent = Samples, source = s, dest = d,
-            vol = volume_sample, air_gap_vol = air_gap_vol, x_offset = x_offset,
+            vol = volume_sample, air_gap_vol = air_gap_sample, x_offset = x_offset,
                    pickup_height = 0.2, disp_height = -10, rinse = False,
                    blow_out=True, touch_tip=False)
             p20.drop_tip()
