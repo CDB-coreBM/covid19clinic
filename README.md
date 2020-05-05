@@ -12,3 +12,5 @@ The equipment is composed by 4 multidispensing robots divided in 3 different sta
 - **Station B**: samples will go under a RNA extraction procedure using magnetic microbeads and will be transferred to a different 96 well plate.
 
 - **Station A**: this step aims to prepare the qPCR plate by adding 5µl of the sample to 24.6µl of a home prepared starter.
+
+MIT
