@@ -34,7 +34,8 @@ def rep_data(n,name,f,d):
 ###############################################################################
 def main():
 
-    #Read the excel file from the run and obtain the dictionary of samples
+    # Read the excel file from the run and obtain the dictionary of samples
+    # muestras.xlsx
     df = pd.read_excel (r'/home/jl/Documentos/code/covid19clinic/Test/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls',
      sheet_name='Deepwell layout', header = None, index_col = 0)
     df = df.iloc[1:]
@@ -43,6 +44,7 @@ def main():
     for key in df_dict:
         for key2 in df_dict[key]:
             merged_dict[str(key)+format(key2)]=df_dict[key][key2]
+
     # count number of declared elements in Dictionary
     num_samples_control = 0
     for elem in merged_dict.values():
@@ -63,11 +65,11 @@ def main():
     control=False
     # Get technician name
     while control==False:
-        tec_name = (input('Nombre del tecnico: '))
-        if isinstance(tec_name,str):
+        tec_name = (input('Nombre del técnico: '))
+        if isinstance(tec_name, str):
             control=True
         else:
-            print('Your name, please')
+            print('Introduzca el nombre, por favor')
 
     control=False
 
@@ -77,14 +79,14 @@ def main():
         if isinstance(id,int):
             control=True
         else:
-            print('Please, assing a numeric ID for this run')
+            print('Please, assign a numeric ID for this run')
     # Get date
     fecha=datetime.now()
     t_registro=fecha.strftime("%m/%d/%Y, %H:%M:%S")
     dia_registro=fecha.strftime("%m_%d_%Y")
 
     # select the type of protocol to be run
-    [protocol,protocol_path]=select_protocol_type(KF_path,OT_path)
+    [protocol,protocol_path]=select_protocol_type(KF_path, OT_path)
     #determine output path
     final_path=os.path.join('/home/jl/Documentos/code/covid19clinic/Test/',str(dia_registro)+'_ID_'+str(id)+'_prueba')
 
