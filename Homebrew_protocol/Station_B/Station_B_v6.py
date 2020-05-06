@@ -20,7 +20,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
 air_gap_vol = 15
 run_id = 'R001'
 
@@ -98,18 +98,18 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_dispense=1,
                       rinse=True,
                       reagent_reservoir_volume=38400,
-                      delay=0,
+                      delay=2,
                       num_wells=4,  # num_Wells max is 4
                       h_cono=1.95,
                       v_fondo=695,  # Prismatic
-                      tip_recycling=['5','10'])
+                      tip_recycling=['5','8'])
 
     Beads = Reagent(name='Magnetic beads',
                     flow_rate_aspirate=1,
                     flow_rate_dispense=1.5,
                     rinse=True,
                     reagent_reservoir_volume=29760,
-                    delay=0,
+                    delay=2,
                     num_wells=4,
                     h_cono=1.95,
                     v_fondo=695 ) # Prismatic)
@@ -119,11 +119,11 @@ def run(ctx: protocol_api.ProtocolContext):
                           flow_rate_dispense=1,
                           rinse=True,
                           reagent_reservoir_volume=14400,
-                          delay=0,
+                          delay=2,
                           num_wells=2,  # num_Wells max is 2
                           h_cono=1.95,
                           v_fondo=695,  # Prismatic
-                          tip_recycling=['8'])
+                          tip_recycling=['10'])
 
     Water = Reagent(name='Water',
                     flow_rate_aspirate=3,
@@ -373,7 +373,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
                     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                               vol=180, rounds=10, blow_out=True, mix_height=0)
+                               vol=180, rounds=10, blow_out=True, mix_height=0, x_offset = [0,0])
                 ctx.comment(
                     'Aspirate from reservoir column: ' + str(Beads.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
@@ -386,6 +386,7 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment('Mixing sample with beads ')
             custom_mix(m300, Beads, location=work_destinations[i], vol=180,
                        rounds=6, blow_out=True, mix_height=16, x_offset=[0,0])
+            m300.touch_tip(speed = 20, v_offset = -5)
             m300.drop_tip(home_after=False)
             # m300.return_tip()
             tip_track['counts'][m300] += 8
@@ -462,7 +463,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multichannel(m300, reagent=Elution, source=work_destinations[i],
                                dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol,
                                x_offset=[x_offset,0], pickup_height=pickup_height, rinse=False,
-                               disp_height=-2, blow_out=True, touch_tip=False)
+                               disp_height=-2, blow_out=True, touch_tip=True)
 
             m300.drop_tip(home_after=True)
             tip_track['counts'][m300] += 8
@@ -507,6 +508,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 custom_mix(m300, reagent=Isopropanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1, x_offset=[0,0])
                 #m300.drop_tip(home_after=True)
+                m300.touch_tip(speed = 20, v_offset = -5)
             m300.return_tip(tips300ri[0].rows()[0][i])
 
             #tip_track['counts'][m300] += 8
@@ -557,8 +559,9 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multichannel(m300, reagent=Elution, source=work_destinations[i],
                                dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=[x_offset,0],
                                pickup_height=pickup_height, rinse=False,
-                               disp_height=-2, blow_out=True, touch_tip=False)
-            m300.drop_tip()
+                               disp_height=-2, blow_out=True, touch_tip=True)
+            #m300.drop_tip()
+            m300.return_tip(tips300ri[0].rows()[0][i])
             tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
@@ -604,6 +607,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1, x_offset=[0,0])
+            m300.touch_tip(speed = 20, v_offset = -5)
             m300.return_tip(tips300r[0].rows()[0][i])
         #tip_track['counts'][m300] += 8
         end = datetime.now()
@@ -657,9 +661,9 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multichannel(m300, reagent=Elution, source=work_destinations[i],
                                dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=[x_offset,0],
                                pickup_height=pickup_height, rinse=False,
-                               disp_height=-2, blow_out=True, touch_tip=False)
-            #m300.return_tip(tips300r[0].rows()[0][i])
-            m300.drop_tip(home_after=True)
+                               disp_height=-2, blow_out=True, touch_tip=True)
+            #m300.drop_tip(home_after=True)
+            m300.return_tip(tips300r[0].rows()[0][i])
             tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
@@ -704,6 +708,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
             custom_mix(m300, reagent=Ethanol, location=work_destinations[i], vol=transfer_vol,
                            rounds=2, blow_out=True, mix_height=1, x_offset=[0,0])
+            m300.touch_tip(speed = 20, v_offset = -5)
             m300.return_tip(tips300r[1].rows()[0][i])
         #m300.drop_tip(home_after=True)
         #tip_track['counts'][m300] += 8
@@ -757,9 +762,9 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multichannel(m300, reagent=Elution, source=work_destinations[i],
                                dest=waste, vol=transfer_vol, air_gap_vol=air_gap_vol, x_offset=[x_offset,0],
                                pickup_height=pickup_height, rinse=False,
-                               disp_height=-2, blow_out=True, touch_tip=False)
-            #m300.return_tip(tips300r.rows()[0][i])
-            m300.drop_tip(home_after=True)
+                               disp_height=-2, blow_out=True, touch_tip=True)
+            #m300.drop_tip(home_after=True)
+            m300.return_tip(tips300r[1].rows()[0][i])
             tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
@@ -926,7 +931,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
-    if not ctx.is_simulating():
+    #if not ctx.is_simulating():
         #os.system('mpg123 -f -10000 /var/lib/jupyter/notebooks/BH.mov &')
     for i in range(3):
         gpio.set_rail_lights(False)
