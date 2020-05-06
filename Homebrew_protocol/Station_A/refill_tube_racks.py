@@ -26,7 +26,6 @@ def run(ctx: protocol_api.ProtocolContext):
             tube_type[0], slot,
             'source tuberack with'+ tube_type[1] + str(i+1)) for i, slot in enumerate(['4','6','3','1'])]
 
-
     water_src = ctx.load_labware(
         'nalgene_1_reservoir_300000ul','2',
         'Water source 300ml')

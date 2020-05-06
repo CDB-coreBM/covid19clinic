@@ -26,8 +26,8 @@ run_id = 'R001'
 
 volume_control = 10
 volume_sample = 300
-height_control = -10
-temperature = 10
+height_control = -20
+#temperature = 10
 x_offset = [0,0]
 
 #Screwcap variables
@@ -53,7 +53,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     #Folder and file_path for log time
     if not ctx.is_simulating():
-        folder_path = '/dvar/lib/jupyter/notebooks/'+run_id
+        folder_path = '/var/lib/jupyter/notebooks/'+run_id
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
         file_path = folder_path + '/StationA_homebrew_time_log.txt'
@@ -83,10 +83,10 @@ def run(ctx: protocol_api.ProtocolContext):
     Control_I = Reagent(name = 'Internal Control',
                      flow_rate_aspirate = 1,
                      flow_rate_dispense = 1,
-                     rinse = True,
+                     rinse = False,
                      delay = 0,
-                     reagent_reservoir_volume = 200,
-                     num_wells = 1,  # num_Wells max is 4
+                     reagent_reservoir_volume = 10*NUM_SAMPLES*1.1,
+                     num_wells = 1,
                      h_cono = (volume_cone * 3 / area_section_screwcap),
                      v_fondo = 50
                      )
@@ -326,10 +326,10 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multichannel(p20, reagent = Control_I, source = Control_I.reagent_reservoir,
             dest = d, vol=volume_control, air_gap_vol = air_gap_vol_ci,
             x_offset = x_offset, pickup_height = pickup_height, rinse = Control_I.rinse,
-            disp_height = height_control, blow_out = True, touch_tip = False)
-        #Drop tip and update counter
-        p20.drop_tip()
-        tip_track['counts'][p20]+=1
+            disp_height = height_control, blow_out = True, touch_tip = True)
+            #Drop tip and update counter
+            p20.drop_tip()
+            tip_track['counts'][p20]+=1
 
         #Time statistics
         end = datetime.now()
@@ -358,7 +358,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ############################################################################
     # Light flash end of program
     from opentrons.drivers.rpi_drivers import gpio
-    if not ctx.is_simulating():
+    #if not ctx.is_simulating():
         #os.system('mpg123 -f -14000 /var/lib/jupyter/notebooks/lionking.mp3')
     for i in range(3):
         gpio.set_rail_lights(False)
