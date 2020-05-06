@@ -1,8 +1,8 @@
 library(tidyr)
 library(dplyr)
+library(knitr)
 
-
-raw_data <- read_delim("Documents/2020_05_05_RUN_PROVA3_Presence%20Absence%20Result.csv", ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+raw_data <- read_delim("~Documents/2020_05_05_RUN_PROVA3_Presence%20Absence%20Result.csv", ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
 raw_data$pos<-raw_data$Well
 
 table1 <- raw_data %>%
