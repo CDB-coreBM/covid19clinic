@@ -1,4 +1,4 @@
-STATIC_IP = "169.254.123.123/16"
+STATIC_IP = "169.254.1.3/16"
 
 keyfile_contents = f"""\
 # This file was placed here by Opentrons Support to work around suspected issues with mDNS.

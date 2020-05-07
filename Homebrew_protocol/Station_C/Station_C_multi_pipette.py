@@ -1,6 +1,7 @@
 from opentrons import protocol_api
 from opentrons.drivers.rpi_drivers import gpio
 import numpy as np
+import math
 from timeit import default_timer as timer
 import json
 from datetime import datetime
@@ -43,6 +44,7 @@ extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 4  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
+num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 # Calculated variables
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
@@ -144,14 +146,15 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # pipettes
     p20 = ctx.load_instrument(
-        'p20_single_gen2', mount='right', tip_racks=tips20)
+        'p20_multi_gen2', mount='right', tip_racks=tips20)
     p300 = ctx.load_instrument(
         'p300_single_gen2', mount='left', tip_racks=tips200)
 
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
+    samples_multi = source_plate.rows()[0][:num_cols]
     pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
-
+    pcr_wells_multi = pcr_plate.rows()[0][:num_cols]
     # Divide destination wells in small groups for P300 pipette
     dests = list(divide_destinations(pcr_wells, size_transfer))
 
@@ -204,7 +207,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if STEPS[STEP]['Execute'] == True:
         # Transfer parameters
         start = datetime.now()
-        for s, d in zip(samples, pcr_wells):
+        for s, d in zip(samples_multi, pcr_wells_multi):
             p20.pick_up_tip()
             p20.transfer(volume_sample, s, d, new_tip='never')
             p20.mix(1, 10, d)
