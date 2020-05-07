@@ -241,7 +241,7 @@ def run(ctx: protocol_api.ProtocolContext):
             f2.write('pipette\ttip_count\n')
             for key in tip_track['counts'].keys():
                 row=str(key)
-                f.write(str(key)+'\t'+format(tip_track['counts'][key]))
+                f2.write(str(key)+'\t'+format(tip_track['counts'][key]))
         f2.close()
 
     # Set light color to green
