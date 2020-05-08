@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 47
+NUM_SAMPLES = 16
 air_gap_vol = 5
 air_gap_sample = 2
 
@@ -35,7 +35,7 @@ volume_sample = 5  # Volume of the sample
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 10  # Temperature of temp module
+temperature = 24  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
 
@@ -384,4 +384,4 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][m20] / 96))
 
     if ctx.is_simulating():
-        os.system('afplay -v 2 /Users/covid19warriors/Downloads/lionking.mp3 &')
+        os.system('afplay -v 3 /Users/covid19warriors/Downloads/lionking.mp3 &')
