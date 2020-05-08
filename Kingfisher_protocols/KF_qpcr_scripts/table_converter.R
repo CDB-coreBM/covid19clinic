@@ -14,13 +14,13 @@ table1 <- raw_data %>%
   select(-pos)
 
 #Reorder columns
-table1 <- table1[, c(2, 1, 4, 5, 6, 3)]
+table1 <- table1[, c(1, 2, 4, 5, 6, 3)]
 
 #Count number of genes not undetermined
 table1$pos_targets = rowSums(table1[,c('N gene','ORF1ab','S gene')] != 'Undetermined')
 
-table1 <- table1 %>% 
-  mutate(interpretation = case_when(    
+table1 <- table1 %>%
+  mutate(interpretation = case_when(
     Sample=='PC' ~ 'control',
     Sample=='NC' ~ 'control',
     MS2=='Undetermined' ~ 'No válido',
@@ -43,10 +43,3 @@ table(table1[table1$interpretation != 'control',]$interpretation, pos_targets = 
 #else: revisar
 
 #Tabla resumen (interpretacion)
-
-
-
-
-
-
-

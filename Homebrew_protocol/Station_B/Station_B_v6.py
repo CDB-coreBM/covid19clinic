@@ -792,7 +792,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 16 Transfer water
+    # STEP 16 Transfer water ( magnet == OFF)
     ############################################################################
 
     STEP += 1
