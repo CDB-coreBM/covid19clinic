@@ -35,7 +35,7 @@ height_MS = -35
 x_offset = [0, 0]
 
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
-volume_screw_one = 500  # Total volume of first screwcap
+volume_screw_one = 400  # Total volume of first screwcap
 
 # Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
@@ -111,7 +111,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse=True,
                     num_wells=4,
                     delay=2,
-                    reagent_reservoir_volume=260 * 96 * 1.1,
+                    reagent_reservoir_volume=260 * NUM_SAMPLES * 1.1,
                     h_cono=1.95,
                     v_fondo=695)  # Prismatic)
 
