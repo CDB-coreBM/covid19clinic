@@ -268,22 +268,23 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Wells in: '+ str(tuberack.rows()[0][:MMIX.num_wells]) + ' element: '+str(MMIX.reagent_reservoir[MMIX.col]))
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
-    pcr_wells = qpcr_plate.wells()[:NUM_SAMPLES]
-
+    samples_multi = source_plate.rows()[0][:num_cols]
+    pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
+    pcr_wells_multi = pcr_plate.rows()[0][:num_cols]
     # Divide destination wells in small groups for P300 pipette
     dests = list(divide_destinations(pcr_wells, size_transfer))
 
 
     # pipettes
-    p20 = ctx.load_instrument(
-        'p20_single_gen2', mount='right', tip_racks=tips20)
+    m20 = ctx.load_instrument(
+        'm20_multi_gen2', mount='right', tip_racks=tips20)
     p300 = ctx.load_instrument(
         'p300_single_gen2', mount='left', tip_racks=tips200)
 
     # used tip counter and set maximum tips available
     tip_track = {
         'counts': {p300: 0,
-                   p20: 0}
+                   m20: 0}
     }
 
     ############################################################################
@@ -323,15 +324,15 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         ctx.comment('pcr_wells')
         #Loop over defined wells
-        for s, d in zip(samples, pcr_wells):
-            p20.pick_up_tip()
+        for s, d in zip(samples_multi, pcr_wells_multi):
+            m20.pick_up_tip()
             #Source samples
-            move_vol_multichannel(p20, reagent = Samples, source = s, dest = d,
+            move_vol_multichannel(m20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_sample, x_offset = x_offset,
                    pickup_height = 0.2, disp_height = -10, rinse = False,
                    blow_out=True, touch_tip=False)
-            p20.drop_tip()
-            tip_track['counts'][p20]+=1
+            m20.drop_tip()
+            tip_track['counts'][m20]+=8
 
         end = datetime.now()
         time_taken = (end - start)
@@ -379,8 +380,8 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
 
     if STEPS[2]['Execute'] == True:
-        ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][p20]))
-        ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][p20] / 96))
+        ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][m20]))
+        ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][m20] / 96))
 
     if ctx.is_simulating():
         os.system('afplay -v 2 /Users/covid19warriors/Downloads/lionking.mp3 &')

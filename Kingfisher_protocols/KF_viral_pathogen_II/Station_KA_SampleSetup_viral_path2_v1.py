@@ -11,7 +11,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'S2 Station A Kingfisher Version 2',
-    'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
+    'author': 'Aitor Gastaminza, Eva González, José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for Kingfisher sample setup (A) - Pathogen Kit (ref 4462359)'
@@ -24,21 +24,29 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 48
+NUM_SAMPLES = 96
 air_gap_vol = 15
-
-volume_sample = 460
+volume_control = 5
+volume_sample = 200
+volume_buffer = 275 #(530ul buffer + 20ul beads)
+height_control = 20
+temperature = 25
 x_offset = [0,0]
 
 # Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
+#falcon
+diameter_falcon = 27
+h_cone_falcon = 17.4
+
 # Calculated variables
-area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
+area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
-screwcap_cross_section_area = math.pi * \
-    diameter_screwcap**2 / 4  # screwcap cross section area
+screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cross secion area
+falcon_cross_section_area = math.pi * diameter_falcon**2 / 4
+v_cone_falcon = 1/3*h_cone_falcon * falcon_cross_section_area
 
 
 def run(ctx: protocol_api.ProtocolContext):
@@ -46,7 +54,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Add samples (300ul)'},
+        1: {'Execute': True, 'description': 'Add samples (200ul)'},
+        2: {'Execute': True, 'description': 'Add internal control (5ul)'},
+        3: {'Execute': True, 'description': 'Add binding buffer + beads (275ul)'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -90,7 +100,32 @@ def run(ctx: protocol_api.ProtocolContext):
                       v_fondo = 4 * math.pi * 4**3 / 3
                       )  # Sphere
 
+    BeadsBuffer = Reagent(name = 'Buffer',
+                      flow_rate_aspirate = 1,
+                      flow_rate_dispense = 1,
+                      rinse = False,
+                      delay =2,
+                      reagent_reservoir_volume = 275*NUM_SAMPLES*1.1,
+                      num_wells = 1,  # num_Wells max is 4
+                      h_cono = h_cone_falcon,
+                      v_fondo = v_cone_falcon
+                      )
+
+    Control_I = Reagent(name = 'Internal Control',
+                     flow_rate_aspirate = 1,
+                     flow_rate_dispense = 1,
+                     rinse = True,
+                     delay = 0,
+                     reagent_reservoir_volume = 5*NUM_SAMPLES*1.1,
+                     num_wells = 1,  # num_Wells max is 4
+                     h_cono = h_cone,
+                     v_fondo = volume_cone
+                     )
+
+
     Samples.vol_well = 700
+    BeadsBuffer.vol_well = BeadsBuffer.vol_well_original
+    Control_I.vol_well = Control_I.vol_well_original
 
     ##################
     # Custom functions
@@ -222,12 +257,43 @@ def run(ctx: protocol_api.ProtocolContext):
     dest_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul', '5', 'KF 96well destination plate')
 
+    ############################################
+    # tempdeck
+    tempdeck = ctx.load_module('tempdeck', '7')
+    tempdeck.set_temperature(temperature)
+
+    ##################################
+    # Cooled reagents in tempdeck
+    reagents = tempdeck.load_labware(
+        'bloquealuminio_24_screwcap_wellplate_1500ul',
+        'cooled reagent tubes')
+    reagents = ctx.load_labware(
+        'bloquealuminio_24_screwcap_wellplate_1500ul', '3',
+        'cooled reagent tubes')
+    ############################################
+    # Buffer reservoir
+    buffer_res = ctx.load_labware(
+        'opentrons_6_tuberack_nest_50ml_conical', '1', 'buffer falcons')
+
+    ####################################
+    # Load tip_racks
+    tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
+               for slot in ['2', '8']]
+    tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
+        for slot in ['10','11']]
+
+
+    ##################################
+    # Tempdeck
+    dest_plate = ctx.load_labware(
+        'kf_96_wellplate_2400ul', '5', 'KF 96well destination plate')
+
     ####################################
     # Load tip_racks
     # tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
     # for slot in ['2', '8']]
     tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-                for slot in ['7', '10']]
+                for slot in ['10', '11']]
 
     ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate

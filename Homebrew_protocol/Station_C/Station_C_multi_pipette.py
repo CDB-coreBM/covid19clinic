@@ -24,7 +24,7 @@ REAGENT SETUP:
 """
 
 # Initial variables
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
 run_id = 'R001'
 
 # Tune variables
@@ -38,11 +38,11 @@ volume_sample = 5 #5.4  # Volume of the sample
 #volume_mmix = 24.6  # Volume of transfered master mix
 #volume_sample = 5.4  # Volume of the sample
 
-volume_screw_one = 285  # Total volume of first screwcap
-volume_screw_two = 0  # Total volume of second screwcap
+volume_screw_one = 800  # Total volume of first screwcap
+volume_screw_two = 800  # Total volume of second screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 4  # Temperature of temp module
+temperature = 25  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
@@ -99,7 +99,7 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/var/lib/jupyter/notebooks'+run_id
+    folder_path = '/var/lib/jupyter/notebooks/'+run_id
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
@@ -141,6 +141,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in ['6']
     ]
 
+
     # waste_pool = ctx.load_labware('nalgene_1_reservoir_300000ul', '11',
     # 'waste reservoir nalgene')
 
@@ -150,6 +151,11 @@ def run(ctx: protocol_api.ProtocolContext):
     p300 = ctx.load_instrument(
         'p300_single_gen2', mount='left', tip_racks=tips200)
 
+    # used tip counter and set maximum tips available
+    tip_track = {
+        'counts': {p300: 0, p20: 0},
+        'maxes': {p300: len(tips200)*96,p20:len(tips20)*96}
+    }
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
     samples_multi = source_plate.rows()[0][:num_cols]
@@ -196,6 +202,7 @@ def run(ctx: protocol_api.ProtocolContext):
                              area_section_screwcap - h_cone)
 
         p300.drop_tip()
+        tip_track['counts'][p300] += 8
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -213,6 +220,7 @@ def run(ctx: protocol_api.ProtocolContext):
             p20.mix(1, 10, d)
             p20.aspirate(5, d.top(2))
             p20.drop_tip()
+            tip_track['counts'][p20] += 8
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
@@ -233,7 +241,7 @@ def run(ctx: protocol_api.ProtocolContext):
             f2.write('pipette\ttip_count\n')
             for key in tip_track['counts'].keys():
                 row=str(key)
-                f.write(str(key)+'\t'+format(tip_track['counts'][key]))
+                f2.write(str(key)+'\t'+format(tip_track['counts'][key]))
         f2.close()
 
     # Set light color to green

@@ -792,7 +792,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 16 Transfer water
+    # STEP 16 Transfer water ( magnet == OFF)
     ############################################################################
 
     STEP += 1
@@ -804,7 +804,7 @@ def run(ctx: protocol_api.ProtocolContext):
         water_wash_vol = [50]
         air_gap_vol_water = 10
         x_offset_w = -1.1
-        magdeck.engage(height=17)
+        #magdeck.engage(height=17)
         ########
         # Water or elution buffer
         for i in range(num_cols):
