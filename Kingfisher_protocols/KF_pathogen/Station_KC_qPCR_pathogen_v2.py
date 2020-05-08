@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 47
 air_gap_vol = 5
 air_gap_sample = 2
 
@@ -35,7 +35,7 @@ volume_sample = 5  # Volume of the sample
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 24  # Temperature of temp module
+temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
 
@@ -94,7 +94,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume = volume_mmix_available,
-                      num_wells = 1, #changes with num samples
+                      num_wells = 1, #change with num samples
                       delay = 0,
                       h_cono = h_cone,
                       v_fondo = volume_cone  # V cono
