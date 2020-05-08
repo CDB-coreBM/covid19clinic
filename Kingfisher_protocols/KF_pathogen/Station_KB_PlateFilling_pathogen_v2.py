@@ -24,7 +24,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 48
+NUM_SAMPLES = 47
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5
 
@@ -82,7 +82,7 @@ def run(ctx: protocol_api.ProtocolContext):
                           flow_rate_dispense=1,
                           rinse=True,
                           delay=2,
-                          reagent_reservoir_volume=70000,
+                          reagent_reservoir_volume=100000,
                           num_wells=1,
                           h_cono=0,
                           v_fondo=0)  # Flat surface
@@ -102,7 +102,7 @@ def run(ctx: protocol_api.ProtocolContext):
                             flow_rate_dispense=1,
                             rinse=False,
                             delay=0,
-                            reagent_reservoir_volume=50*NUM_SAMPLES,
+                            reagent_reservoir_volume=50*NUM_SAMPLES*1.1,
                             num_wells=1,
                             h_cono=1.95,
                             v_fondo=695)  # Prismatic
