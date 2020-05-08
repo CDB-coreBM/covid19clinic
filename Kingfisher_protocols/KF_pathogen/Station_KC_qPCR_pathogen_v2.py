@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 56
+NUM_SAMPLES = 47
 air_gap_vol = 5
 air_gap_sample = 2
 
@@ -269,15 +269,15 @@ def run(ctx: protocol_api.ProtocolContext):
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
     samples_multi = source_plate.rows()[0][:num_cols]
-    pcr_wells = pcr_plate.wells()[:NUM_SAMPLES]
-    pcr_wells_multi = pcr_plate.rows()[0][:num_cols]
+    pcr_wells = qpcr_plate.wells()[:NUM_SAMPLES]
+    pcr_wells_multi = qpcr_plate.rows()[0][:num_cols]
     # Divide destination wells in small groups for P300 pipette
     dests = list(divide_destinations(pcr_wells, size_transfer))
 
 
     # pipettes
     m20 = ctx.load_instrument(
-        'm20_multi_gen2', mount='right', tip_racks=tips20)
+        'p20_multi_gen2', mount='right', tip_racks=tips20)
     p300 = ctx.load_instrument(
         'p300_single_gen2', mount='left', tip_racks=tips200)
 
