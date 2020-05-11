@@ -3,7 +3,7 @@ import string
 import os
 
 input_file = "/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/qpcr_kf_template.txt"
-out_file = "/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/qpcr_kf_file_test2.txt"
+out_file = "/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/qpcr_kf_file_test4.txt"
 
 #Read the excel file from the run and obtain the dictionary of samples
 #df = pd.read_excel (r'/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/COREBM/OPENTRONS/RUNS/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls',
