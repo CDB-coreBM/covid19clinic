@@ -1,7 +1,7 @@
 ---
-title: "Kingfisher results"
+title: "Kingfisher results test 4"
 author: "JL Villanueva"
-date: "5/6/2020"
+date: "2020_05_08"
 output: html_document
 ---
 
@@ -13,9 +13,10 @@ library(knitr)
 library(readr)
 library(kableExtra)
 
-raw_data <- read_delim("~/Documents/2020_05_05_RUN_PROVA3_Presence%20Absence%20Result.csv", ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+raw_data <- read_delim("~/Documents/2020_05_08_RUN_PROVA4A_Presence%20Absence%20Result.csv", ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
 
 raw_data$pos<-raw_data$Well
+raw_data[raw_data$Cq != "Undetermined",]$Cq <- format(round(as.numeric(raw_data[raw_data$Cq != "Undetermined",]$Cq),digits=2))
 
 table1 <- raw_data %>%
   select(`Well Position`, Sample,Target,Cq, pos) %>%
@@ -37,10 +38,11 @@ table1 <- table1 %>%
     Sample=='NC' ~ 'control',
     MS2=='Undetermined' ~ 'No válido',
     pos_targets >=2 ~ 'Positivo',
-    MS2!='Undetermined' && pos_targets == 0 ~ 'Indetectable',
-
+    MS2!='Undetermined' & pos_targets == 0 ~ 'Indetectable',
     TRUE ~ 'revisar'
-  ))
+  )) %>%
+   mutate(interpretation = cell_spec(interpretation, "html", color = ifelse(interpretation == "revisar", "red", "black")))
+
 
 summary_table <- table(table1[table1$interpretation != 'control',]$interpretation, pos_targets = table1[table1$interpretation != 'control',]$pos_targets)
 
@@ -52,12 +54,14 @@ Texto de ejemplo. Podemos poner una breve descripción.
 ## Summary
 Resumen de interpretación según número de targets positivos
 ```{r tables, echo=FALSE}
-kable(summary_table)
+kable(summary_table,format="html", escape= F)%>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+  add_header_above(c("Resultado" =1,'Número de targets' =4))
 ```
 
 ## Tabla resultados
 ```{r tables2, echo=FALSE}
-kable(table1,digits=2) %>%
+kable(table1,format="html", escape= F) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
