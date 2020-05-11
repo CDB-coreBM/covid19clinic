@@ -10,21 +10,25 @@ import csv
 
 # metadata
 metadata = {
-    'protocolName': 'S2 Station Kingfisher Version 2',
+    'protocolName': 'S2 Station A Kingfisher Version 2',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for Kingfisher sample setup (A) - Pathogen Kit (ref 4462359)'
-    'technician': $technician,
-    'data': $date
 }
+
+'''
+'technician': '$technician',
+'date': '$date'
+'''
 
 #Defined variables
 ##################
-NUM_SAMPLES = $num_samples
+NUM_SAMPLES = 56
 air_gap_vol = 15
 
 volume_sample = 460
+x_offset = [0,0]
 
 # Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
@@ -101,29 +105,66 @@ def run(ctx: protocol_api.ProtocolContext):
                 s = s + source[rack_number].wells()
         return s
 
-    def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height):
+    def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
+                       pickup_height, rinse, disp_height, blow_out, touch_tip):
         '''
-        Function for mix in the same location a certain number of rounds. Blow out optional
+        x_offset: list with two values. x_offset in source and x_offset in destination i.e. [-1,1]
+        pickup_height: height from bottom where volume
+        rinse: if True it will do 2 rounds of aspirate and dispense before the tranfer
+        disp_height: dispense height; by default it's close to the top (z=-2), but in case it is needed it can be lowered
+        blow_out, touch_tip: if True they will be done after dispensing
+        '''
+        # Rinse before aspirating
+        if rinse == True:
+            custom_mix(pipet, reagent, location = source, vol = vol,
+                       rounds = 2, blow_out = True, mix_height = 0,
+                       x_offset = x_offset)
+        # SOURCE
+        s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
+        pipet.aspirate(vol, s)  # aspirate liquid
+        if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
+            pipet.aspirate(air_gap_vol, source.top(z = -2),
+                           rate = reagent.flow_rate_aspirate)  # air gap
+        # GO TO DESTINATION
+        drop = dest.top(z = disp_height).move(Point(x = x_offset[1]))
+        pipet.dispense(vol + air_gap_vol, drop,
+                       rate = reagent.flow_rate_dispense)  # dispense all
+        ctx.delay(seconds = reagent.delay) # pause for x seconds depending on reagent
+        if blow_out == True:
+            pipet.blow_out(dest.top(z = -2))
+        if touch_tip == True:
+            pipet.touch_tip(speed = 20, v_offset = -5)
+
+
+    def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
+    x_offset, source_height = 3):
+        '''
+        Function for mixing a given [vol] in the same [location] a x number of [rounds].
+        blow_out: Blow out optional [True,False]
+        x_offset = [source, destination]
+        source_height: height from bottom to aspirate
+        mix_height: height from bottom to dispense
         '''
         if mix_height == 0:
             mix_height = 3
         pipet.aspirate(1, location=location.bottom(
-            z=3), rate=reagent.flow_rate_aspirate)
+            z=source_height).move(Point(x=x_offset[0])), rate=reagent.flow_rate_aspirate)
         for _ in range(rounds):
             pipet.aspirate(vol, location=location.bottom(
-                z=3), rate=reagent.flow_rate_aspirate)
+                z=source_height).move(Point(x=x_offset[0])), rate=reagent.flow_rate_aspirate)
             pipet.dispense(vol, location=location.bottom(
-                z=mix_height), rate=reagent.flow_rate_dispense)
+                z=mix_height).move(Point(x=x_offset[1])), rate=reagent.flow_rate_dispense)
         pipet.dispense(1, location=location.bottom(
-            z=mix_height), rate=reagent.flow_rate_dispense)
+            z=mix_height).move(Point(x=x_offset[1])), rate=reagent.flow_rate_dispense)
         if blow_out == True:
             pipet.blow_out(location.top(z=-2))  # Blow out
 
-    def calc_height(reagent, cross_section_area, aspirate_volume):
+    def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.5):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
                     '< needed volume ' + str(aspirate_volume) + '?')
         if reagent.vol_well < aspirate_volume:
+            reagent.unused.append(reagent.vol_well)
             ctx.comment('Next column should be picked')
             ctx.comment('Previous to change: ' + str(reagent.col))
             # column selector position; intialize to required number
@@ -131,44 +172,22 @@ def run(ctx: protocol_api.ProtocolContext):
             ctx.comment(str('After change: ' + str(reagent.col)))
             reagent.vol_well = reagent.vol_well_original
             ctx.comment('New volume:' + str(reagent.vol_well))
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area
+                    #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Remaining volume:' + str(reagent.vol_well))
-            if height < 0.5:
-                height = 0.5
+            if height < min_height:
+                height = min_height
             col_change = True
         else:
-            height = (reagent.vol_well - aspirate_volume -
-                      reagent.v_cono) / cross_section_area - reagent.h_cono
+            height = (reagent.vol_well - aspirate_volume - reagent.v_cono) / cross_section_area #- reagent.h_cono
             reagent.vol_well = reagent.vol_well - aspirate_volume
             ctx.comment('Calculated height is ' + str(height))
-            if height < 0.5:
-                height = 0.5
+            if height < min_height:
+                height = min_height
             ctx.comment('Used height is ' + str(height))
             col_change = False
         return height, col_change
-
-    def move_vol_multi(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
-                       pickup_height, drop_height, rinse):
-        # Rinse before aspirating
-        if rinse == True:
-            custom_mix(pipet, reagent, location=source, vol=vol,
-                       rounds=2, blow_out=True, mix_height=0)
-        # SOURCE
-        s = source.bottom(pickup_height).move(Point(x=x_offset))
-        pipet.aspirate(vol, s)  # aspirate liquid
-        if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
-            pipet.aspirate(air_gap_vol, source.top(z=-2),
-                           rate=reagent.flow_rate_aspirate)  # air gap
-        # GO TO DESTINATION
-        if drop_height != 0:
-            drop = dest.bottom(z=drop_height)
-        else:
-            drop = dest.top(z=-2)
-        pipet.dispense(vol + air_gap_vol, drop,
-                       rate=reagent.flow_rate_dispense)  # dispense all
-        pipet.blow_out(dest.top(z=-2))
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -242,13 +261,14 @@ def run(ctx: protocol_api.ProtocolContext):
         for s, d in zip(sample_sources, destinations):
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
-            # Mix the sample before dispensing
+            # Mix the sample BEFORE dispensing
             #custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
-            move_vol_multi(p1000, reagent=Samples, source=s, dest=d,
-                           vol=volume_sample, air_gap_vol=air_gap_vol, x_offset=0,
-                           pickup_height=1, drop_height=0, rinse=False)
+            move_vol_multichannel(p1000, reagent = Samples, source = s, dest = d,
+            vol=volume_sample, air_gap_vol = air_gap_vol, x_offset = x_offset,
+                               pickup_height = 1, rinse = Samples.rinse, disp_height = -10,
+                               blow_out = True, touch_tip = True)
+            # Mix the sample AFTER dispensing
             #custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
-            p1000.touch_tip(speed=20, v_offset=-5)
             # Drop tip and update counter
             p1000.drop_tip()
             tip_track['counts'][p1000] += 1

@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import string
 KF_path = '/home/jl/Documentos/code/covid19clinic/Test/KF_config/'
-OT_path = '/home/jl/Documentos/code/covid19clinic/Test/OT_config/'
+HC_path = '/home/jl/Documentos/code/covid19clinic/Test/HC_config/'
 main_path = '/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/'
 excel = main_path + '/barcode_template/muestras.xlsx'
 # Funtion to distinguish between OT and KF protocols
@@ -89,7 +89,7 @@ def main():
     dia_registro=fecha.strftime("%Y_%m_%d")
 
     # select the type of protocol to be run
-    [protocol,protocol_path]=select_protocol_type(KF_path, OT_path)
+    [protocol,protocol_path]=select_protocol_type(KF_path, HC_path)
     #determine output path
     final_path=os.path.join(main_path+'RUNS/',str(dia_registro)+'_OT'+str(id)+'_'+protocol)
 
@@ -106,7 +106,7 @@ def main():
             fin.close()
             final_protocol=rep_data(num_samples, tec_name, t_registro, data) #replace data
             position=file.find('_',12) # find _ position after the name and get value
-            filename=str(dia_registro)+'_'+file[:position]+'_'+str(id)+'.py' # assign a filename date + station name + id
+            filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.py' # assign a filename date + station name + id
             fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
             fout.write(final_protocol)
             fout.close()
