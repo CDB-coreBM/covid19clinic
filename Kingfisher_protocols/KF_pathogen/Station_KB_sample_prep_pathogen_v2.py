@@ -59,9 +59,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Mix beads'},
+        1: {'Execute': False, 'description': 'Mix beads'},
         2: {'Execute': True, 'description': 'Transfer beads'},
-        3: {'Execute': True, 'description': 'Add MS2'}
+        3: {'Execute': False, 'description': 'Add MS2'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -327,8 +327,8 @@ def run(ctx: protocol_api.ProtocolContext):
             for j, transfer_vol in enumerate(beads_transfer_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
-                    regent = Beads, cross_section_area = multi_well_rack_area,
-                    aspirate_volume = transfer_vol * 8)
+                    reagent = Beads, cross_section_area = multi_well_rack_area,
+                    aspirate_volume = transfer_vol * 8, min_height=1)
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
@@ -338,6 +338,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 ctx.comment(
                     'Aspirate from reservoir column: ' + str(Beads.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
+
                 if j != 0:
                     rinse = False
                 move_vol_multichannel(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
