@@ -19,10 +19,10 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 47
 air_gap_vol_ci = 2
 air_gap_vol_sample = 5
-run_id = 'R001'
+run_id = 'R002'
 
 volume_control = 10
 volume_sample = 300
