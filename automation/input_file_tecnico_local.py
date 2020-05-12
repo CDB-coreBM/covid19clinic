@@ -5,11 +5,10 @@ from datetime import datetime
 import os
 import pandas as pd
 import string
-KF_path = '/home/jl/Documentos/code/covid19clinic/Test/KF_config/'
-HC_path = '/home/jl/Documentos/code/covid19clinic/Test/HC_config/'
+KF_path = '/home/jl/Documentos/code/covid19clinic/automation/KF_config/'
+HC_path = '/home/jl/Documentos/code/covid19clinic/automation/HC_config/'
 main_path = '/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/'
 excel = main_path + '/barcode_template/muestras.xlsx'
-
 # Funtion to distinguish between OT and KF protocols
 def select_protocol_type(p1, p2):
     ff=False
@@ -25,7 +24,7 @@ def select_protocol_type(p1, p2):
             ff=True
         else:
             print('Please, try again')
-    return pr,p
+    return pr, p
 
 def rep_data(n, name, f, d):
     d=d.replace('$num_samples', str(n))
@@ -63,10 +62,7 @@ def main():
             print('Número de muestras debe ser un número entre 1 y 96')
     print('El número de muestras registradas en el excel es: '+str(num_samples_control))
     if num_samples_control!=num_samples:
-        print('Error: El número de muestras entre excel y reportado no coincide')
-        exit()
-    else:
-        print('El número de muestras coincide')
+        exit('Error: El número de muestras no coincide con el reportado en excel')
 
     # Get technician name
     control=False
@@ -100,6 +96,8 @@ def main():
     if not os.path.isdir(final_path):
         os.mkdir(final_path)
         os.mkdir(final_path+'/scripts')
+        os.mkdir(final_path+'/results')
+        os.mkdir(final_path+'/logs')
         os.system('cp ' + excel +' '+ final_path+'/OT'+str(id)+'_samples.xlsx')
 
     for file in os.listdir(protocol_path): # look for all protocols in folder
