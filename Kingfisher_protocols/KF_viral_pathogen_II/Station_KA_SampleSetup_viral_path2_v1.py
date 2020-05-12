@@ -26,9 +26,9 @@ metadata = {
 ##################
 NUM_SAMPLES = 96
 air_gap_vol = 15
-volume_control = 5
-volume_sample = 200
-volume_buffer = 275 #(530ul buffer + 20ul beads)
+volume_control = 10
+volume_sample = 400
+volume_buffer = 550 #(530ul buffer + 20ul beads)
 height_control = 20
 temperature = 25
 x_offset = [0,0]
@@ -54,9 +54,10 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Add samples (200ul)'},
-        2: {'Execute': True, 'description': 'Add internal control (5ul)'},
-        3: {'Execute': True, 'description': 'Add binding buffer + beads (275ul)'}
+        1: {'Execute': True, 'description': 'Add samples (400ul)'},
+        2: {'Execute': True, 'description': 'Add internal control (10ul)'},
+        3: {'Execute': True, 'description': 'Premix beads (800ul)'},
+        4: {'Execute': True, 'description': 'Add binding buffer + beads (550ul)'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -100,11 +101,11 @@ def run(ctx: protocol_api.ProtocolContext):
                       v_fondo = 4 * math.pi * 4**3 / 3
                       )  # Sphere
 
-    BeadsBuffer = Reagent(name = 'Buffer',
+    Beads = Reagent(name = 'Buffer',
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       rinse = False,
-                      delay =2,
+                      delay =0,
                       reagent_reservoir_volume = 275*NUM_SAMPLES*1.1,
                       num_wells = 1,  # num_Wells max is 4
                       h_cono = h_cone_falcon,
@@ -114,7 +115,7 @@ def run(ctx: protocol_api.ProtocolContext):
     Control_I = Reagent(name = 'Internal Control',
                      flow_rate_aspirate = 1,
                      flow_rate_dispense = 1,
-                     rinse = True,
+                     rinse = False,
                      delay = 0,
                      reagent_reservoir_volume = 5*NUM_SAMPLES*1.1,
                      num_wells = 1,  # num_Wells max is 4
@@ -124,7 +125,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
 
     Samples.vol_well = 700
-    BeadsBuffer.vol_well = BeadsBuffer.vol_well_original
+    Beads.vol_well = Beads.vol_well_original
     Control_I.vol_well = Control_I.vol_well_original
 
     ##################
@@ -257,43 +258,28 @@ def run(ctx: protocol_api.ProtocolContext):
     dest_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul', '5', 'KF 96well destination plate')
 
-    ############################################
-    # tempdeck
-    tempdeck = ctx.load_module('tempdeck', '7')
-    tempdeck.set_temperature(temperature)
-
     ##################################
-    # Cooled reagents in tempdeck
-    reagents = tempdeck.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul',
-        'cooled reagent tubes')
+    # Cooled reagents in aluminium opentrons blocks
     reagents = ctx.load_labware(
-        'bloquealuminio_24_screwcap_wellplate_1500ul', '3',
-        'cooled reagent tubes')
+        'opentrons_24_aluminumblock_generic_2ml_screwcap', '7',
+        'cooled internal control tube')
     ############################################
     # Buffer reservoir
     buffer_res = ctx.load_labware(
-        'opentrons_6_tuberack_nest_50ml_conical', '1', 'buffer falcons')
+        'opentrons_6_tuberack_nest_50ml_conical', '2', 'buffer falcons')
 
     ####################################
     # Load tip_racks
     tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
-               for slot in ['2', '8']]
+               for slot in ['8']]
     tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
         for slot in ['10','11']]
-
 
     ##################################
     # Tempdeck
     dest_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul', '5', 'KF 96well destination plate')
 
-    ####################################
-    # Load tip_racks
-    # tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
-    # for slot in ['2', '8']]
-    tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
-                for slot in ['10', '11']]
 
     ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
@@ -303,15 +289,15 @@ def run(ctx: protocol_api.ProtocolContext):
     sample_sources = sample_sources_full[:NUM_SAMPLES]
     destinations = dest_plate.wells()[:NUM_SAMPLES]
 
-    # p20 = ctx.load_instrument(
-    # 'p20_single_gen2', mount='right', tip_racks=tips20)
+    p20 = ctx.load_instrument(
+    'p20_single_gen2', mount='right', tip_racks=tips20)
     p1000 = ctx.load_instrument(
         'p1000_single_gen2', 'left', tip_racks=tips1000)  # load P1000 pipette
 
     # used tip counter and set maximum tips available
     tip_track = {
-        'counts': {p1000: 0},  # p1000: 0},
-        'maxes': {p1000: len(tips1000) * 96}  # ,p20: len(tips20)*96,
+        'counts': {p1000: 0, p20: 0},  # p1000: 0},
+        'maxes': {p1000: len(tips1000) * 96 ,p20: len(tips20)*96,
     }
 
     ############################################################################
@@ -335,6 +321,107 @@ def run(ctx: protocol_api.ProtocolContext):
                                blow_out = True, touch_tip = True)
             # Mix the sample AFTER dispensing
             #custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            # Drop tip and update counter
+            p1000.drop_tip()
+            tip_track['counts'][p1000] += 1
+
+        # Time statistics
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+                    ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    # Export the time log to a tsv file
+    if not ctx.is_simulating():
+        with open(file_path, 'w') as f:
+            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
+            for key in STEPS.keys():
+                row = str(key)
+                for key2 in STEPS[key].keys():
+                    row += '\t' + format(STEPS[key][key2])
+                f.write(row + '\n')
+        f.close()
+
+    ############################################################################
+    # STEP 2: Transfer Internal Control
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        # Transfer parameters
+        start = datetime.now()
+        for d in work_destinations:
+            if not p20.hw_pipette['has_tip']:
+                pick_up(p20)
+            # Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(
+                Control_I, screwcap_cross_section_area, MS_vol)
+            move_vol_multichannel(p20, reagent = Control_I, source = Control_I.reagent_reservoir[Control_I.col],
+                                  dest = d, vol = volume_control, air_gap_vol = air_gap_vol,
+                                  x_offset = x_offset, pickup_height = pickup_height,
+                                  rinse = False, disp_height = height_control, blow_out = True,
+                                  touch_tip = True)
+            # Drop tip and update counter
+            p20.drop_tip()
+            tip_track['counts'][p20] += 1
+
+        # Time statistics
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+                    ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    ############################################################################
+    # STEP 3: PREMIX BEADS
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+
+        start = datetime.now()
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+        if not p1000.hw_pipette['has_tip']:
+            pick_up(p1000)
+            ctx.comment('Tip picked up')
+        ctx.comment('Mixing ' + Beads.name)
+
+        # Mixing
+        custom_mix(p1000, Beads, Beads.vol_well_original, vol=800,
+                   rounds=10, blow_out=True, mix_height=0, x_offset = x_offset)
+        ctx.comment('Finished premixing!')
+        ctx.comment('Now, reagents will be transferred to deepwell plate.')
+
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' +
+                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    ############################################################################
+    # STEP 4: TRANSFER BEADS
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        # Transfer parameters
+        start = datetime.now()
+        for d in destinations:
+            if not p1000.hw_pipette['has_tip']:
+                pick_up(p1000)
+            # Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(
+                beads, falcon_cross_section_area, volume_buffer)
+            move_vol_multichannel(p1000, reagent = Beads, source = Beads.vol_well,
+                                  dest = d, vol = volume_buffer, air_gap_vol = air_gap_vol,
+                                  x_offset = x_offset, pickup_height = pickup_height,
+                                  rinse = False, disp_height = height_control, blow_out = True,
+                                  touch_tip = True)
             # Drop tip and update counter
             p1000.drop_tip()
             tip_track['counts'][p1000] += 1
