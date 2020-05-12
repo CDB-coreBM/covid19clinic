@@ -3,6 +3,7 @@ from opentrons.types import Point
 from opentrons import protocol_api
 import time
 import os
+import numpy as np
 from timeit import default_timer as timer
 import json
 from datetime import datetime
@@ -59,6 +60,7 @@ def run(ctx: protocol_api.ProtocolContext):
         3: {'Execute': True, 'description': 'Premix beads (800ul)'},
         4: {'Execute': True, 'description': 'Add binding buffer + beads (550ul)'}
     }
+
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
@@ -275,12 +277,6 @@ def run(ctx: protocol_api.ProtocolContext):
     tips1000 = [ctx.load_labware('opentrons_96_filtertiprack_1000ul', slot, '1000µl filter tiprack')
         for slot in ['10','11']]
 
-    ##################################
-    # Tempdeck
-    dest_plate = ctx.load_labware(
-        'kf_96_wellplate_2400ul', '5', 'KF 96well destination plate')
-
-
     ################################################################################
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
 
@@ -290,14 +286,14 @@ def run(ctx: protocol_api.ProtocolContext):
     destinations = dest_plate.wells()[:NUM_SAMPLES]
 
     p20 = ctx.load_instrument(
-    'p20_single_gen2', mount='right', tip_racks=tips20)
+        'p20_single_gen2', mount='right', tip_racks=tips20)
     p1000 = ctx.load_instrument(
         'p1000_single_gen2', 'left', tip_racks=tips1000)  # load P1000 pipette
 
     # used tip counter and set maximum tips available
     tip_track = {
         'counts': {p1000: 0, p20: 0},  # p1000: 0},
-        'maxes': {p1000: len(tips1000) * 96 ,p20: len(tips20)*96,
+        'maxes': {p1000: len(tips1000) * 96 ,p20: len(tips20)*96}
     }
 
     ############################################################################
@@ -307,6 +303,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if STEPS[STEP]['Execute'] == True:
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
+
 
         # Transfer parameters
         start = datetime.now()
@@ -353,13 +350,13 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        for d in work_destinations:
+        for d in destinations:
             if not p20.hw_pipette['has_tip']:
                 pick_up(p20)
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(
-                Control_I, screwcap_cross_section_area, MS_vol)
-            move_vol_multichannel(p20, reagent = Control_I, source = Control_I.reagent_reservoir[Control_I.col],
+                Control_I, screwcap_cross_section_area, volume_control)
+            move_vol_multichannel(p20, reagent = Control_I, source = Control_I.reagent_reservoir_volume[Control_I.col],
                                   dest = d, vol = volume_control, air_gap_vol = air_gap_vol,
                                   x_offset = x_offset, pickup_height = pickup_height,
                                   rinse = False, disp_height = height_control, blow_out = True,

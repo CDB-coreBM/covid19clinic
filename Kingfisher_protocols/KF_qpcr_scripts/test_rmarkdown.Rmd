@@ -1,7 +1,7 @@
 ---
-title: "Kingfisher results test 4"
+title: "Kingfisher results OT1"
 author: "JL Villanueva"
-date: "2020_05_08"
+date: "2020_05_12"
 output: html_document
 ---
 
@@ -13,8 +13,12 @@ library(knitr)
 library(readr)
 library(kableExtra)
 
+<<<<<<< HEAD
 run="2020_05_12_OT1_KF"
 raw_data <- read_delim(paste0("/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/",run,'/results/2020_05_12_R1_Presence_Absence_Result.csv'), ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+=======
+raw_data <- read_delim("~/Documents/2020_05_12_R1_Presence_Absence_Result.csv", ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+>>>>>>> 31dc6b660ade444830f2d801b07bab485fd4d7e4
 
 raw_data$pos<-raw_data$Well
 raw_data[raw_data$Cq != "Undetermined",]$Cq <- format(round(as.numeric(raw_data[raw_data$Cq != "Undetermined",]$Cq),digits=2))
@@ -56,8 +60,7 @@ Texto de ejemplo. Podemos poner una breve descripción.
 Resumen de interpretación según número de targets positivos
 ```{r tables, echo=FALSE}
 kable(summary_table,format="html", escape= F)%>%
-  kable_styling(bootstrap_options = c("striped", "hover")) %>%
-  add_header_above(c("Resultado" =1,'Número de targets' =4))
+  kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
 ## Tabla resultados
