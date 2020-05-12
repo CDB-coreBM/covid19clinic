@@ -26,7 +26,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 48
+NUM_SAMPLES = 96
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
@@ -298,7 +298,8 @@ def run(ctx: protocol_api.ProtocolContext):
                 pick_up(p20)
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(
-                MS, screwcap_cross_section_area, MS_vol)
+                reagent = MS, cross_section_area = screwcap_cross_section_area,
+                aspirate_volume = MS_vol, min_height=1)
             move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
                                   dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS,
                                   x_offset = x_offset, pickup_height = pickup_height,
@@ -358,7 +359,8 @@ def run(ctx: protocol_api.ProtocolContext):
             for j, transfer_vol in enumerate(beads_transfer_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
-                    Beads, multi_well_rack_area, transfer_vol * 8)
+                    regent = Beads, cross_section_area = multi_well_rack_area,
+                    aspirate_volume = transfer_vol * 8)
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))

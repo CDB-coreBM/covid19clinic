@@ -25,7 +25,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 47
+NUM_SAMPLES = 95
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5
 
@@ -42,7 +42,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
         1: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 1'},
         2: {'Execute': True, 'description': 'Add 300 ul Wash Buffer 1 - Round 2'},
-        3: {'Execute': True, 'description': 'Add 500 ul Wash Buffer 2 - Round 1'},
+        3: {'Execute': True, 'description': 'Add 450 ul Wash Buffer 2 - Round 1'},
         4: {'Execute': True, 'description': 'Add 450 ul Wash Buffer 2 - Round 2'},
         5: {'Execute': True, 'description': 'Add 50 ul Elution Buffer'},
     }
