@@ -17,13 +17,13 @@ metadata = {
     'apiLevel': '2.0',
     'description': 'Protocol for RNA extraction preparation for ThermoFisher Pathogen kit (ref 4462359) \
     setup - sample + beads + buffer preparation'
-    'technician': $technician,
-    'data': $date
+    'technician': 'pepin',
+    'data': '05/11/2020, 17:05:29'
 }
 
 #Defined variables
 ##################
-NUM_SAMPLES = $num_samples
+NUM_SAMPLES = 8
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2

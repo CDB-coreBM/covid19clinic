@@ -5,19 +5,20 @@ from datetime import datetime
 import os
 import pandas as pd
 import string
-KF_path='/home/jl/Documentos/code/covid19clinic/Test/KF_config/'
-OT_path='/home/jl/Documentos/code/covid19clinic/Test/OT_config/'
-
+KF_path = '/home/jl/Documentos/code/covid19clinic/Test/KF_config/'
+HC_path = '/home/jl/Documentos/code/covid19clinic/Test/HC_config/'
+main_path = '/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/'
+excel = main_path + '/barcode_template/muestras.xlsx'
 # Funtion to distinguish between OT and KF protocols
-def select_protocol_type(p1,p2):
+def select_protocol_type(p1, p2):
     ff=False
     while ff==False:
-        protocol=input('Input type of test you would like to run: \nCustom protocol (OT) or Kingfisher (KF) \nProtocol type: ')
+        protocol=input('Introducir protocolo: \nCustom protocol (HC) o Kingfisher (KF) \nProtocolo: ')
         if protocol=='KF':
             pr=protocol
             p=p1
             ff=True
-        elif protocol=='OT':
+        elif protocol=='HC':
             pr=protocol
             p=p2
             ff=True
@@ -25,10 +26,10 @@ def select_protocol_type(p1,p2):
             print('Please, try again')
     return pr,p
 
-def rep_data(n,name,f,d):
-    d=d.replace('$num_samples',str(n))
-    d=d.replace('$technician','\''+str(name)+'\'')
-    d=d.replace('$date','\''+str(f)+'\'')
+def rep_data(n, name, f, d):
+    d=d.replace('$num_samples', str(n))
+    d=d.replace('$technician', '\'' + str(name) + '\'')
+    d=d.replace('$date', '\'' + str(f) + '\'')
     return d
 
 ###############################################################################
@@ -36,7 +37,7 @@ def main():
 
     # Read the excel file from the run and obtain the dictionary of samples
     # muestras.xlsx
-    df = pd.read_excel (r'/home/jl/Documentos/code/covid19clinic/Test/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls',
+    df = pd.read_excel (excel,
      sheet_name='Deepwell layout', header = None, index_col = 0)
     df = df.iloc[1:]
     df_dict = df.to_dict('index')
@@ -51,19 +52,21 @@ def main():
         if elem != 0:
             num_samples_control += 1
 
-    print('Number of samples registered in control excel file: '+str(num_samples_control))
-
-    control=False
     # Get sample data from user
+    control=False
     while control==False:
-        num_samples = int(input('Numero de muestras a declarar: '))
+        num_samples = int(input('Número de muestras a procesar (incluidos PC + NC): '))
         if (num_samples>0 and num_samples<=96):
             control=True
         else:
-            print('Sample number must be between 1 and 96')
+            print('Número de muestras debe ser un número entre 1 y 96')
+    print('El número de muestras registradas en el excel es: '+str(num_samples_control))
+    if num_samples_control!=num_samples:
+        print('Error: El número de muestras entre excel y reportado no coincide')
+        exit()
 
-    control=False
     # Get technician name
+    control=False
     while control==False:
         tec_name = (input('Nombre del técnico: '))
         if isinstance(tec_name, str):
@@ -71,29 +74,30 @@ def main():
         else:
             print('Introduzca el nombre, por favor')
 
-    control=False
-
     # Get run session ID
+    control=False
     while control==False:
         id = int(input('ID run: '))
         if isinstance(id,int):
             control=True
         else:
-            print('Please, assign a numeric ID for this run')
+            print('Por favor, assignar un ID numérico para éste RUN')
+
     # Get date
     fecha=datetime.now()
     t_registro=fecha.strftime("%m/%d/%Y, %H:%M:%S")
-    dia_registro=fecha.strftime("%m_%d_%Y")
+    dia_registro=fecha.strftime("%Y_%m_%d")
 
     # select the type of protocol to be run
-    [protocol,protocol_path]=select_protocol_type(KF_path, OT_path)
+    [protocol,protocol_path]=select_protocol_type(KF_path, HC_path)
     #determine output path
-    final_path=os.path.join('/home/jl/Documentos/code/covid19clinic/Test/',str(dia_registro)+'_ID_'+str(id)+'_prueba')
+    final_path=os.path.join(main_path+'RUNS/',str(dia_registro)+'_OT'+str(id)+'_'+protocol)
 
     # create folder in case it doesn't already exist and copy excel registry file there
     if not os.path.isdir(final_path):
         os.mkdir(final_path)
-        os.system('cp /home/jl/Documentos/code/covid19clinic/2020_04_28_RUN_PROVA/2020_04_28_RUN_PROVA.xls '+final_path+'/2020_04_28_RUN_PROVA.xls')
+        os.mkdir(final_path+'/scripts')
+        os.system('cp ' + excel +' '+ final_path+'/OT'+str(id)+'_samples.xlsx')
 
     for file in os.listdir(protocol_path): # look for all protocols in folder
         if file.endswith('.py'):
@@ -102,8 +106,8 @@ def main():
             fin.close()
             final_protocol=rep_data(num_samples, tec_name, t_registro, data) #replace data
             position=file.find('_',12) # find _ position after the name and get value
-            filename=str(dia_registro)+'_'+file[:position]+'_'+str(id)+'.py' # assign a filename date + station name + id
-            fout = open(os.path.join(final_path,filename), "wt")
+            filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.py' # assign a filename date + station name + id
+            fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
             fout.write(final_protocol)
             fout.close()
 
