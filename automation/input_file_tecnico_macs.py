@@ -7,8 +7,8 @@ import os.path
 import pandas as pd
 import string
 homedir=os.path.expanduser("~")
-KF_path = homedir+'/Documents/code/covid19clinic/Test/KF_config/'
-HC_path = homedir+'/Documents/code/covid19clinic/Test/HC_config/'
+KF_path = homedir+'/Documents/code/covid19clinic/automation/KF_config/'
+HC_path = homedir+'/Documents/code/covid19clinic/automation/HC_config/'
 main_path = '/Volumes/opentrons/'
 excel = main_path + '/barcode_template/muestras.xlsx'
 
