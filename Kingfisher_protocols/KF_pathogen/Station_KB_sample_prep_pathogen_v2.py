@@ -350,7 +350,7 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
-        beads_transfer_vol = [130, 130]  # Two rounds of 155
+        beads_transfer_vol = [130, 130]  # Two rounds of 130
         rinse = True
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:

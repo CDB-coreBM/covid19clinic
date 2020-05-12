@@ -94,7 +94,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume = volume_mmix_available,
-                      num_wells = 1, #change with num samples
+                      num_wells = 2, #change with num samples
                       delay = 0,
                       h_cono = h_cone,
                       v_fondo = volume_cone  # V cono
@@ -382,6 +382,3 @@ def run(ctx: protocol_api.ProtocolContext):
     if STEPS[2]['Execute'] == True:
         ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][m20]))
         ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][m20] / 96))
-
-    if ctx.is_simulating():
-        os.system('afplay -v 3 /Users/covid19warriors/Downloads/lionking.mp3 &')

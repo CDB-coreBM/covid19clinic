@@ -24,7 +24,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 56
+NUM_SAMPLES = 95
 air_gap_vol = 15
 
 volume_sample = 460
@@ -96,7 +96,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Custom functions
     def generate_source_table(source):
         '''
-        Concatenate the wells frome the different origin racks
+        Concatenate the wells from the different origin racks
         '''
         for rack_number in range(len(source)):
             if rack_number == 0:
