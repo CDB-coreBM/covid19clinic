@@ -1,8 +1,8 @@
 library(tidyr)
 library(dplyr)
 library(knitr)
-
-raw_data <- read_delim("~Documents/2020_05_05_RUN_PROVA3_Presence%20Absence%20Result.csv", ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+run="2020_05_12_OT1_KF"
+raw_data <- read_delim(paste0("/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/",run,'/results/2020_05_12_R1_Presence_Absence_Result.csv'), ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
 raw_data$pos<-raw_data$Well
 
 table1 <- raw_data %>%

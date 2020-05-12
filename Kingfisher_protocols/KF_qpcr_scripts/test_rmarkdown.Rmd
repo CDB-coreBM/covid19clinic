@@ -13,7 +13,8 @@ library(knitr)
 library(readr)
 library(kableExtra)
 
-raw_data <- read_delim("~/Documents/2020_05_08_RUN_PROVA4A_Presence%20Absence%20Result.csv", ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+run="2020_05_12_OT1_KF"
+raw_data <- read_delim(paste0("/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/",run,'/results/2020_05_12_R1_Presence_Absence_Result.csv'), ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
 
 raw_data$pos<-raw_data$Well
 raw_data[raw_data$Cq != "Undetermined",]$Cq <- format(round(as.numeric(raw_data[raw_data$Cq != "Undetermined",]$Cq),digits=2))
@@ -32,8 +33,8 @@ table1 <- table1[, c(2, 1, 4, 5, 6, 3)]
 #Count number of genes not undetermined
 table1$pos_targets = rowSums(table1[,c('N gene','ORF1ab','S gene')] != 'Undetermined')
 
-table1 <- table1 %>% 
-  mutate(interpretation = case_when(    
+table1 <- table1 %>%
+  mutate(interpretation = case_when(
     Sample=='PC' ~ 'control',
     Sample=='NC' ~ 'control',
     MS2=='Undetermined' ~ 'No válido',
@@ -64,5 +65,3 @@ kable(summary_table,format="html", escape= F)%>%
 kable(table1,format="html", escape= F) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
-
-
