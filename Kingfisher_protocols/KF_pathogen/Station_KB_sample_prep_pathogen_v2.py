@@ -26,7 +26,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 48
+NUM_SAMPLES = 96
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
@@ -59,9 +59,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Add MS2'},
-        2: {'Execute': True, 'description': 'Mix beads'},
-        3: {'Execute': True, 'description': 'Transfer beads'}
+        1: {'Execute': True, 'description': 'Mix beads'},
+        2: {'Execute': True, 'description': 'Transfer beads'},
+        3: {'Execute': True, 'description': 'Add MS2'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -283,40 +283,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
     MS.reagent_reservoir = tuberack.rows()[0]  # 1 row, 2 columns (first ones)
 
-    ############################################################################
-    # STEP 1: Transfer MS
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        # Transfer parameters
-        start = datetime.now()
-        for d in work_destinations:
-            if not p20.hw_pipette['has_tip']:
-                pick_up(p20)
-            # Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(
-                MS, screwcap_cross_section_area, MS_vol)
-            move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
-                                  dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS,
-                                  x_offset = x_offset, pickup_height = pickup_height,
-                                  rinse = False, disp_height = height_MS, blow_out = True,
-                                  touch_tip = True)
-            # Drop tip and update counter
-            p20.drop_tip()
-            tip_track['counts'][p20] += 1
-
-        # Time statistics
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
-                    ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 2: PREMIX BEADS
+    # STEP 1: PREMIX BEADS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -342,7 +311,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 3: TRANSFER BEADS
+    # STEP 2: TRANSFER BEADS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -358,7 +327,12 @@ def run(ctx: protocol_api.ProtocolContext):
             for j, transfer_vol in enumerate(beads_transfer_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
+<<<<<<< HEAD
                     Beads, multi_well_rack_area, transfer_vol * 8, min_height=1)
+=======
+                    regent = Beads, cross_section_area = multi_well_rack_area,
+                    aspirate_volume = transfer_vol * 8)
+>>>>>>> 79a6f8cd13cd63e98ebdeb00c9da1096d04e4b74
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
@@ -397,6 +371,39 @@ def run(ctx: protocol_api.ProtocolContext):
                     row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
+
+    ############################################################################
+    # STEP 3: Transfer MS
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
+        ctx.comment('###############################################')
+
+        # Transfer parameters
+        start = datetime.now()
+        for d in work_destinations:
+            if not p20.hw_pipette['has_tip']:
+                pick_up(p20)
+            # Calculate pickup_height based on remaining volume and shape of container
+            [pickup_height, change_col] = calc_height(
+                reagent = MS, cross_section_area = screwcap_cross_section_area,
+                aspirate_volume = MS_vol, min_height=1)
+            move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
+                                  dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS,
+                                  x_offset = x_offset, pickup_height = pickup_height,
+                                  rinse = False, disp_height = height_MS, blow_out = True,
+                                  touch_tip = True)
+            # Drop tip and update counter
+            p20.drop_tip()
+            tip_track['counts'][p20] += 1
+
+        # Time statistics
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
+                    ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
     # Light flash end of program
