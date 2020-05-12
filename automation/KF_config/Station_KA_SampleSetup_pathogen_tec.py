@@ -24,7 +24,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 95
+NUM_SAMPLES = $num_samples-1
 air_gap_vol = 15
 
 volume_sample = 460
@@ -39,7 +39,6 @@ area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 screwcap_cross_section_area = math.pi * \
     diameter_screwcap**2 / 4  # screwcap cross section area
-
 
 def run(ctx: protocol_api.ProtocolContext):
 

@@ -26,7 +26,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = $num_samples-1
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
@@ -35,7 +35,6 @@ height_MS = -35
 x_offset = [0, 0]
 
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
-volume_screw_one = 400  # Total volume of first screwcap
 volume_screw_one = NUM_SAMPLES*MS_vol*1.1+25  # Total volume of first screwcap
 
 # Screwcap variables
@@ -60,9 +59,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': 'Mix beads'},
+        1: {'Execute': True, 'description': 'Mix beads'},
         2: {'Execute': True, 'description': 'Transfer beads'},
-        3: {'Execute': False, 'description': 'Add MS2'}
+        3: {'Execute': True, 'description': 'Add MS2'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:

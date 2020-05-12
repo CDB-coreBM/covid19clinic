@@ -25,7 +25,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 95
+NUM_SAMPLES = $num_samples-1
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5
 
@@ -103,7 +103,7 @@ def run(ctx: protocol_api.ProtocolContext):
                             flow_rate_dispense=1,
                             rinse=False,
                             delay=0,
-                            reagent_reservoir_volume=50*NUM_SAMPLES,
+                            reagent_reservoir_volume=50*NUM_SAMPLES*1.1,
                             num_wells=1,
                             h_cono=1.95,
                             v_fondo=695)  # Prismatic

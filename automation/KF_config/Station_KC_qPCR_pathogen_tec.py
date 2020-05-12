@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 95
+NUM_SAMPLES = $num_samples-1
 air_gap_vol = 5
 air_gap_sample = 2
 
