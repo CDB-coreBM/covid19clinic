@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 47
+NUM_SAMPLES = 95
 air_gap_vol = 5
 air_gap_sample = 2
 
@@ -43,7 +43,6 @@ x_offset = [0,0]
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
-
 
 def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
@@ -299,7 +298,6 @@ def run(ctx: protocol_api.ProtocolContext):
         for dest in dests:
             aspirate_volume=volume_mmix * len(dest) + extra_dispensal
             [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, aspirate_volume)
-            # source MMIX_reservoir[col_change]
             used_vol_temp = distribute_custom(
             p300, volume = volume_mmix, src = MMIX.reagent_reservoir[MMIX.col], dest = dest,
             waste_pool = MMIX.reagent_reservoir[MMIX.col], pickup_height = pickup_height,

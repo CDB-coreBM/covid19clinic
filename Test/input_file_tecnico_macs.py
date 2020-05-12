@@ -3,11 +3,13 @@
 # the directories to run
 from datetime import datetime
 import os
+import os.path
 import pandas as pd
 import string
-KF_path = '/home/jl/Documentos/code/covid19clinic/Test/KF_config/'
-HC_path = '/home/jl/Documentos/code/covid19clinic/Test/HC_config/'
-main_path = '/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/'
+homedir=os.path.expanduser("~")
+KF_path = homedir+'/Documents/code/covid19clinic/Test/KF_config/'
+HC_path = homedir+'/Documents/code/covid19clinic/Test/HC_config/'
+main_path = '/Volumes/opentrons/'
 excel = main_path + '/barcode_template/muestras.xlsx'
 
 # Funtion to distinguish between OT and KF protocols

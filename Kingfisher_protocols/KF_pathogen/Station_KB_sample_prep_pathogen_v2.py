@@ -36,6 +36,7 @@ x_offset = [0, 0]
 
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
 volume_screw_one = 400  # Total volume of first screwcap
+volume_screw_one = NUM_SAMPLES*MS_vol*1.1+25  # Total volume of first screwcap
 
 # Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
@@ -329,6 +330,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 [pickup_height, change_col] = calc_height(
                     reagent = Beads, cross_section_area = multi_well_rack_area,
                     aspirate_volume = transfer_vol * 8, min_height=1)
+
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
