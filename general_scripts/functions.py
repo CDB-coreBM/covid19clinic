@@ -175,8 +175,6 @@ def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.5):
         col_change = False
     return height, col_change
 
-
-
     def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, disp_height=0, extra_dispensal):
         # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
         pipette.aspirate((len(dest) * volume) +
