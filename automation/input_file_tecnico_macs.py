@@ -103,6 +103,8 @@ def main():
     if not os.path.isdir(final_path):
         os.mkdir(final_path)
         os.mkdir(final_path+'/scripts')
+        os.mkdir(final_path+'/results')
+        os.mkdir(final_path+'/logs')
         os.system('cp ' + excel +' '+ final_path+'/OT'+str(id)+'_samples.xlsx')
 
     if protocol=='KF':
