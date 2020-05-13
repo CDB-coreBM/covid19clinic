@@ -1,13 +1,18 @@
 import pandas as pd
 import string
 import os
+import os.path
+import sys
 
-input_file = "/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/qpcr_kf_template.txt"
-out_file = "/home/jl/Documentos/code/covid19clinic/Kingfisher_protocols/KF_qpcr_scripts/qpcr_kf_file_test4.txt"
+homedir=os.path.expanduser("~")
+code_path = homedir + '/Documents/code/covid19clinic/automation/'
+input_file = code_path + 'qpcr_kf_template.txt'
+out_file = sys.argv[0]
+main_path = '/Volumes/opentrons/'
+excel = main_path + '/barcode_template/muestras.xlsx'
 
 #Read the excel file from the run and obtain the dictionary of samples
-df = pd.read_excel (r'/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/COREBM/OPENTRONS/barcode_template/muestras.xlsx',
-  sheet_name='Deepwell layout', header = None, index_col = 0)
+df = pd.read_excel (excel, sheet_name='Deepwell layout', header = None, index_col = 0)
 df = df.iloc[1:]
 df_dict = df.to_dict('index')
 merged_dict={}

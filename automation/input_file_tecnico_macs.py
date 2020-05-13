@@ -7,8 +7,9 @@ import os.path
 import pandas as pd
 import string
 homedir=os.path.expanduser("~")
-KF_path = homedir+'/Documents/code/covid19clinic/automation/KF_config/'
-HC_path = homedir+'/Documents/code/covid19clinic/automation/HC_config/'
+code_path = homedir + '/Documents/code/covid19clinic/automation/'
+KF_path = code_path + 'KF_config/'
+HC_path = code_path + 'HC_config/'
 main_path = '/Volumes/opentrons/'
 excel = main_path + '/barcode_template/muestras.xlsx'
 
@@ -104,9 +105,12 @@ def main():
         os.mkdir(final_path+'/scripts')
         os.system('cp ' + excel +' '+ final_path+'/OT'+str(id)+'_samples.xlsx')
 
+    if protocol=='KF':
+        file_name = 'qpcr_template_OT'+str(id)+'_'+protocol+'.txt'
+        os.system('python3 thermoqpcr_generate_template.py ' + final_path + '/'+ file_name
     for file in os.listdir(protocol_path): # look for all protocols in folder
         if file.endswith('.py'):
-            fin = open(protocol_path+file, "rt") #open file and copy protocol
+            fin = open(protocol_path+file, "rt") # open file and copy protocol
             data = fin.read()
             fin.close()
             final_protocol=rep_data(num_samples, tec_name, t_registro, data) #replace data
