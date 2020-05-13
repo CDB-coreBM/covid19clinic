@@ -7,8 +7,9 @@ import sys
 homedir=os.path.expanduser("~")
 code_path = homedir + '/Documents/code/covid19clinic/automation/'
 input_file = code_path + 'qpcr_kf_template.txt'
-out_file = sys.argv[0]
+out_file = sys.argv[1]
 main_path = '/Volumes/opentrons/'
+
 excel = main_path + '/barcode_template/muestras.xlsx'
 
 #Read the excel file from the run and obtain the dictionary of samples
