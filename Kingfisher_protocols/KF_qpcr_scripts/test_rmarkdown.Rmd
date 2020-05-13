@@ -64,6 +64,5 @@ kable(summary_table,format="html", escape= F)%>%
 ## Tabla resultados
 ```{r tables2, echo=FALSE}
 kable(table1,format="html", escape= F) %>%
-  kable_styling(bootstrap_options = c("striped", "hover"))%>%
-  scroll_box(height = "600px")
+  kable_styling(bootstrap_options = c("striped", "hover"))
 ```
