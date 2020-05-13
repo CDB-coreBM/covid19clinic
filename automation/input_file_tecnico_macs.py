@@ -7,7 +7,7 @@ import os.path
 import pandas as pd
 import string
 homedir=os.path.expanduser("~")
-code_path = homedir + '/Documentos/code/covid19clinic/automation/'
+code_path = homedir + '/Documents/code/covid19clinic/automation/'
 KF_path = code_path + 'KF_config/'
 HC_path = code_path + 'HC_config/'
 main_path = '/Volumes/opentrons/'
