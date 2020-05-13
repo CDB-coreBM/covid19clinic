@@ -5,10 +5,10 @@ import os.path
 import sys
 
 homedir=os.path.expanduser("~")
-code_path = homedir + '/Documents/code/covid19clinic/automation/'
 input_file = code_path + 'qpcr_kf_template.txt'
 out_file = sys.argv[1]
 main_path = '/Volumes/opentrons/'
+code_path = main_path + '/code/covid19clinic/automation/'
 
 excel = main_path + '/barcode_template/muestras.xlsx'
 

@@ -7,13 +7,13 @@ import os.path
 import pandas as pd
 import string
 homedir=os.path.expanduser("~")
-code_path = homedir + '/Documents/code/covid19clinic/automation/'
 KF_path = code_path + 'KF_config/'
 HC_path = code_path + 'HC_config/'
 main_path = '/Volumes/opentrons/'
+code_path = main_path + '/code/covid19clinic/automation/'
 excel = main_path + '/barcode_template/muestras.xlsx'
 
-# Funtion to distinguish between OT and KF protocols
+# Function to distinguish between OT and KF protocols
 def select_protocol_type(p1, p2):
     ff=False
     while ff==False:
