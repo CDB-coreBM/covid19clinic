@@ -174,6 +174,28 @@ def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.5):
         ctx.comment('Used height is ' + str(height))
         col_change = False
     return height, col_change
+
+
+
+    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, disp_height=0, extra_dispensal):
+        # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
+        pipette.aspirate((len(dest) * volume) +
+                         extra_dispensal, src.bottom(pickup_height))
+        pipette.touch_tip(speed=20, v_offset=-5)
+        pipette.move_to(src.top(z=5))
+        pipette.aspirate(5)  # air gap
+        for d in dest:
+            pipette.dispense(5, d.top())
+            drop = d.top(z = disp_height)
+            pipette.dispense(volume, drop)
+            pipette.move_to(d.top(z=5))
+            pipette.aspirate(5)  # air gap
+        try:
+            pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
+        except:
+            pipette.blow_out(waste_pool.bottom(pickup_height + 3))
+        return (len(dest) * volume)
+
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
 m300.flow_rate.dispense = 300
