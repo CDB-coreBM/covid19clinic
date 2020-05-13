@@ -74,11 +74,11 @@ def main():
     # Get technician name
     control=False
     while control==False:
-        tec_name = (input('Nombre del técnico: '))
+        tec_name = (input('Nombre del técnico (usuario HCP): '))
         if isinstance(tec_name, str):
             control=True
         else:
-            print('Introduzca el nombre, por favor')
+            print('Introduce tu usuario HCP, por favor')
 
     # Get run session ID
     control=False
