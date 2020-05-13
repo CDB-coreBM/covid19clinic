@@ -60,26 +60,6 @@ def divide_destinations(l, n):
 def check_door():
     return gpio.read_window_switches()
 
-
-def distribute_custom(pipette, volume_mmix, mmix, dest, waste_pool, pickup_height, extra_dispensal):
-    # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
-    pipette.aspirate((len(dest) * volume_mmix) +
-                     extra_dispensal, mmix.bottom(pickup_height))
-    pipette.touch_tip(speed=20, v_offset=-5)
-    pipette.move_to(mmix.top(z=5))
-    pipette.aspirate(5)  # air gap
-    for d in dest:
-        pipette.dispense(5, d.top())
-        pipette.dispense(volume_mmix, d)
-        pipette.move_to(d.top(z=5))
-        pipette.aspirate(5)  # air gap
-    try:
-        pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
-    except:
-        pipette.blow_out(waste_pool.bottom(pickup_height + 3))
-    return (len(dest) * volume_mmix)
-
-
 def run(ctx: protocol_api.ProtocolContext):
     global volume_screw_one
     global volume_screw_two
@@ -97,6 +77,25 @@ def run(ctx: protocol_api.ProtocolContext):
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
+
+    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal, disp_height=0):
+        # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
+        pipette.aspirate((len(dest) * volume) +
+                         extra_dispensal, src.bottom(pickup_height))
+        pipette.touch_tip(speed=20, v_offset=-5)
+        pipette.move_to(src.top(z=5))
+        pipette.aspirate(5)  # air gap
+        for d in dest:
+            pipette.dispense(5, d.top())
+            drop = d.top(z = disp_height)
+            pipette.dispense(volume, drop)
+            pipette.move_to(d.top(z=5))
+            pipette.aspirate(5)  # air gap
+        try:
+            pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
+        except:
+            pipette.blow_out(waste_pool.bottom(pickup_height + 3))
+        return (len(dest) * volume)
 
     #Folder and file_path for log time
     folder_path = '/var/lib/jupyter/notebooks/'+run_id

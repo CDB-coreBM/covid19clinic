@@ -122,7 +122,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(0, len(l), n):
             yield l[i:i + n]
 
-    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal):
+    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal, disp_height=0):
         # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
         pipette.aspirate((len(dest) * volume) +
                          extra_dispensal, src.bottom(pickup_height))
@@ -131,7 +131,8 @@ def run(ctx: protocol_api.ProtocolContext):
         pipette.aspirate(5)  # air gap
         for d in dest:
             pipette.dispense(5, d.top())
-            pipette.dispense(volume, d)
+            drop = d.top(z = disp_height)
+            pipette.dispense(volume, drop)
             pipette.move_to(d.top(z=5))
             pipette.aspirate(5)  # air gap
         try:
