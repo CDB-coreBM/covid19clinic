@@ -328,7 +328,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
                     reagent = Beads, cross_section_area = multi_well_rack_area,
-                    aspirate_volume = transfer_vol * 8, min_height=1)
+                    aspirate_volume = transfer_vol * 8, min_height=1.5)
 
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
