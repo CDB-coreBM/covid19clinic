@@ -35,7 +35,7 @@ volume_sample = 5  # Volume of the sample
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 10  # Temperature of temp module
+temperature = 25  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
 
@@ -53,7 +53,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': True, 'description': 'Transfer elution'}
+        2: {'Execute': False, 'description': 'Transfer elution'}
     }
 
     for s in STEPS:  # Create an empty wait_time

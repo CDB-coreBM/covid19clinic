@@ -108,7 +108,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate=1,
                     flow_rate_dispense=3,
                     rinse=True,
-                    num_wells=4,
+                    num_wells=3,
                     delay=2,
                     reagent_reservoir_volume=260 * NUM_SAMPLES * 1.1,
                     h_cono=1.95,
@@ -346,7 +346,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
                     reagent = Beads, cross_section_area = multi_well_rack_area,
-                    aspirate_volume = transfer_vol * 8, min_height=1.5)
+                    aspirate_volume = transfer_vol * 8, min_height=1)
 
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
@@ -365,6 +365,9 @@ def run(ctx: protocol_api.ProtocolContext):
                                       air_gap_vol=air_gap_vol, x_offset=x_offset,
                                       pickup_height=pickup_height, disp_height = -2,
                                       rinse=rinse, blow_out = True, touch_tip=False)
+                m300.aspirate(air_gap_vol, work_destinations_cols[i].top(z = -2),
+                               rate = Beads.flow_rate_aspirate)
+                m300.dispense(air_gap_vol, Beads.reagent_reservoir[Beads.col].top())
             ctx.comment('Mixing MS with beads ')
 
         m300.drop_tip(home_after=False)

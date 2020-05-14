@@ -88,7 +88,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # Reagents and their characteristics
     MasterMix = Reagent(name = 'MasterMix',
-                     flow_rate_aspirate = 0,
+                     flow_rate_aspirate = 1,
                      flow_rate_dispense = 1,
                      rinse = False,
                      reagent_reservoir_volume = MMIX_initial_volume,

@@ -109,7 +109,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate=1,
                     flow_rate_dispense=3,
                     rinse=True,
-                    num_wells=4,
+                    num_wells=3,
                     delay=2,
                     reagent_reservoir_volume=260 * NUM_SAMPLES * 1.1,
                     h_cono=1.95,
