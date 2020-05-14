@@ -1,0 +1,68 @@
+
+---
+title: "Kingfisher results OT5_KF"
+author: "jlvillanueva@clinic.cat"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output: html_document
+params:
+  run: 2018
+  output_file: test
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyr)
+library(dplyr)
+library(knitr)
+library(readr)
+library(kableExtra)
+
+#results_file=$results_file
+raw_data <- read_delim('/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_14_OT5_KF/results/2020_05_14_OT5_KF_Presence Absence Result.csv', ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+
+raw_data$pos<-raw_data$Well
+raw_data[raw_data$Cq != "Undetermined",]$Cq <- format(round(as.numeric(raw_data[raw_data$Cq != "Undetermined",]$Cq),digits=2))
+
+table1 <- raw_data %>%
+  select(`Well Position`, Sample,Target,Cq, pos) %>%
+  spread(key=Target, value=Cq) %>%
+  mutate(Sample=ifelse(nchar(Sample)>3,substr(Sample, 4, 12),Sample)) %>%
+  mutate(pos=ifelse(Sample=='PC', 0, pos)) %>%
+  arrange(pos) %>%
+  select(-pos)
+
+#Reorder columns
+table1 <- table1[, c(2, 1, 4, 5, 6, 3)]
+
+#Count number of genes not undetermined
+table1$pos_targets = rowSums(table1[,c('N gene','ORF1ab','S gene')] != 'Undetermined')
+
+table1 <- table1 %>%
+  mutate(interpretation = case_when(
+    Sample=='PC' ~ 'control',
+    Sample=='NC' ~ 'control',
+    MS2=='Undetermined' ~ 'No válido',
+    pos_targets >=2 ~ 'Positivo',
+    MS2!='Undetermined' & pos_targets == 0 ~ 'Indetectable',
+    TRUE ~ 'revisar'
+  )) %>%
+   mutate(interpretation = cell_spec(interpretation, "html", color = ifelse(interpretation == "revisar", "red", "black")))
+
+
+summary_table <- table(table1[table1$interpretation != 'control',]$interpretation, pos_targets = factor(table1[table1$interpretation != 'control',]$pos_targets, levels=0:3))
+
+```
+
+## Summary
+Resumen de interpretación según número de targets positivos
+```{r tables, echo=FALSE}
+kable(summary_table,format="html", escape= F)%>%
+  kable_styling(bootstrap_options = c("striped", "hover")) %>%
+   add_header_above(c("Resultado" =1,'Número de targets' =4),align = 'center')
+```
+
+## Tabla resultados
+```{r tables2, echo=FALSE}
+kable(table1,format="html", escape= F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
