@@ -1,0 +1,226 @@
+{
+    "ordering": [
+        [
+            "A1"
+        ],
+        [
+            "A2"
+        ],
+        [
+            "A3"
+        ],
+        [
+            "A4"
+        ],
+        [
+            "A5"
+        ],
+        [
+            "A6"
+        ],
+        [
+            "A7"
+        ],
+        [
+            "A8"
+        ],
+        [
+            "A9"
+        ],
+        [
+            "A10"
+        ],
+        [
+            "A11"
+        ],
+        [
+            "A12"
+        ]
+    ],
+    "brand": {
+        "brand": "PerkinElmer",
+        "brandId": [
+            "6008700"
+        ]
+    },
+    "metadata": {
+        "displayName": "PerkinElmer 12 Reservoir 21000 µL",
+        "displayCategory": "reservoir",
+        "displayVolumeUnits": "µL",
+        "tags": []
+    },
+    "dimensions": {
+        "xDimension": 127.5,
+        "yDimension": 85,
+        "zDimension": 44
+    },
+    "wells": {
+        "A1": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 14.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A2": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 23.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A3": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 32.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A4": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 41.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A5": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 50.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A6": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 59.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A7": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 68.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A8": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 77.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A9": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 86.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A10": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 95.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A11": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 104.25,
+            "y": 42.5,
+            "z": 5
+        },
+        "A12": {
+            "depth": 39,
+            "totalLiquidVolume": 21000,
+            "shape": "rectangular",
+            "xDimension": 8,
+            "yDimension": 71.2,
+            "x": 113.25,
+            "y": 42.5,
+            "z": 5
+        }
+    },
+    "groups": [
+        {
+            "metadata": {
+                "displayName": "PerkinElmer 12 Reservoir 21000 µL",
+                "displayCategory": "reservoir",
+                "wellBottomShape": "v"
+            },
+            "brand": {
+                "brand": "PerkinElmer",
+                "brandId": [
+                    "6008700"
+                ]
+            },
+            "wells": [
+                "A1",
+                "A2",
+                "A3",
+                "A4",
+                "A5",
+                "A6",
+                "A7",
+                "A8",
+                "A9",
+                "A10",
+                "A11",
+                "A12"
+            ]
+        }
+    ],
+    "parameters": {
+        "format": "irregular",
+        "quirks": [
+            "centerMultichannelOnWells",
+            "touchTipDisabled"
+        ],
+        "isTiprack": false,
+        "isMagneticModuleCompatible": false,
+        "loadName": "perkinelmer_12_reservoir_21000ul"
+    },
+    "namespace": "custom_beta",
+    "version": 1,
+    "schemaVersion": 2,
+    "cornerOffsetFromSlot": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+    }
+}
