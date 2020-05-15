@@ -97,7 +97,8 @@ def main():
     # select the type of protocol to be run
     [protocol,protocol_path]=select_protocol_type(KF_path, HC_path)
     #determine output path
-    final_path=os.path.join(main_path+'RUNS/',str(dia_registro)+'_OT'+str(id)+'_'+protocol)
+    run_name = str(dia_registro)+'_OT'+str(id)+'_'+protocol
+    final_path=os.path.join(main_path+'RUNS/',run_name)
 
     # create folder in case it doesn't already exist and copy excel registry file there
     if not os.path.isdir(final_path):
@@ -118,6 +119,16 @@ def main():
             final_protocol=rep_data(num_samples, tec_name, t_registro, data) #replace data
             position=file.find('_',12) # find _ position after the name and get value
             filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.py' # assign a filename date + station name + id
+            fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
+            fout.write(final_protocol)
+            fout.close()
+        if file.endswith('.Rmd')
+            fin = open(protocol_path+file, "rt") # open file and copy protocol
+            data = fin.read()
+            fin.close()
+            final_protocol=data.replace('$THERUN', str(run_name))
+            position=file.find('_',12) # find _ position after the name and get value
+            filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.Rmd' # assign a filename date + station name + id
             fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
             fout.write(final_protocol)
             fout.close()

@@ -1,12 +1,11 @@
 
 ---
-title: "Kingfisher results OT5_KF"
+title: "Kingfisher results table $THERUN"
 author: "jlvillanueva@clinic.cat"
 date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output: html_document
 params:
-  run: 2018
-  output_file: test
+      run: '$THERUN'
 ---
 
 ```{r setup, include=FALSE}
@@ -16,9 +15,10 @@ library(dplyr)
 library(knitr)
 library(readr)
 library(kableExtra)
+file_dir=paste0('/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/',params$run,'/results/')
+csv_file=Sys.glob(file.path(file_dir, "*.csv"))
 
-#results_file=$results_file
-raw_data <- read_delim('/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_14_OT5_KF/results/2020_05_14_OT5_KF_Presence Absence Result.csv', ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+raw_data <- read_delim(csv_file), ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
 
 raw_data$pos<-raw_data$Well
 raw_data[raw_data$Cq != "Undetermined",]$Cq <- format(round(as.numeric(raw_data[raw_data$Cq != "Undetermined",]$Cq),digits=2))
@@ -55,6 +55,7 @@ summary_table <- table(table1[table1$interpretation != 'control',]$interpretatio
 
 ## Summary
 Resumen de interpretación según número de targets positivos
+
 ```{r tables, echo=FALSE}
 kable(summary_table,format="html", escape= F)%>%
   kable_styling(bootstrap_options = c("striped", "hover")) %>%
