@@ -6,6 +6,7 @@ import os
 import os.path
 import pandas as pd
 import string
+import math
 homedir=os.path.expanduser("~")
 main_path = '/Volumes/opentrons/'
 code_path = main_path + '/code/covid19clinic/automation/'
@@ -137,17 +138,17 @@ def main():
     print('################')
     num_wells=math.ceil(num_samples / 24)
     bead_volume=260 * num_samples * 1.1
-    mmix_vol=(NUM_SAMPLES * 1.1 * volume_mmix)
+    mmix_vol=(num_samples * 1.1 * 20)
     num_wells_mmix=math.ceil(mmix_vol/2000)
-    print('Es necesario un volumen mínimo de beads total de '+format(bead_volume)+ 'ul')
+    print('Es necesario un volumen mínimo de beads total de '+format(round(bead_volume,2))+ 'ul')
     print('A dividir en '+format(num_wells)+' pocillos')
-    print('Volumen mínimo por pocillo: '+ format(bead_volume/num_wells)+ 'ul')
+    print('Volumen mínimo por pocillo: '+ format(round(bead_volume/num_wells,2))+ 'ul')
     print('###### Station C ##########')
     print('Volumen y número tubos de MMIX')
     print('################')
-    print('Serán necesarios '+format(mmix_vol))
+    print('Serán necesarios '+format(round(mmix_vol,2))+' ul')
     print('A dividir en '+format(num_wells_mmix))
-    print('Volumen mínimo por pocillo: '+ format(mmix_vol/num_wells_mmix)+ 'ul')
+    print('Volumen mínimo por pocillo: '+ format(round(mmix_vol/num_wells_mmix,2))+ 'ul')
 
 if __name__ == '__main__':
     main()
