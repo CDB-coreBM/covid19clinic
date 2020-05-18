@@ -71,7 +71,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/Station_KB_sample_prep_pathogen_log.txt'
+        file_path = folder_path + '/Station_KB_sample_prep_viral_path2_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -284,8 +284,8 @@ def run(ctx: protocol_api.ProtocolContext):
     #    'p20_single_gen2', 'left', tip_racks=tips20)  # load P1000 pipette
 
     tip_track = {
-        'counts': {m300: 0, p20: 0},
-        'maxes': {m300: len(tips200) * 96, p20: len(tips20) * 96}
+        'counts': {m300: 0, m20: 0},
+        'maxes': {m300: len(tips200) * 96, m20: len(tips20) * 96}
     }
 
     # Divide destination wells in small groups for P300 pipette
