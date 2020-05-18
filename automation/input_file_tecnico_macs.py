@@ -136,7 +136,7 @@ def main():
     print('######### Station B ##########')
     print('Volumen y localización de beads')
     print('##############################')
-    num_wells=math.ceil(num_samples / 24)
+    num_wells=math.ceil(num_samples / 32)
     bead_volume=260 * num_samples * 1.1
     mmix_vol=(num_samples * 1.1 * 20)
     num_wells_mmix=math.ceil(mmix_vol/2000)
