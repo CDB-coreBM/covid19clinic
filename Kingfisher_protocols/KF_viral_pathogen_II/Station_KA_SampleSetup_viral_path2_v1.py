@@ -11,7 +11,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'S2 Station A Kingfisher Version 2',
-    'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
+    'author': 'Eva González & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for Kingfisher sample setup (A) - Viral/Pathogen II Kit (ref A48383)'
@@ -58,6 +58,7 @@ def run(ctx: protocol_api.ProtocolContext):
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
         file_path = folder_path + '/KA_SampleSetup_pathogen_time_log.txt'
+        file_path = folder_path + '/KA_SampleSetup_viral_path2_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:

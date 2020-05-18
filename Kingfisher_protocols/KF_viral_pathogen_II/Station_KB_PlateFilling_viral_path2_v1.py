@@ -12,7 +12,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'Kingfisher Pathogen Station B1 v2',
-    'author': 'Aitor Gastaminza,  José Luis Villanueva & Eva González (jlvillanueva@clinic.cat)',
+    'author': 'José Luis Villanueva & Eva González (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol to fill KingFisher Deepwell plates with reagents - Pathogen Kit (ref 4462359)'
@@ -51,7 +51,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/KB_PlateFilling_pathogen_time_log.txt'
+        file_path = folder_path + '/KB_PlateFilling_viral_path2_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:

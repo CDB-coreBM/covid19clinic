@@ -194,6 +194,18 @@ def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.5):
             pipette.blow_out(waste_pool.bottom(pickup_height + 3))
         return (len(dest) * volume)
 
+##########
+# pick up tip and if there is none left, prompt user for a new rack
+def pick_up(pip):
+    nonlocal tip_track
+    if not ctx.is_simulating():
+        if tip_track['counts'][pip] == tip_track['maxes'][pip]:
+            ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
+            resuming.')
+            pip.reset_tipracks()
+            tip_track['counts'][pip] = 0
+    pip.pick_up_tip()
+    
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
 m300.flow_rate.dispense = 300

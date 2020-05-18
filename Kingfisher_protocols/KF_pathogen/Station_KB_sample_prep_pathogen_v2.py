@@ -29,13 +29,13 @@ metadata = {
 NUM_SAMPLES = 96
 air_gap_vol = 15
 
-MS_vol = 20
-size_transfer = 7  # Number of wells the distribute function will fill
-extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
+MS_vol = 5
+air_gap_vol_MS = 2
+height_MS = -35
+temperature = 10
 x_offset = [0,0]
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
-volume_screw_one = NUM_SAMPLES*MS_vol*1.1+25  # Total volume of first screwcap
-
+total_MS_volume = NUM_SAMPLES * MS_vol * 1.1  # Total volume of MS
 # Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
@@ -58,9 +58,9 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': False, 'description': 'Mix beads'},
-        2: {'Execute': False, 'description': 'Transfer beads'},
-        3: {'Execute': True, 'description': 'Add MS2'}
+        1: {'Execute': True, 'description': 'Add MS2'},
+        2: {'Execute': True, 'description': 'Mix beads'},
+        3: {'Execute': True, 'description': 'Transfer beads'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -108,7 +108,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate=1,
                     flow_rate_dispense=3,
                     rinse=True,
-                    num_wells=3,
+                    num_wells=math.ceil(NUM_SAMPLES / 24),
                     delay=2,
                     reagent_reservoir_volume=260 * NUM_SAMPLES * 1.1,
                     h_cono=1.95,
@@ -118,8 +118,8 @@ def run(ctx: protocol_api.ProtocolContext):
                  flow_rate_aspirate=1,
                  flow_rate_dispense=1,
                  rinse=False,
-                 reagent_reservoir_volume=volume_screw_one,
-                 num_wells=2,
+                 reagent_reservoir_volume=total_MS_volume,
+                 num_wells=8,
                  delay=0,
                  h_cono=h_cone,
                  v_fondo=volume_cone  # V cono
@@ -127,7 +127,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     Sample.vol_well = Sample.reagent_reservoir_volume
     Beads.vol_well = Beads.vol_well_original
-    MS.vol_well = MS.vol_well_original
+    MS.vol_well = MS.reagent_reservoir_volume
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                        pickup_height, rinse, disp_height, blow_out, touch_tip):
@@ -219,13 +219,13 @@ def run(ctx: protocol_api.ProtocolContext):
                          extra_dispensal, src.bottom(pickup_height))
         pipette.touch_tip(speed=20, v_offset=-5)
         pipette.move_to(src.top(z=5))
-        pipette.aspirate(5)  # air gap
+        pipette.aspirate(20)  # air gap
         for d in dest:
-            pipette.dispense(5, d.top())
+            pipette.dispense(20, d.top())
             drop = d.top(z = disp_height)
             pipette.dispense(volume, drop)
             pipette.move_to(d.top(z=5))
-            pipette.aspirate(5)  # air gap
+            pipette.aspirate(20)  # air gap
         try:
             pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
         except:
@@ -261,35 +261,46 @@ def run(ctx: protocol_api.ProtocolContext):
         'kf_96_wellplate_2400ul', '1',
         'KF 96 Well 2400ul elution plate')
 
+    ############################################
+    # tempdeck
+    tempdeck = ctx.load_module('tempdeck', '4')
+    tempdeck.set_temperature(temperature)
+
+    ##################################
+    # MS plate -  plate with a column containing the internal control MS
+    ms_plate = tempdeck.load_labware(
+        'vwr_96_wellplate_200ul_alum_opentrons',
+        'pcr plate with MS control')
+
     ####################################
     # load labware and modules
     # 24 well rack aluminium opentrons
-    tuberack = ctx.load_labware(
-        'opentrons_24_aluminumblock_generic_2ml_screwcap', '3',
-        'Bloque Aluminio opentrons 24 Screwcaps')
+    #tuberack = ctx.load_labware(
+    #    'opentrons_24_aluminumblock_generic_2ml_screwcap', '3',
+    #    'Bloque Aluminio opentrons 24 Screwcaps')
 
     ##################################
     # Load Tipracks
-    #tips20 = [
-    #    ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
-    #    for slot in ['6']
-    #]
+    tips20 = [
+        ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
+        for slot in ['6']
+    ]
 
     tips200 = [
         ctx.load_labware('opentrons_96_filtertiprack_200ul', slot)
-        for slot in ['4', '6']
+        for slot in ['3']
     ]
 
     # pipettes. P1000 currently deactivated
     m300 = ctx.load_instrument(
         'p300_multi_gen2', 'right', tip_racks=tips200)  # Load p300 multi pipette
 
-    p300 = ctx.load_instrument(
-        'p300_single_gen2', 'left', tip_racks=tips200) # load p300 single pipette
+    m20 = ctx.load_instrument(
+        'p20_multi_gen2', 'left', tip_racks=tips20) # load p300 single pipette
 
     tip_track = {
-        'counts': {m300: 0, p300: 0},
-        'maxes': {m300: len(tips200) * 96, p300: len(tips200) * 96}
+        'counts': {m300: 0, m20: 0},
+        'maxes': {m300: len(tips200) * 96, m20: len(tips20) * 96}
     }
 
     # Divide destination wells in small groups for P300 pipette
@@ -298,12 +309,47 @@ def run(ctx: protocol_api.ProtocolContext):
     )[0][:Beads.num_wells]  # 1 row, 4 columns (first ones)
     work_destinations = sample_plate.wells()[:NUM_SAMPLES]
     work_destinations_cols = sample_plate.rows()[0][:num_cols]
-    # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    MS.reagent_reservoir = tuberack.rows()[0][:MS.num_wells]  # 1 row, 2 columns (first ones)
-    dests = list(divide_destinations(work_destinations, size_transfer))
+    ms_origins = ms_plate.rows()[0][0]  # 1 row, 1 columns
 
     ############################################################################
-    # STEP 1: PREMIX BEADS
+    # STEP 1: Transfer MS
+    ############################################################################
+
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        start = datetime.now()
+        ctx.comment('ms_wells')
+        #Loop over defined wells
+        for d in work_destinations_cols:
+            m20.pick_up_tip()
+            #Source samples
+            move_vol_multichannel(m20, reagent = MS, source = ms_origins, dest = d,
+            vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = x_offset,
+                   pickup_height = 0.2, disp_height = -35, rinse = False,
+                   blow_out=True, touch_tip=True)
+            m20.drop_tip()
+            tip_track['counts'][m20]+=8
+
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' +
+                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+    # Export the time log to a tsv file
+    if not ctx.is_simulating():
+        with open(file_path, 'w') as f:
+            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
+            for key in STEPS.keys():
+                row = str(key)
+                for key2 in STEPS[key].keys():
+                    row += '\t' + format(STEPS[key][key2])
+                f.write(row + '\n')
+        f.close()
+
+
+    ############################################################################
+    # STEP 2: PREMIX BEADS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -329,7 +375,7 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
     ############################################################################
-    # STEP 2: TRANSFER BEADS
+    # STEP 3: TRANSFER BEADS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -380,46 +426,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
 
 
-    ############################################################################
-    # STEP 3: Transfer MS
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        start = datetime.now()
-        p300.pick_up_tip()
 
-        used_vol=[]
-        for dest in dests:
-            aspirate_volume = MS_vol * len(dest) + extra_dispensal
-            [pickup_height,col_change]=calc_height(MS, area_section_screwcap, aspirate_volume)
-            used_vol_temp = distribute_custom(
-            p300, volume = MS_vol, src = MS.reagent_reservoir[MS.col], dest = dest,
-            waste_pool = MS.reagent_reservoir[MS.col], pickup_height = pickup_height,
-            extra_dispensal = extra_dispensal, disp_height = -5)
-            used_vol.append(used_vol_temp)
-        p300.drop_tip()
-        tip_track['counts'][p300]+=1
-        #MMIX.unused_two = MMIX.vol_well
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-
-
-    # Export the time log to a tsv file
-    if not ctx.is_simulating():
-        with open(file_path, 'w') as f:
-            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
-            for key in STEPS.keys():
-                row = str(key)
-                for key2 in STEPS[key].keys():
-                    row += '\t' + format(STEPS[key][key2])
-                f.write(row + '\n')
-        f.close()
-        
     ############################################################################
     # Light flash end of program
     gpio.set_rail_lights(False)
