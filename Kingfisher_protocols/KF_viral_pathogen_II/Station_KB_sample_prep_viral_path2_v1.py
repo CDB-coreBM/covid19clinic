@@ -31,11 +31,12 @@ air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
 height_MS = -35
+temperature = 25
 
 x_offset = [0, 0]
 
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
-volume_screw_one = 500  # Total volume of first screwcap
+total_MS_volume = NUM_SAMPLES * 5 * 1.1  # Total volume of MS
 
 # Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
@@ -111,7 +112,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse=True,
                     num_wells=3,
                     delay=2,
-                    reagent_reservoir_volume=260 * 96,
+                    reagent_reservoir_volume=550 * 96 * 1.1,
                     h_cono=1.95,
                     v_fondo=695)  # Prismatic)
 
@@ -119,8 +120,8 @@ def run(ctx: protocol_api.ProtocolContext):
                  flow_rate_aspirate=1,
                  flow_rate_dispense=1,
                  rinse=False,
-                 reagent_reservoir_volume=volume_screw_one,
-                 num_wells=1,
+                 reagent_reservoir_volume=total_MS_volume,
+                 num_wells=8,
                  delay=0,
                  h_cono=h_cone,
                  v_fondo=volume_cone  # V cono
@@ -215,18 +216,6 @@ def run(ctx: protocol_api.ProtocolContext):
         return height, col_change
 
 
-    ##########
-    # pick up tip and if there is none left, prompt user for a new rack
-    def pick_up(pip):
-        nonlocal tip_track
-        if not ctx.is_simulating():
-            if tip_track['counts'][pip] == tip_track['maxes'][pip]:
-                ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-                resuming.')
-                pip.reset_tipracks()
-                tip_track['counts'][pip] = 0
-        pip.pick_up_tip()
-
     def divide_destinations(l, n):
         # Divide the list of destinations in size n lists.
         for i in range(0, len(l), n):
@@ -305,10 +294,10 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         ctx.comment('ms_wells')
         #Loop over defined wells
-        for s, d in zip(ms_origins, work_destinations):
+        for d in work_destinations_cols:
             m20.pick_up_tip()
             #Source samples
-            move_vol_multichannel(m20, reagent = MS, source = s, dest = d,
+            move_vol_multichannel(m20, reagent = MS, source = ms_origins, dest = d,
             vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = x_offset,
                    pickup_height = 0.2, disp_height = -35, rinse = False,
                    blow_out=True, touch_tip=False)
@@ -342,7 +331,7 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
         ctx.comment('###############################################')
         if not m300.hw_pipette['has_tip']:
-            pick_up(m300)
+            m300.pick_up_tip()
             ctx.comment('Tip picked up')
         ctx.comment('Mixing ' + Beads.name)
 
@@ -371,7 +360,7 @@ def run(ctx: protocol_api.ProtocolContext):
         rinse = True
         for i in range(num_cols):
             if not m300.hw_pipette['has_tip']:
-                pick_up(m300)
+                m300.pick_up_tip()
             for j, transfer_vol in enumerate(beads_transfer_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
@@ -396,8 +385,8 @@ def run(ctx: protocol_api.ProtocolContext):
             #custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
                        #rounds=1, blow_out=True, mix_height=16,
                        #x_offset = x_offset)
-            m300.drop_tip(home_after=False)
-            tip_track['counts'][m300] += 8
+        m300.drop_tip(home_after=False)
+        tip_track['counts'][m300] += 8
         end = datetime.now()
         time_taken = (end - start)
         ctx.comment('Step ' + str(STEP) + ': ' +
