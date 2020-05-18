@@ -132,6 +132,22 @@ def main():
             fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
             fout.write(final_protocol)
             fout.close()
+    print('###### Station B ##########')
+    print('Volumen y localización de beads')
+    print('################')
+    num_wells=math.ceil(num_samples / 24)
+    bead_volume=260 * num_samples * 1.1
+    mmix_vol=(NUM_SAMPLES * 1.1 * volume_mmix)
+    num_wells_mmix=math.ceil(mmix_vol/2000)
+    print('Es necesario un volumen mínimo de beads total de '+format(bead_volume)+ 'ul')
+    print('A dividir en '+format(num_wells)+' pocillos')
+    print('Volumen mínimo por pocillo: '+ format(bead_volume/num_wells)+ 'ul')
+    print('###### Station C ##########')
+    print('Volumen y número tubos de MMIX')
+    print('################')
+    print('Serán necesarios '+format(mmix_vol))
+    print('A dividir en '+format(num_wells_mmix))
+    print('Volumen mínimo por pocillo: '+ format(mmix_vol/num_wells_mmix)+ 'ul')
 
 if __name__ == '__main__':
     main()
