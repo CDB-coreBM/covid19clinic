@@ -26,23 +26,16 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 48
+NUM_SAMPLES = 96
 air_gap_vol = 15
 
-<<<<<<< HEAD
 MS_vol = 5
 air_gap_vol_MS = 2
 height_MS = -35
 temperature = 10
-=======
-MS_vol = 20
-size_transfer = 8  # Number of wells the distribute function will fill
-extra_dispensal = 10  # Extra volume for master mix in each distribute transfer
->>>>>>> f671da83a69cb7a0d0c971b905246e56963f517b
 x_offset = [0,0]
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
-volume_screw_one = NUM_SAMPLES*MS_vol*1.1+25  # Total volume of first screwcap
-
+total_MS_volume = NUM_SAMPLES * MS_vol * 1.1  # Total volume of MS
 # Screwcap variables
 diameter_screwcap = 8.25  # Diameter of the screwcap
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
@@ -115,7 +108,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate=1,
                     flow_rate_dispense=3,
                     rinse=True,
-                    num_wells=3,
+                    num_wells=math.ceil(NUM_SAMPLES / 24),
                     delay=2,
                     reagent_reservoir_volume=260 * NUM_SAMPLES * 1.1,
                     h_cono=1.95,
@@ -125,8 +118,8 @@ def run(ctx: protocol_api.ProtocolContext):
                  flow_rate_aspirate=1,
                  flow_rate_dispense=1,
                  rinse=False,
-                 reagent_reservoir_volume=volume_screw_one,
-                 num_wells=2,
+                 reagent_reservoir_volume=total_MS_volume,
+                 num_wells=8,
                  delay=0,
                  h_cono=h_cone,
                  v_fondo=volume_cone  # V cono
@@ -134,7 +127,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     Sample.vol_well = Sample.reagent_reservoir_volume
     Beads.vol_well = Beads.vol_well_original
-    MS.vol_well = MS.vol_well_original
+    MS.vol_well = MS.reagent_reservoir_volume
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                        pickup_height, rinse, disp_height, blow_out, touch_tip):
@@ -327,10 +320,10 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         ctx.comment('ms_wells')
         #Loop over defined wells
-        for d in zip(work_destinations_cols):
+        for d in work_destinations_cols:
             m20.pick_up_tip()
             #Source samples
-            move_vol_multichannel(m20, reagent = MS, source = ms_plate, dest = d,
+            move_vol_multichannel(m20, reagent = MS, source = ms_origins, dest = d,
             vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = x_offset,
                    pickup_height = 0.2, disp_height = -35, rinse = False,
                    blow_out=True, touch_tip=True)
