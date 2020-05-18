@@ -26,14 +26,13 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = $num_samples-1
+NUM_SAMPLES = 96
 air_gap_vol = 15
-MS_vol = 5
-air_gap_vol_MS = 2
-height_MS = -35
 
-x_offset = [0, 0]
-
+MS_vol = 20
+size_transfer = 7  # Number of wells the distribute function will fill
+extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
+x_offset = [0,0]
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
 volume_screw_one = NUM_SAMPLES*MS_vol*1.1+25  # Total volume of first screwcap
 
@@ -59,8 +58,8 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Mix beads'},
-        2: {'Execute': True, 'description': 'Transfer beads'},
+        1: {'Execute': False, 'description': 'Mix beads'},
+        2: {'Execute': False, 'description': 'Transfer beads'},
         3: {'Execute': True, 'description': 'Add MS2'}
     }
     for s in STEPS:  # Create an empty wait_time
@@ -113,14 +112,14 @@ def run(ctx: protocol_api.ProtocolContext):
                     delay=2,
                     reagent_reservoir_volume=260 * NUM_SAMPLES * 1.1,
                     h_cono=1.95,
-                    v_fondo=695)  # Prismatic)
+                    v_fondo=695)  # Prismatic
 
     MS = Reagent(name='MS2',
                  flow_rate_aspirate=1,
                  flow_rate_dispense=1,
                  rinse=False,
                  reagent_reservoir_volume=volume_screw_one,
-                 num_wells=1,
+                 num_wells=2,
                  delay=0,
                  h_cono=h_cone,
                  v_fondo=volume_cone  # V cono
@@ -128,7 +127,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     Sample.vol_well = Sample.reagent_reservoir_volume
     Beads.vol_well = Beads.vol_well_original
-    MS.vol_well = MS.reagent_reservoir_volume
+    MS.vol_well = MS.vol_well_original
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                        pickup_height, rinse, disp_height, blow_out, touch_tip):
@@ -214,6 +213,24 @@ def run(ctx: protocol_api.ProtocolContext):
             col_change = False
         return height, col_change
 
+    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal, disp_height=0):
+        # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
+        pipette.aspirate((len(dest) * volume) +
+                         extra_dispensal, src.bottom(pickup_height))
+        pipette.touch_tip(speed=20, v_offset=-5)
+        pipette.move_to(src.top(z=5))
+        pipette.aspirate(5)  # air gap
+        for d in dest:
+            pipette.dispense(5, d.top())
+            drop = d.top(z = disp_height)
+            pipette.dispense(volume, drop)
+            pipette.move_to(d.top(z=5))
+            pipette.aspirate(5)  # air gap
+        try:
+            pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
+        except:
+            pipette.blow_out(waste_pool.bottom(pickup_height + 3))
+        return (len(dest) * volume)
 
     ##########
     # pick up tip and if there is none left, prompt user for a new rack
@@ -253,25 +270,26 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ##################################
     # Load Tipracks
-    tips20 = [
-        ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
-        for slot in ['5']
-    ]
+    #tips20 = [
+    #    ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
+    #    for slot in ['6']
+    #]
 
     tips200 = [
         ctx.load_labware('opentrons_96_filtertiprack_200ul', slot)
-        for slot in ['6']
+        for slot in ['4', '6']
     ]
 
     # pipettes. P1000 currently deactivated
     m300 = ctx.load_instrument(
-        'p300_multi_gen2', 'right', tip_racks=tips200)  # Load multi pipette
-    p20 = ctx.load_instrument(
-        'p20_single_gen2', 'left', tip_racks=tips20)  # load P1000 pipette
+        'p300_multi_gen2', 'right', tip_racks=tips200)  # Load p300 multi pipette
+
+    p300 = ctx.load_instrument(
+        'p300_single_gen2', 'left', tip_racks=tips200) # load p300 single pipette
 
     tip_track = {
-        'counts': {m300: 0, p20: 0},
-        'maxes': {m300: len(tips200) * 96, p20: len(tips20) * 96}
+        'counts': {m300: 0, p300: 0},
+        'maxes': {m300: len(tips200) * 96, p300: len(tips200) * 96}
     }
 
     # Divide destination wells in small groups for P300 pipette
@@ -281,8 +299,8 @@ def run(ctx: protocol_api.ProtocolContext):
     work_destinations = sample_plate.wells()[:NUM_SAMPLES]
     work_destinations_cols = sample_plate.rows()[0][:num_cols]
     # Declare which reagents are in each reservoir as well as deepwell and elution plate
-    MS.reagent_reservoir = tuberack.rows()[0]  # 1 row, 2 columns (first ones)
-
+    MS.reagent_reservoir = tuberack.rows()[0][:MS.num_wells]  # 1 row, 2 columns (first ones)
+    dests = list(divide_destinations(work_destinations, size_transfer))
 
     ############################################################################
     # STEP 1: PREMIX BEADS
@@ -361,6 +379,36 @@ def run(ctx: protocol_api.ProtocolContext):
         STEPS[STEP]['Time:'] = str(time_taken)
 
 
+
+    ############################################################################
+    # STEP 3: Transfer MS
+    ############################################################################
+    STEP += 1
+    if STEPS[STEP]['Execute'] == True:
+        start = datetime.now()
+        p300.pick_up_tip()
+
+        used_vol=[]
+        for dest in dests:
+            aspirate_volume = MS_vol * len(dest) + extra_dispensal
+            [pickup_height,col_change]=calc_height(MS, area_section_screwcap, aspirate_volume)
+            used_vol_temp = distribute_custom(
+            p300, volume = MS_vol, src = MS.reagent_reservoir[MS.col], dest = dest,
+            waste_pool = MS.reagent_reservoir[MS.col], pickup_height = pickup_height,
+            extra_dispensal = extra_dispensal, disp_height = -5)
+            used_vol.append(used_vol_temp)
+        p300.drop_tip()
+        tip_track['counts'][p300]+=1
+        #MMIX.unused_two = MMIX.vol_well
+
+        end = datetime.now()
+        time_taken = (end - start)
+        ctx.comment('Step ' + str(STEP) + ': ' +
+                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
+        STEPS[STEP]['Time:'] = str(time_taken)
+
+
+
     # Export the time log to a tsv file
     if not ctx.is_simulating():
         with open(file_path, 'w') as f:
@@ -371,40 +419,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
-
-    ############################################################################
-    # STEP 3: Transfer MS
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-
-        # Transfer parameters
-        start = datetime.now()
-        for d in work_destinations:
-            if not p20.hw_pipette['has_tip']:
-                pick_up(p20)
-            # Calculate pickup_height based on remaining volume and shape of container
-            [pickup_height, change_col] = calc_height(
-                reagent = MS, cross_section_area = screwcap_cross_section_area,
-                aspirate_volume = MS_vol, min_height=1)
-            move_vol_multichannel(p20, reagent = MS, source = MS.reagent_reservoir[MS.col],
-                                  dest = d, vol = MS_vol, air_gap_vol = air_gap_vol_MS,
-                                  x_offset = x_offset, pickup_height = pickup_height,
-                                  rinse = False, disp_height = height_MS, blow_out = True,
-                                  touch_tip = True)
-            # Drop tip and update counter
-            p20.drop_tip()
-            tip_track['counts'][p20] += 1
-
-        # Time statistics
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
-                    ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
+        
     ############################################################################
     # Light flash end of program
     gpio.set_rail_lights(False)

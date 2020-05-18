@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = $num_samples-1
+NUM_SAMPLES = 95
 air_gap_vol = 5
 air_gap_sample = 2
 
@@ -35,7 +35,7 @@ volume_sample = 5  # Volume of the sample
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
 extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 10  # Temperature of temp module
+temperature = 25  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
 
@@ -53,7 +53,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': True, 'description': 'Transfer elution'}
+        2: {'Execute': False, 'description': 'Transfer elution'}
     }
 
     for s in STEPS:  # Create an empty wait_time
@@ -122,7 +122,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for i in range(0, len(l), n):
             yield l[i:i + n]
 
-    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal):
+    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal, disp_height=0):
         # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
         pipette.aspirate((len(dest) * volume) +
                          extra_dispensal, src.bottom(pickup_height))
@@ -131,7 +131,8 @@ def run(ctx: protocol_api.ProtocolContext):
         pipette.aspirate(5)  # air gap
         for d in dest:
             pipette.dispense(5, d.top())
-            pipette.dispense(volume, d)
+            drop = d.top(z = disp_height)
+            pipette.dispense(volume, drop)
             pipette.move_to(d.top(z=5))
             pipette.aspirate(5)  # air gap
         try:

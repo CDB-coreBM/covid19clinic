@@ -122,7 +122,7 @@ def main():
             fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
             fout.write(final_protocol)
             fout.close()
-        if file.endswith('.Rmd')
+        if file.endswith('.Rmd'):
             fin = open(protocol_path+file, "rt") # open file and copy protocol
             data = fin.read()
             fin.close()
