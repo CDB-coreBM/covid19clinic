@@ -66,7 +66,7 @@ def run(ctx: protocol_api.ProtocolContext):
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/KC_qPCR_time_log.txt'
+        file_path = folder_path + '/KC_qPCR_viral_path2_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:

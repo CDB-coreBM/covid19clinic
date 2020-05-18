@@ -26,13 +26,19 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 48
 air_gap_vol = 15
 
+<<<<<<< HEAD
 MS_vol = 5
 air_gap_vol_MS = 2
 height_MS = -35
 temperature = 10
+=======
+MS_vol = 20
+size_transfer = 8  # Number of wells the distribute function will fill
+extra_dispensal = 10  # Extra volume for master mix in each distribute transfer
+>>>>>>> f671da83a69cb7a0d0c971b905246e56963f517b
 x_offset = [0,0]
 L_deepwell = 8  # Deepwell side length (KingFisher deepwell)
 volume_screw_one = NUM_SAMPLES*MS_vol*1.1+25  # Total volume of first screwcap
@@ -220,13 +226,13 @@ def run(ctx: protocol_api.ProtocolContext):
                          extra_dispensal, src.bottom(pickup_height))
         pipette.touch_tip(speed=20, v_offset=-5)
         pipette.move_to(src.top(z=5))
-        pipette.aspirate(5)  # air gap
+        pipette.aspirate(20)  # air gap
         for d in dest:
-            pipette.dispense(5, d.top())
+            pipette.dispense(20, d.top())
             drop = d.top(z = disp_height)
             pipette.dispense(volume, drop)
             pipette.move_to(d.top(z=5))
-            pipette.aspirate(5)  # air gap
+            pipette.aspirate(20)  # air gap
         try:
             pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
         except:
