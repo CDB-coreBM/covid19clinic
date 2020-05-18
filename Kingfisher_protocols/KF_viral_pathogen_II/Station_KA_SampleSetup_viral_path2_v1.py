@@ -11,7 +11,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'S2 Station A Kingfisher Version 2',
-    'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
+    'author': 'Eva González & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for Kingfisher sample setup (A) - Viral/Pathogen II Kit (ref A48383)'

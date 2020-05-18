@@ -12,7 +12,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'Kingfisher Pathogen Station B1 v2',
-    'author': 'Aitor Gastaminza,  José Luis Villanueva & Eva González (jlvillanueva@clinic.cat)',
+    'author': 'José Luis Villanueva & Eva González (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol to fill KingFisher Deepwell plates with reagents - Pathogen Kit (ref 4462359)'

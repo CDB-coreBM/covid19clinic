@@ -12,7 +12,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'Kingfisher Pathogen Station B2 v2',
-    'author': 'Aitor Gastaminza, Eva Gonzalez, José Luis Villanueva (jlvillanueva@clinic.cat)',
+    'author': 'Eva Gonzalez, José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for RNA extraction preparation for ThermoFisher Pathogen kit (ref 4462359) \
@@ -26,7 +26,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 48
+NUM_SAMPLES = 96
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
@@ -110,11 +110,11 @@ def run(ctx: protocol_api.ProtocolContext):
                     flow_rate_aspirate=0.75,
                     flow_rate_dispense=1,
                     rinse=True,
-                    num_wells=3,
+                    num_wells=4,
                     delay=2,
                     reagent_reservoir_volume=550 * 96 * 1.1,
                     h_cono=1.95,
-                    v_fondo=695)  # Prismatic)
+                    v_fondo=695)  # Prismatic
 
     MS = Reagent(name='MS2',
                  flow_rate_aspirate=1,
@@ -255,7 +255,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Load Tipracks
     tips20 = [
         ctx.load_labware('opentrons_96_filtertiprack_20ul', slot)
-        for slot in ['7']
+        for slot in ['6']
     ]
 
     tips200 = [
@@ -300,7 +300,7 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multichannel(m20, reagent = MS, source = ms_origins, dest = d,
             vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = x_offset,
                    pickup_height = 0.2, disp_height = -35, rinse = False,
-                   blow_out=True, touch_tip=False)
+                   blow_out=True, touch_tip=True)
             m20.drop_tip()
             tip_track['counts'][m20]+=8
 
@@ -364,7 +364,7 @@ def run(ctx: protocol_api.ProtocolContext):
             for j, transfer_vol in enumerate(beads_transfer_vol):
                 # Calculate pickup_height based on remaining volume and shape of container
                 [pickup_height, change_col] = calc_height(
-                    Beads, multi_well_rack_area, transfer_vol * 8)
+                    Beads, multi_well_rack_area, transfer_vol * 8, min_height = 1)
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
