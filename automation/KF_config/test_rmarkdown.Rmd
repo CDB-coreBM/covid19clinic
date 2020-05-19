@@ -18,7 +18,7 @@ library(kableExtra)
 file_dir=paste0('/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/',params$run,'/results/')
 csv_file=Sys.glob(file.path(file_dir, "*.csv"))
 
-raw_data <- read_delim(csv_file), ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
+raw_data <- read_delim(csv_file, ",", escape_double = FALSE, trim_ws = TRUE, skip = 20)
 
 raw_data$pos<-raw_data$Well
 raw_data[raw_data$Cq != "Undetermined",]$Cq <- format(round(as.numeric(raw_data[raw_data$Cq != "Undetermined",]$Cq),digits=2))
