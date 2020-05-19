@@ -194,7 +194,7 @@ def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, ext
         pipette.blow_out(waste_pool.bottom(pickup_height + 3))
     return (len(dest) * volume)
 
-def divide_volume(volume,max_vol):
+def divide_volume(volume, max_vol):
     # Divide a volume in a list of smaller ones, depending on the maximum capacity of a pipette
     num_transfers=math.ceil(volume/max_vol)
     vol_roundup=math.ceil(volume/num_transfers)
