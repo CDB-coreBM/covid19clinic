@@ -175,37 +175,34 @@ def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.5):
         col_change = False
     return height, col_change
 
-    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal, disp_height=0):
-        # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
-        pipette.aspirate((len(dest) * volume) +
-                         extra_dispensal, src.bottom(pickup_height))
-        pipette.touch_tip(speed=20, v_offset=-5)
-        pipette.move_to(src.top(z=5))
+def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal, disp_height=0):
+    # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
+    pipette.aspirate((len(dest) * volume) +
+                     extra_dispensal, src.bottom(pickup_height))
+    pipette.touch_tip(speed=20, v_offset=-5)
+    pipette.move_to(src.top(z=5))
+    pipette.aspirate(5)  # air gap
+    for d in dest:
+        pipette.dispense(5, d.top())
+        drop = d.top(z = disp_height)
+        pipette.dispense(volume, drop)
+        pipette.move_to(d.top(z=5))
         pipette.aspirate(5)  # air gap
-        for d in dest:
-            pipette.dispense(5, d.top())
-            drop = d.top(z = disp_height)
-            pipette.dispense(volume, drop)
-            pipette.move_to(d.top(z=5))
-            pipette.aspirate(5)  # air gap
-        try:
-            pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
-        except:
-            pipette.blow_out(waste_pool.bottom(pickup_height + 3))
-        return (len(dest) * volume)
+    try:
+        pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
+    except:
+        pipette.blow_out(waste_pool.bottom(pickup_height + 3))
+    return (len(dest) * volume)
 
-##########
-# pick up tip and if there is none left, prompt user for a new rack
-def pick_up(pip):
-    nonlocal tip_track
-    if not ctx.is_simulating():
-        if tip_track['counts'][pip] == tip_track['maxes'][pip]:
-            ctx.pause('Replace ' + str(pip.max_volume) + 'µl tipracks before \
-            resuming.')
-            pip.reset_tipracks()
-            tip_track['counts'][pip] = 0
-    pip.pick_up_tip()
-    
+def divide_volume(volume,max_vol):
+    # Divide a volume in a list of smaller ones, depending on the maximum capacity of a pipette
+    num_transfers=math.ceil(volume/max_vol)
+    vol_roundup=math.ceil(volume/num_transfers)
+    last_vol=vol-vol_roundup*(num_transfers-1)
+    vol_list=[v*vol_roundup for v in range(1,num_transfers)]
+    vol_list.append(last_vol)
+    return vol_list
+
 ##### FLOW RATES #######
 m300.flow_rate.aspirate = 150
 m300.flow_rate.dispense = 300
