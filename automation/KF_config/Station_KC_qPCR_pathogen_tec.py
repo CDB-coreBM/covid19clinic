@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 95
+NUM_SAMPLES = $num_samples
 air_gap_vol = 5
 air_gap_sample = 2
 
@@ -53,7 +53,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': False, 'description': 'Transfer elution'}
+        2: {'Execute': True, 'description': 'Transfer elution'}
     }
 
     for s in STEPS:  # Create an empty wait_time
