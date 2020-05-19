@@ -29,13 +29,13 @@ air_gap_vol = 5
 air_gap_sample = 2
 
 # Tune variables
-size_transfer = 7  # Number of wells the distribute function will fill
+size_transfer = 5  # Number of wells the distribute function will fill
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
-extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
+extra_dispensal = 10  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
-temperature = 25  # Temperature of temp module
+temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
 
@@ -53,7 +53,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Transfer MMIX'},
-        2: {'Execute': False, 'description': 'Transfer elution'}
+        2: {'Execute': True, 'description': 'Transfer elution'}
     }
 
     for s in STEPS:  # Create an empty wait_time
@@ -128,13 +128,13 @@ def run(ctx: protocol_api.ProtocolContext):
                          extra_dispensal, src.bottom(pickup_height))
         pipette.touch_tip(speed=20, v_offset=-5)
         pipette.move_to(src.top(z=5))
-        pipette.aspirate(5)  # air gap
+        pipette.aspirate(20)  # air gap
         for d in dest:
-            pipette.dispense(5, d.top())
+            pipette.dispense(20, d.top())
             drop = d.top(z = disp_height)
             pipette.dispense(volume, drop)
             pipette.move_to(d.top(z=5))
-            pipette.aspirate(5)  # air gap
+            pipette.aspirate(20)  # air gap
         try:
             pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
         except:
