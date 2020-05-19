@@ -12,7 +12,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'Kingfisher Pathogen Station B1 v2',
-    'author': 'José Luis Villanueva & Eva González (jlvillanueva@clinic.cat)',
+    'author': 'Eva González & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol to fill KingFisher Deepwell plates with reagents - Pathogen Kit (ref 4462359)'
@@ -248,8 +248,8 @@ def run(ctx: protocol_api.ProtocolContext):
         'kf_96_wellplate_2400ul', '4', 'EtOH 80% Deepwell plate')
 
     ############################################
-    ElutionBuffer_50ul_plate = ctx.load_labware(
-        'kingfisher_std_96_wellplate_550ul', '6', 'Elution Buffer 50 ul STD plate')
+    ElutionBuffer_1000ul_plate = ctx.load_labware(
+        'kingfisher_std_96_wellplate_550ul', '6', 'Elution Buffer 550 ul STD plate')
 
 
 ####################################

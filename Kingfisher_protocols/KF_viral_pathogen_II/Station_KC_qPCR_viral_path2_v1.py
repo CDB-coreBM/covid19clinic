@@ -247,7 +247,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Sample plate - comes from B
     source_plate = ctx.load_labware(
         "kingfisher_std_96_wellplate_550ul", '1',
-        'chilled KF plate with elutions (alum opentrons)')
+        'chilled KF plate with eluates')
     samples = source_plate.wells()[:NUM_SAMPLES]
 
     ##################################
