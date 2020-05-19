@@ -29,11 +29,9 @@ air_gap_vol = 5
 air_gap_sample = 2
 
 # Tune variables
-size_transfer = 7  # Number of wells the distribute function will fill
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
-extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
@@ -116,31 +114,6 @@ def run(ctx: protocol_api.ProtocolContext):
     ##################
     # Custom functions
 
-
-    def divide_destinations(l, n):
-        # Divide the list of destinations in size n lists.
-        for i in range(0, len(l), n):
-            yield l[i:i + n]
-
-    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal, disp_height=0):
-        # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
-        pipette.aspirate((len(dest) * volume) +
-                         extra_dispensal, src.bottom(pickup_height))
-        pipette.touch_tip(speed=20, v_offset=-5)
-        pipette.move_to(src.top(z=5))
-        pipette.aspirate(5)  # air gap
-        for d in dest:
-            pipette.dispense(5, d.top())
-            drop = d.top(z = disp_height)
-            pipette.dispense(volume, drop)
-            pipette.move_to(d.top(z=5))
-            pipette.aspirate(5)  # air gap
-        try:
-            pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
-        except:
-            pipette.blow_out(waste_pool.bottom(pickup_height + 3))
-        return (len(dest) * volume)
-
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                        pickup_height, rinse, disp_height, blow_out, touch_tip):
         '''
@@ -169,7 +142,7 @@ def run(ctx: protocol_api.ProtocolContext):
         if blow_out == True:
             pipet.blow_out(dest.top(z = -2))
         if touch_tip == True:
-            pipet.touch_tip(speed = 20, v_offset = -5)
+            pipet.touch_tip(speed = 20, v_offset = -5, radius = 0.9)
 
 
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
@@ -271,9 +244,6 @@ def run(ctx: protocol_api.ProtocolContext):
     samples_multi = source_plate.rows()[0][:num_cols]
     pcr_wells = qpcr_plate.wells()[:NUM_SAMPLES]
     pcr_wells_multi = qpcr_plate.rows()[0][:num_cols]
-    # Divide destination wells in small groups for P300 pipette
-    dests = list(divide_destinations(pcr_wells, size_transfer))
-
 
     # pipettes
     m20 = ctx.load_instrument(
@@ -295,15 +265,12 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         p300.pick_up_tip()
 
-        used_vol=[]
-        for dest in dests:
-            aspirate_volume=volume_mmix * len(dest) + extra_dispensal
-            [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, aspirate_volume)
-            used_vol_temp = distribute_custom(
-            p300, volume = volume_mmix, src = MMIX.reagent_reservoir[MMIX.col], dest = dest,
-            waste_pool = MMIX.reagent_reservoir[MMIX.col], pickup_height = pickup_height,
-            extra_dispensal = extra_dispensal)
-            used_vol.append(used_vol_temp)
+        for dest in pcr_wells:
+            [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, volume_mmix)
+            move_vol_multichannel(p300, reagent = MMIX, source = MMIX.reagent_reservoir[MMIX.col],
+            dest = dest, vol = volume_mmix, air_gap_vol = air_gap_vol, x_offset = x_offset,
+                   pickup_height = pickup_height, disp_height = -10, rinse = False,
+                   blow_out=True, touch_tip=True)
         p300.drop_tip()
         tip_track['counts'][p300]+=1
         #MMIX.unused_two = MMIX.vol_well
@@ -367,14 +334,6 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Finished! \nMove plate to PCR')
 
     if STEPS[1]['Execute'] == True:
-        total_used_vol = np.sum(used_vol)
-        total_needed_volume = total_used_vol
-        ctx.comment('Total Master Mix used volume is: ' + str(total_used_vol) + '\u03BCl.')
-        ctx.comment('Needed Master Mix volume is ' +
-                    str(total_needed_volume + extra_dispensal*len(dests)) +'\u03BCl')
-        ctx.comment('Used Master Mix volumes per run are: ' + str(used_vol) + '\u03BCl.')
-        ctx.comment('Master Mix Volume remaining in tubes is: ' +
-                    format(np.sum(MMIX.unused)+extra_dispensal*len(dests)+MMIX.vol_well) + '\u03BCl.')
         ctx.comment('200 ul Used tips in total: ' + str(tip_track['counts'][p300]))
         ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
 
