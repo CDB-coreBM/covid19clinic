@@ -26,7 +26,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = 16
 air_gap_vol = 15
 MS_vol = 5
 air_gap_vol_MS = 2
