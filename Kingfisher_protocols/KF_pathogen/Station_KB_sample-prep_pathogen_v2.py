@@ -110,7 +110,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     rinse=True,
                     num_wells=math.ceil(NUM_SAMPLES / 32),
                     delay=2,
-                    reagent_reservoir_volume=260 * NUM_SAMPLES * 1.1,
+                    reagent_reservoir_volume=260 * 8 * num_cols * 1.1,
                     h_cono=1.95,
                     v_fondo=695)  # Prismatic
 
