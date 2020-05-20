@@ -88,7 +88,7 @@ def main():
         if isinstance(id,int):
             control=True
         else:
-            print('Por favor, assignar un ID numérico para éste RUN')
+            print('Por favor, assigna un ID numérico para éste RUN')
 
     # Get date
     fecha=datetime.now()

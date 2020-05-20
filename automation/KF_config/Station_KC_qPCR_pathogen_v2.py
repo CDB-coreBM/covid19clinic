@@ -321,7 +321,6 @@ def run(ctx: protocol_api.ProtocolContext):
     # Light flash end of program
     gpio.set_rail_lights(False)
     time.sleep(2)
-    #os.system('mpg123 -f -8000 /var/lib/jupyter/notebooks/toreador.mp3 &')
     for i in range(3):
         gpio.set_rail_lights(False)
         gpio.set_button_light(1, 0, 0)
