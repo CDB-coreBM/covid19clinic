@@ -31,7 +31,7 @@ air_gap_sample = 2
 # Tune variables
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
+volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
@@ -266,7 +266,7 @@ def run(ctx: protocol_api.ProtocolContext):
         p300.pick_up_tip()
 
         for dest in pcr_wells:
-            [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, volume_mmix)
+            [pickup_height, col_change] = calc_height(MMIX, area_section_screwcap, volume_mmix)
             move_vol_multichannel(p300, reagent = MMIX, source = MMIX.reagent_reservoir[MMIX.col],
             dest = dest, vol = volume_mmix, air_gap_vol = air_gap_vol, x_offset = x_offset,
                    pickup_height = pickup_height, disp_height = -10, rinse = False,

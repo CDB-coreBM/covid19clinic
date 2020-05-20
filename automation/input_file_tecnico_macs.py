@@ -8,11 +8,11 @@ import pandas as pd
 import string
 import math
 homedir=os.path.expanduser("~")
-main_path = '/Volumes/opentrons'
-code_path = main_path + '/code/covid19clinic/automation/'
+main_path = '/Volumes/opentrons/'
+code_path = main_path + 'code/covid19clinic/automation/'
 KF_path = code_path + 'KF_config/'
 HC_path = code_path + 'HC_config/'
-excel = main_path + '/barcode_template/muestras.xlsx'
+excel = main_path + 'barcode_template/muestras.xlsx'
 
 # Function to distinguish between OT and KF protocols
 def select_protocol_type(p1, p2):
@@ -135,7 +135,7 @@ def main():
 
     #Calculate needed volumes and wells in stations B and C
     num_wells=math.ceil(num_samples / 32)
-    bead_volume=260 * num_samples * 1.1
+    bead_volume=260 * 8 * math.ceil(num_samples/8) * 1.1
     mmix_vol=(num_samples * 1.1 * 20)
     num_wells_mmix=math.ceil(mmix_vol/2000)
 
@@ -144,18 +144,19 @@ def main():
     print('######### Station B ##########', file=f)
     print('Volumen y localización de beads', file=f)
     print('##############################', file=f)
-    print('Es necesario un volumen mínimo de beads total de '+format(round(bead_volume,2))+ 'ul', file=f)
+    print('Es necesario un volumen mínimo de beads total de '+format(round(bead_volume,2))+ ' \u03BCl', file=f)
     print('A dividir en '+format(num_wells)+' pocillos', file=f)
-    print('Volumen mínimo por pocillo: '+ format(round(bead_volume/num_wells,2))+ 'ul', file=f)
+    print('Volumen mínimo por pocillo: '+ format(round(bead_volume/num_wells,2))+ ' \u03BCl', file=f)
     print('######### Station C ##########', file=f)
     print('Volumen y número tubos de MMIX', file=f)
     print('###############################', file=f)
-    print('Serán necesarios '+format(round(mmix_vol,2))+' ul', file=f)
+    print('Serán necesarios '+format(round(mmix_vol,2))+' \u03BCl', file=f)
     print('A dividir en '+format(num_wells_mmix), file=f)
-    print('Volumen mínimo por pocillo: '+ format(round(mmix_vol/num_wells_mmix,2))+ 'ul', file=f)
+    print('Volumen mínimo por pocillo: '+ format(round(mmix_vol/num_wells_mmix,2))+ ' \u03BCl', file=f)
     f.close()
+    print('Revisa los volúmenes y pocillos necesarios en el archivo OT'+str(id)+'volumes.txt dentro de la carpeta '+run_name)
 
 if __name__ == '__main__':
     main()
+
     print('Success!')
-    print('Revisa los volúmenes y pocillos necesarios en el archivo OT'+str(id)+'volumes.txt dentro de la carpeta '+run_name)
