@@ -8,7 +8,7 @@ import pandas as pd
 import string
 import math
 homedir=os.path.expanduser("~")
-main_path = '/Volumes/opentrons/'
+main_path = '/Volumes/opentrons'
 code_path = main_path + '/code/covid19clinic/automation/'
 KF_path = code_path + 'KF_config/'
 HC_path = code_path + 'HC_config/'
@@ -128,28 +128,34 @@ def main():
             data = fin.read()
             fin.close()
             final_protocol=data.replace('$THERUN', str(run_name))
-            position=file.find('_',12) # find _ position after the name and get value
-            filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.Rmd' # assign a filename date + station name + id
+            filename=str(dia_registro)+'_OT'+str(id)+'.Rmd' # assign a filename date + station name + id
             fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
             fout.write(final_protocol)
             fout.close()
-    print('######### Station B ##########')
-    print('Volumen y localización de beads')
-    print('##############################')
+
+    #Calculate needed volumes and wells in stations B and C
     num_wells=math.ceil(num_samples / 32)
     bead_volume=260 * num_samples * 1.1
     mmix_vol=(num_samples * 1.1 * 20)
     num_wells_mmix=math.ceil(mmix_vol/2000)
-    print('Es necesario un volumen mínimo de beads total de '+format(round(bead_volume,2))+ 'ul')
-    print('A dividir en '+format(num_wells)+' pocillos')
-    print('Volumen mínimo por pocillo: '+ format(round(bead_volume/num_wells,2))+ 'ul')
-    print('######### Station C ##########')
-    print('Volumen y número tubos de MMIX')
-    print('###############################')
-    print('Serán necesarios '+format(round(mmix_vol,2))+' ul')
-    print('A dividir en '+format(num_wells_mmix))
-    print('Volumen mínimo por pocillo: '+ format(round(mmix_vol/num_wells_mmix,2))+ 'ul')
+
+    #Print the information to a txt file
+    f = open(final_path + '/OT'+str(id)+"volumes.txt", "wt")
+    print('######### Station B ##########', file=f)
+    print('Volumen y localización de beads', file=f)
+    print('##############################', file=f)
+    print('Es necesario un volumen mínimo de beads total de '+format(round(bead_volume,2))+ 'ul', file=f)
+    print('A dividir en '+format(num_wells)+' pocillos', file=f)
+    print('Volumen mínimo por pocillo: '+ format(round(bead_volume/num_wells,2))+ 'ul', file=f)
+    print('######### Station C ##########', file=f)
+    print('Volumen y número tubos de MMIX', file=f)
+    print('###############################', file=f)
+    print('Serán necesarios '+format(round(mmix_vol,2))+' ul', file=f)
+    print('A dividir en '+format(num_wells_mmix), file=f)
+    print('Volumen mínimo por pocillo: '+ format(round(mmix_vol/num_wells_mmix,2))+ 'ul', file=f)
+    f.close()
 
 if __name__ == '__main__':
     main()
     print('Success!')
+    print('Revisa los volúmenes y pocillos necesarios en el archivo OT'+str(id)+'volumes.txt dentro de la carpeta '+run_name)

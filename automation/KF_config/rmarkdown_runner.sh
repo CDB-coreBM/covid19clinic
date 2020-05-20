@@ -8,9 +8,9 @@ run='2020_05_19_OT6_KF'
 
 
 Rscript -e 'library(rmarkdown);
-rmarkdown::render("/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_19_OT6_KF/scripts/2020_05_19_test_rmarkdown.Rm_OT6.Rmd",
-"html_document", output_file = "OT6_resultados.html",
-output_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_19_OT6_KF/results/")
+rmarkdown::render("/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_19_OT7_KF/scripts/2020_05_19_test_rmarkdown.Rm_OT7.Rmd",
+"html_document", output_file = "OT7_resultados.html",
+output_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_19_OT7_KF/results/")'
 
 
 smb://opn.cdb.nas.csc.es/opentrons/RUNS/2020_05_15_OT666_KF/scripts/2020_05_15_test_rmarkdown.Rm_OT666.Rmd
