@@ -1,28 +1,22 @@
+#!/bin/bash
+# set path to watch
+DIR="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/"
+# set path to copy the script to
+target_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/"
 
-
-$run
-$csv_file
-
+inotifywait -m -r -e moved_to -e create "$DIR" --format "%w%f" | while read f
 folder='/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/'
-run='2020_05_19_OT6_KF'
-
-
-Rscript -e 'library(rmarkdown);
-rmarkdown::render("/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_19_OT7_KF/scripts/2020_05_19_test_rmarkdown.Rm_OT7.Rmd",
-"html_document", output_file = "OT7_resultados.html",
-output_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_19_OT7_KF/results/")'
-
-
-smb://opn.cdb.nas.csc.es/opentrons/RUNS/2020_05_15_OT666_KF/scripts/2020_05_15_test_rmarkdown.Rm_OT666.Rmd
-
-/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/2020_05_14_OT4_KF/results/2020_05_14_OT4_KF_Presence Absence Result.csv
-
-
-RUNS/2020_05_14_OT4_KF/results/
-
-
-Rscript -e 'library(rmarkdown);
-rmarkdown::render("${folder}",
-"html_document", output_file = "test_resultados.html",
-output_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/")
-params = list(run = "teeeeeeeeeeeest")'
+do
+    echo $f
+    # check if the file is a .sh file
+    if [[ $f = *.csv ]]; then
+      echo $f 'detected'
+      run=`echo $f | cut -d '/' -f8`
+      rscript=`find ${folder}${run} -name '*.Rmd' -print0 | xargs -r0 echo | cut -d '/' -f10`
+      Rscript -e 'library(rmarkdown);
+      rmarkdown::render("'${folder}${run}'/scripts/'${rscript}'",
+      "html_document", output_file = "'${run}'_resultados.html",
+      output_dir="'$folder${run}'/results/")'
+      echo ${rscript}' executed for '${run}
+    fi
+done
