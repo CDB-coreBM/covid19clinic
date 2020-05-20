@@ -91,7 +91,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Reagents and their characteristics
     MMIX = Reagent(name = 'Master Mix',
                       rinse = False,
-                      flow_rate_aspirate = 1,
+                      flow_rate_aspirate = 0.75,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume = volume_mmix_available,
                       num_wells = 1, #changes with num samples
@@ -116,30 +116,6 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ##################
     # Custom functions
-
-
-    def divide_destinations(l, n):
-        # Divide the list of destinations in size n lists.
-        for i in range(0, len(l), n):
-            yield l[i:i + n]
-
-    def distribute_custom(pipette, volume, src, dest, waste_pool, pickup_height, extra_dispensal):
-        # Custom distribute function that allows for blow_out in different location and adjustement of touch_tip
-        pipette.aspirate((len(dest) * volume) +
-                         extra_dispensal, src.bottom(pickup_height))
-        pipette.touch_tip(speed=20, v_offset=-5)
-        pipette.move_to(src.top(z=5))
-        pipette.aspirate(5)  # air gap
-        for d in dest:
-            pipette.dispense(5, d.top())
-            pipette.dispense(volume, d)
-            pipette.move_to(d.top(z=5))
-            pipette.aspirate(5)  # air gap
-        try:
-            pipette.blow_out(waste_pool.wells()[0].bottom(pickup_height + 3))
-        except:
-            pipette.blow_out(waste_pool.bottom(pickup_height + 3))
-        return (len(dest) * volume)
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                        pickup_height, rinse, disp_height, blow_out, touch_tip):
@@ -268,22 +244,20 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Wells in: '+ str(tuberack.rows()[0][:MMIX.num_wells]) + ' element: '+str(MMIX.reagent_reservoir[MMIX.col]))
     # setup up sample sources and destinations
     samples = source_plate.wells()[:NUM_SAMPLES]
+    samples_multi = source_plate.rows()[0][:num_cols]
     pcr_wells = qpcr_plate.wells()[:NUM_SAMPLES]
-
-    # Divide destination wells in small groups for P300 pipette
-    dests = list(divide_destinations(pcr_wells, size_transfer))
-
+    pcr_wells_multi = qpcr_plate.rows()[0][:num_cols]
 
     # pipettes
-    p20 = ctx.load_instrument(
-        'p20_single_gen2', mount='right', tip_racks=tips20)
+    m20 = ctx.load_instrument(
+        'p20_multi_gen2', mount='right', tip_racks=tips20)
     p300 = ctx.load_instrument(
         'p300_single_gen2', mount='left', tip_racks=tips200)
 
     # used tip counter and set maximum tips available
     tip_track = {
         'counts': {p300: 0,
-                   p20: 0}
+                   m20: 0}
     }
 
     ############################################################################
@@ -294,16 +268,12 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         p300.pick_up_tip()
 
-        used_vol=[]
-        for dest in dests:
-            aspirate_volume=volume_mmix * len(dest) + extra_dispensal
-            [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, aspirate_volume)
-            # source MMIX_reservoir[col_change]
-            used_vol_temp = distribute_custom(
-            p300, volume = volume_mmix, src = MMIX.reagent_reservoir[MMIX.col], dest = dest,
-            waste_pool = MMIX.reagent_reservoir[MMIX.col], pickup_height = pickup_height,
-            extra_dispensal = extra_dispensal)
-            used_vol.append(used_vol_temp)
+        for dest in pcr_wells:
+            [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, volume_mmix)
+            move_vol_multichannel(p300, reagent = MMIX, source = MMIX.reagent_reservoir[MMIX.col],
+            dest = dest, vol = volume_mmix, air_gap_vol = air_gap_vol, x_offset = x_offset,
+                   pickup_height = pickup_height, disp_height = -10, rinse = False,
+                   blow_out=True, touch_tip=True)
         p300.drop_tip()
         tip_track['counts'][p300]+=1
         #MMIX.unused_two = MMIX.vol_well
@@ -314,6 +284,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
+
     ############################################################################
     # STEP 2: TRANSFER Samples
     ############################################################################
@@ -323,15 +294,15 @@ def run(ctx: protocol_api.ProtocolContext):
         start = datetime.now()
         ctx.comment('pcr_wells')
         #Loop over defined wells
-        for s, d in zip(samples, pcr_wells):
-            p20.pick_up_tip()
+        for s, d in zip(samples_multi, pcr_wells_multi):
+            m20.pick_up_tip()
             #Source samples
-            move_vol_multichannel(p20, reagent = Samples, source = s, dest = d,
+            move_vol_multichannel(m20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_sample, x_offset = x_offset,
                    pickup_height = 0.2, disp_height = -10, rinse = False,
                    blow_out=True, touch_tip=False)
-            p20.drop_tip()
-            tip_track['counts'][p20]+=1
+            m20.drop_tip()
+            tip_track['counts'][m20]+=8
 
         end = datetime.now()
         time_taken = (end - start)
