@@ -50,7 +50,7 @@ def run(ctx: protocol_api.ProtocolContext):
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
 
-    #Fo     lder and file_path for log time
+    #Folder and file_path for log time
     if not ctx.is_simulating():
         folder_path = '/dvar/lib/jupyter/notebooks'
         if not os.path.isdir(folder_path):

@@ -159,11 +159,11 @@ def run(ctx: protocol_api.ProtocolContext):
         if blow_out == True:
             pipet.blow_out(location.top(z=-2))  # Blow out
 
-    def calc_height(reagent, cross_section_area, aspirate_volume, min_height=0.5):
+    def calc_height(reagent, cross_section_area, aspirate_volume, min_height = 0.5, extra_volume = 50):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
                     '< needed volume ' + str(aspirate_volume) + '?')
-        if reagent.vol_well < aspirate_volume:
+        if reagent.vol_well < aspirate_volume + extra_volume:
             reagent.unused.append(reagent.vol_well)
             ctx.comment('Next column should be picked')
             ctx.comment('Previous to change: ' + str(reagent.col))

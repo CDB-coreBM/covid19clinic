@@ -1,6 +1,0 @@
-STEP	execution	description	wait_time	execution_time
-1	True	Add 300 ul Wash Buffer 1 - Round 1	0	0:07:53.450939
-2	True	Add 300 ul Wash Buffer 1 - Round 2	0	0:07:52.964635
-3	True	Add 500 ul Wash Buffer 2 - Round 1	0	0:11:31.195187
-4	True	Add 450 ul Wash Buffer 2 - Round 2	0	0:11:27.146907
-5	True	Add 50 ul Elution Buffer	0	0:02:16.999145
