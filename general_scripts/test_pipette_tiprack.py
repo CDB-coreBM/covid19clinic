@@ -24,6 +24,7 @@ REAGENT SETUP:
 NUM_SAMPLES = 16
 transfer_volume = 310
 pipette = 'p300_multi_gen2'
+position = 'right' # 'left'
 tip_model = 'opentrons_96_filtertiprack_200ul'
 
 def run(ctx: protocol_api.ProtocolContext):
@@ -41,7 +42,7 @@ def run(ctx: protocol_api.ProtocolContext):
         for slot in [ '1']
     ]
     # Load pipette
-    pip = ctx.load_instrument(pipette, 'right', tip_racks=tips) # Load multi pipette
+    pip = ctx.load_instrument(pipette, position, tip_racks=tips) # Load multi pipette
 
     water = reagent_res.wells('A1')
     isopropanol = reagent_res.wells('A4')
