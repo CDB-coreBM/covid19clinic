@@ -1,10 +1,8 @@
 #!/bin/bash
 # set path to watch
-DIR="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/"
-# set path to copy the script to
-target_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/"
+DIR=$1
 
-inotifywait -m -r -e moved_to -e create "$DIR" --format "%w%f" | while read f
+inotifywait -m -e moved_to -e create "$DIR" --format "%w%f" | while read f
 folder='/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/'
 do
     echo $f

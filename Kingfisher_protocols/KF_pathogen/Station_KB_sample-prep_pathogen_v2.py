@@ -24,7 +24,7 @@ metadata = {
 'date': '$date'
 '''
 
-#Defined variables
+# Defined variables
 ##################
 NUM_SAMPLES = 96
 air_gap_vol = 15
