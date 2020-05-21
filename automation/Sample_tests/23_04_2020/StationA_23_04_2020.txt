@@ -1,3 +1,0 @@
-STEP	execution	description	wait_time	execution_time
-1	True	1: Add internal control (10ul)	0	0:04:10.814396
-2	True	2: Add samples (300ul)	0	0:15:32.992998

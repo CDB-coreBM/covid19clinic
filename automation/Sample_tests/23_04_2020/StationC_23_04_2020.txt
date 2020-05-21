@@ -1,3 +1,0 @@
-STEP	execution	description	wait_time	execution_time
-1	True	Transfer MMIX	0	0:01:18.276667	
-2	True	Transfer elution	0	0:08:25.343750	

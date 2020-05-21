@@ -1,4 +1,0 @@
-STEP	execution	description	wait_time	execution_time
-1	True	Add MS2	0	0:22:48.760969
-2	True	Mix beads	0	0:01:11.091123
-3	True	Transfer beads	0	0:14:37.490022

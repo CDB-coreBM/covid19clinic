@@ -1,2 +1,0 @@
-STEP	execution	description	wait_time	execution_time
-1	True	Add samples (300ul)	0	0:09:35.617381

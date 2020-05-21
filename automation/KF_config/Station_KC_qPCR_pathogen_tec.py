@@ -16,13 +16,14 @@ metadata = {
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for Kingfisher sample setup (C) - Pathogen Kit (ref 4462359)'
-
 }
+
 '''
 'technician': '$technician',
 'date': '$date'
 '''
-#Defined variables
+
+# Defined variables
 ##################
 NUM_SAMPLES = $num_samples
 air_gap_vol = 5
@@ -30,7 +31,7 @@ air_gap_sample = 2
 
 # Tune variables
 volume_mmix = 20  # Volume of transfered master mix
-volume_sample = 5  # Volume of the sample
+volume_sample = 5 # Volume of the sample
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
@@ -81,7 +82,7 @@ def run(ctx: protocol_api.ProtocolContext):
             self.vol_well = 0
             self.h_cono = h_cono
             self.v_cono = v_fondo
-            self.unused=[]
+            self.unused = []
             self.tip_recycling = tip_recycling
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
