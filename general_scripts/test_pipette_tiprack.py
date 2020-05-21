@@ -5,7 +5,7 @@ from opentrons import protocol_api
 # metadata
 metadata = {
     'protocolName': 'Pipette testing',
-    'author': 'Nick <protocols@opentrons.com>',
+    'author': 'JL Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Custom Protocol Request',
     'apiLevel': '2.0'
 }
@@ -14,9 +14,10 @@ metadata = {
 REAGENT SETUP:
 
 - slot 2 12-channel reservoir:
-    - beads and isopropanol: channels 1-2
-    - 70% ethanol: channels 4-5
-    - nuclease-free water: channel 12
+    - Water_ channel 1
+    - Isopropanol: channel 4
+    - 70% ethanol: channel 6
+    - Beads: channel 7
 
 """
 
