@@ -26,4 +26,4 @@ while True:
     for run in runs:
         if run not in watching:
             watching.append(run)
-            print('os.system('+script_path + run)
+            os.system(script_path + ' '+ run)
