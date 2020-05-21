@@ -20,7 +20,7 @@ REAGENT SETUP:
 
 """
 
-#NUM_SAMPLES = 16
+NUM_SAMPLES = 16
 transfer_volume = 310
 pipette = 'p300_multi_gen2'
 tip_model = 'opentrons_96_filtertiprack_200ul'
@@ -46,12 +46,11 @@ def run(ctx: protocol_api.ProtocolContext):
     isopropanol = reagent_res.wells('A4')
     ethanol = reagent_res.wells('A6')
     beads = reagent_res.wells('A7')
+    destinations = deepwell2.wells()[:NUM_SAMPLES]
 
-    pip.pick_up_tip()
-    pip.transfer(transfer_volume, water, deepwell2.wells()[0].top(), new_tip='never', air_gap=10)
-    pip.touch_tip(speed=20, v_offset=-5,radius=0.9)
-    pip.blow_out(deepwell.wells()[0].top())
-    pip.transfer(transfer_volume, water, deepwell2.wells()[8].top(), new_tip='never', air_gap=10)
-    pip.touch_tip(speed=20, v_offset=-5,radius=0.9)
-    pip.blow_out(deepwell.wells()[8].top())
-    pip.drop_tip()
+    for dest in destinations:
+        pip.pick_up_tip()
+        pip.transfer(transfer_volume, water, deepwell2.wells()[0].top(), new_tip='never', air_gap=10)
+        pip.touch_tip(speed=20, v_offset=-5, radius=0.9)
+        pip.blow_out(deepwell.wells()[0].top())
+        pip.drop_tip()
