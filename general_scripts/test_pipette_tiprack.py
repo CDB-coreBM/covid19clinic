@@ -21,11 +21,12 @@ REAGENT SETUP:
 
 """
 
-NUM_SAMPLES = 16
-transfer_volume = 310
-pipette = 'p300_multi_gen2'
+NUM_SAMPLES = 8
+transfer_volume = 15
+air_gap = 5
+pipette = 'p300_single_gen2'
 position = 'right' # 'left'
-tip_model = 'opentrons_96_filtertiprack_200ul'
+tip_model = 'tipone_96_tiprack_200ul'
 
 def run(ctx: protocol_api.ProtocolContext):
 
@@ -33,7 +34,7 @@ def run(ctx: protocol_api.ProtocolContext):
     reagent_res = ctx.load_labware('nest_12_reservoir_15ml', '2',
                                        'reagent deepwell plate 1')
 
-    deepwell2=reagent_res.load_labware('nest_12_reservoir_15ml','96-deepwell sample plate')
+    deepwell=ctx.load_labware('kf_96_wellplate_2400ul','3','96-deepwell sample plate')
 
     # Load tip_racks
     tips = [
@@ -48,11 +49,11 @@ def run(ctx: protocol_api.ProtocolContext):
     isopropanol = reagent_res.wells('A4')
     ethanol = reagent_res.wells('A6')
     beads = reagent_res.wells('A7')
-    destinations = deepwell2.wells()[:NUM_SAMPLES]
+    destinations = deepwell.wells()[:NUM_SAMPLES]
 
     for dest in destinations:
         pip.pick_up_tip()
-        pip.transfer(transfer_volume, water, deepwell2.wells()[0].top(), new_tip='never', air_gap=10)
+        pip.transfer(transfer_volume, water, dest.top(), new_tip='never', air_gap = air_gap)
         pip.touch_tip(speed=20, v_offset=-5, radius=0.9)
-        pip.blow_out(deepwell.wells()[0].top())
+        pip.blow_out()
         pip.drop_tip()
