@@ -8,4 +8,6 @@ Stations letters define a OT2 robot with a certain combination of pippettes atta
 - **KingFisher**: RNA extraction procedure using magnetic microbeads
 - **Station C**: The qPCR plate is prepared by adding 5µl of the sample from the elution plate and 20 µl of a custom mastermix.
 
-Station A and Station B1 can run in parallel
+Station A and Station B1 can run in parallel at the same time.
+
+The difference between pathogen and viral pathogen 2 is the kits that are used for the extraction procedure, with different reactives and volumes. Code for both types of kits are provided in the different folders.
