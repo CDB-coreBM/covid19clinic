@@ -9,7 +9,7 @@ Most importantly, we have created a framework by providing a template, custom fu
 
 We demonstrate its use by providing fully functional and tested code for Thermo-KingFisher, using this robot for the extraction step.
 
-We are currently developing more automated protocols, including a homebrew protocol. The extraction step does not rely on the use of any commercial kits, as it implements a custom protocol using commonly available reactives. [cite original protocol here]. 
+We are currently developing more automated protocols, including a homebrew protocol. The extraction step does not rely on the use of any commercial kits, as it implements a custom protocol using commonly available reactives. [cite original protocol here].
 
 
 **Folder structure**
@@ -20,4 +20,3 @@ We are currently developing more automated protocols, including a homebrew proto
 - *general_scripts:*
 - *labware_simulate:* when simulating protocols a folder containing only .json files is needed. This is a copy of custom labware, containing only such files.
 - *protocol_diagrams:*
-

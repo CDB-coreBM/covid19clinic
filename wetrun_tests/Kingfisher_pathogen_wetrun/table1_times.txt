@@ -1,0 +1,5 @@
+station	steps	total_time
+A: sample setup	1	54.2722459166667
+B1: sample prep	3	59.44988795
+B2: plate filling	5	41.0292802166667
+C: qPCR	2	50.0145533
