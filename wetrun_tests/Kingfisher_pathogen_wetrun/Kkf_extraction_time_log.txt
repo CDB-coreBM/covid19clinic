@@ -1,0 +1,2 @@
+STEP	execution	description	wait_time	execution_time
+1	True	Extraction	0	0:30:00.0

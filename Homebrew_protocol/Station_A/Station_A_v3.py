@@ -7,6 +7,9 @@ from timeit import default_timer as timer
 import json
 from datetime import datetime
 import csv
+import subprocess
+#import datetime
+from opentrons.types import Mount
 
 # metadata
 metadata = {
@@ -19,7 +22,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 47
+NUM_SAMPLES = 1
 air_gap_vol_ci = 2
 air_gap_vol_sample = 5
 run_id = 'R002'
@@ -41,11 +44,15 @@ area_section_sample = (math.pi * diameter_sample**2) / 4 # It will change if sam
 h_cone = (volume_cone * 3 / area_section_screwcap)
 screwcap_cross_section_area = math.pi * diameter_screwcap**2 / 4  # screwcap cross secion area, cross_section_area = 63.61
 
+# update everytime you want to record more lines
+prev_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 def run(ctx: protocol_api.ProtocolContext):
+
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Add samples (300ul)'},
-        2: {'Execute': True, 'description': 'Add internal control (10ul)'}
+        2: {'Execute': False, 'description': 'Add internal control (10ul)'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -107,6 +114,21 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ##################
     # Custom functions
+    def write_to_csv(ctx, prev_time):
+    	# Call this function any time you wish to write
+    	# logs to the file. It will only write API readable logs.
+    	# FILE_NAME
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        s = subprocess.check_output([
+            "journalctl", "-t", "opentrons_api", "--since", prev_time, "--until", current_time])
+        new_str = s.decode("utf-8")
+        file_path = folder_path + '/instructions_log.txt'
+        file = open(file_path, 'a')
+        split_str = new_str.split('\n')
+        for line in split_str:
+            file.write(line)
+            file.write('\n')
+        file.close()
 
     def move_vol_multichannel(pipet, reagent, source, dest, vol, air_gap_vol, x_offset,
                        pickup_height, rinse, disp_height, blow_out, touch_tip):
@@ -307,7 +329,8 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
                     ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-
+        if not ctx._hw_manager.hardware.is_simulator:
+            write_to_csv(ctx, prev_time)
     ############################################################################
     # STEP 2: Add Internal Control
     ############################################################################
@@ -318,9 +341,10 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        if not p20.hw_pipette['has_tip']:
-            pick_up(p20)
+
         for d in destinations:
+            if not p20.hw_pipette['has_tip']:
+                pick_up(p20)
             # Calculate pickup_height based on remaining volume and shape of container
             [pickup_height, change_col] = calc_height(Control_I, screwcap_cross_section_area, volume_control)
             move_vol_multichannel(p20, reagent = Control_I, source = Control_I.reagent_reservoir,
@@ -337,6 +361,8 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'] +
         ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
+        if not ctx._hw_manager.hardware.is_simulator:
+            write_to_csv(ctx, prev_time)
 
     # Export the time log to a tsv file
     if not ctx.is_simulating():
@@ -352,7 +378,7 @@ def run(ctx: protocol_api.ProtocolContext):
             f2.write('pipette\ttip_count\n')
             for key in tip_track['counts'].keys():
                 row=str(key)
-                f.write(str(key)+'\t'+format(tip_track['counts'][key]))
+                f2.write(str(key)+'\t'+format(tip_track['counts'][key]))
         f2.close()
 
     ############################################################################

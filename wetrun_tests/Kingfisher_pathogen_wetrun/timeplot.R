@@ -2,16 +2,20 @@ library(lubridate)
 library(tidyverse)
 #install.packages("kableExtra")
 
-data_A <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/tests/Kingfisher_pathogen_wetrun/KA_SampleSetup_pathogen_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
+data_A <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/KA_SampleSetup_pathogen_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
 data_A$station <- 'A: sample setup'
-data_B1 <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/tests/Kingfisher_pathogen_wetrun/KB_sample_prep_pathogen_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
+data_B1 <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/KB_sample_prep_pathogen_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
 data_B1$station <- 'B1: sample prep'
-data_B2 <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/tests/Kingfisher_pathogen_wetrun/KB_plate_filling_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
+data_B2 <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/KB_plate_filling_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
 data_B2$station <- 'B2: plate filling'
-data_C <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/tests/Kingfisher_pathogen_wetrun/KC_qPCR_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
-data_C$station <- 'C: qPCR'
+data_C <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/KC_qPCR_time_log_nomulti.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
+data_C$station <- 'C: qPCR preparation'
+data_kf <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/Kkf_extraction_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
+data_kf$station <- 'KF: extraction'
+data_qpcr <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/Kqpcr_qPCR_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
+data_qpcr$station <- 'Thermocycler: qPCR'
 
-data<-rbind(data_A,data_B1,data_B2,data_C)
+data<-rbind(data_A,data_B1,data_B2, data_kf, data_C, data_qpcr)
 
 #Format time
 data$Time <- parse_time(data$execution_time, "%H:%M:%OS")
@@ -26,10 +30,10 @@ ggplot(data,aes(x=fct_reorder(fct_reorder(new_desc, STEP),station), y=Time)) +
   ylab('Time in minutes')+
   scale_fill_brewer(palette = "Set1")
 
-ggsave('/Users/covid19warriors/Documents/code/covid19clinic/tests/Kingfisher_pathogen_wetrun/kingfisher_times_test_27042020_nomix.png', height=6, width=9, plot=last_plot())
+ggsave('/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/kingfisher_times_test_27042020_nomix.png', height=6, width=9, plot=last_plot())
 
 table1 <- data %>%
   group_by(station) %>%
   summarize(steps=n(),total_time=sum(as.double(Time))/60)
 
-write.table(table1, file="/Users/covid19warriors/Documents/code/covid19clinic/tests/Kingfisher_pathogen_wetrun/table1_times.txt",row.names = FALSE, sep='\t', quote = FALSE)
+write.table(table1, file="/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/table1_times.txt",row.names = FALSE, sep='\t', quote = FALSE)
