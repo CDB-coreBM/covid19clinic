@@ -61,8 +61,7 @@ def run(ctx: protocol_api.ProtocolContext):
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
         1: {'Execute': True, 'description': 'Add MS2'},
-        2: {'Execute': True, 'description': 'Mix beads'},
-        3: {'Execute': True, 'description': 'Transfer beads'}
+        2: {'Execute': True, 'description': 'Transfer beads'}
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -108,7 +107,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     Beads = Reagent(name='Magnetic beads and binding solution',
                     flow_rate_aspirate=0.75,
-                    flow_rate_dispense=1,
+                    flow_rate_dispense=0.75,
                     rinse=True,
                     num_wells=math.ceil(NUM_SAMPLES / 32),
                     delay=2,
@@ -322,33 +321,7 @@ def run(ctx: protocol_api.ProtocolContext):
         f.close()
 
     ############################################################################
-    # STEP 2: PREMIX BEADS
-    ############################################################################
-    STEP += 1
-    if STEPS[STEP]['Execute'] == True:
-
-        start = datetime.now()
-        ctx.comment('Step ' + str(STEP) + ': ' + STEPS[STEP]['description'])
-        ctx.comment('###############################################')
-        if not m300.hw_pipette['has_tip']:
-            m300.pick_up_tip()
-            ctx.comment('Tip picked up')
-        ctx.comment('Mixing ' + Beads.name)
-
-        # Mixing
-        custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col], vol=180,
-                   rounds=10, blow_out=True, mix_height=0, x_offset = x_offset)
-        ctx.comment('Finished premixing!')
-        ctx.comment('Now, reagents will be transferred to deepwell plate.')
-
-        end = datetime.now()
-        time_taken = (end - start)
-        ctx.comment('Step ' + str(STEP) + ': ' +
-                    STEPS[STEP]['description'] + ' took ' + str(time_taken))
-        STEPS[STEP]['Time:'] = str(time_taken)
-
-    ############################################################################
-    # STEP 3: TRANSFER BEADS
+    # STEP 2: TRANSFER BEADS
     ############################################################################
     STEP += 1
     if STEPS[STEP]['Execute'] == True:
@@ -369,7 +342,7 @@ def run(ctx: protocol_api.ProtocolContext):
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
                     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
-                               vol=170, rounds=10, blow_out=True, mix_height=0,
+                               vol=170, rounds=10, blow_out=False, mix_height=0,
                                x_offset = x_offset)
                 ctx.comment(
                     'Aspirate from reservoir column: ' + str(Beads.col))
@@ -380,11 +353,8 @@ def run(ctx: protocol_api.ProtocolContext):
                                       dest=work_destinations_cols[i], vol=transfer_vol,
                                       air_gap_vol=air_gap_vol, x_offset=x_offset,
                                       pickup_height=pickup_height, disp_height = -2,
-                                      rinse=rinse, blow_out = True, touch_tip=False)
-            ctx.comment('Mixing MS with beads ')
-            #custom_mix(m300, Beads, location=work_destinations_cols[i], vol=180,
-                       #rounds=1, blow_out=True, mix_height=16,
-                       #x_offset = x_offset)
+                                      rinse=rinse, blow_out = False, touch_tip=False)
+
         m300.drop_tip(home_after=False)
         tip_track['counts'][m300] += 8
         end = datetime.now()
