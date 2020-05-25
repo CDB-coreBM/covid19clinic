@@ -9,11 +9,11 @@ data_B1$station <- 'B1: sample prep'
 data_B2 <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/KB_plate_filling_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
 data_B2$station <- 'B2: plate filling'
 data_C <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/KC_qPCR_time_log_nomulti.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
-data_C$station <- 'C: qPCR preparation'
+data_C$station <- 'C: RT-qPCR preparation'
 data_kf <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/Kkf_extraction_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
 data_kf$station <- 'KF: extraction'
 data_qpcr <- read_delim("/Users/covid19warriors/Documents/code/covid19clinic/wetrun_tests/Kingfisher_pathogen_wetrun/Kqpcr_qPCR_time_log.txt", "\t", escape_double = FALSE, col_types = cols(execution_time = col_character()), trim_ws = TRUE)
-data_qpcr$station <- 'Thermocycler: qPCR'
+data_qpcr$station <- 'Thermocycler: RT-qPCR'
 
 data<-rbind(data_A,data_B1,data_B2, data_kf, data_C, data_qpcr)
 
