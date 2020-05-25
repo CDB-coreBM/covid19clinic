@@ -1,3 +1,5 @@
+**Documentation in progress**
+
 
 One working unit is composed by 4 OT2 robots divided in 3 different stations named A, B1, B2, and C. 
 Stations letters define a OT2 robot with a certain combination of pippettes attached, meaning the protocols can be run in the same robot. This is the case of Station B1 and B2, thus we could build this circuit using only 3 robots. Each station performs different actions as described below:
