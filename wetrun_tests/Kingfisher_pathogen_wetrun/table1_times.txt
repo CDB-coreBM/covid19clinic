@@ -1,7 +1,0 @@
-station	steps	total_time
-A: sample setup	1	54.2722459166667
-B1: sample prep	3	59.44988795
-B2: plate filling	5	41.0292802166667
-C: qPCR preparation	2	20.4303656666667
-KF: extraction	1	30
-Thermocycler: qPCR	1	70
