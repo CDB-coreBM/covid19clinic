@@ -2,7 +2,7 @@
 
 
 
-**Height adjustment**
+*Height adjustment*
 
 Due to the unavailability of liquid detection on the tip's edge, height position from which the pipette must aspirate has to be fed as a parameter. Going directly to the bottom of each well is not a good mean of procedure, as it could touch the bottom of the well and not aspirate correctly the needed amount of reactive volume, neither sinking the tip to the bottom edge which would induce the flooding of the pipette itself and prompt its malfunction. Furthermore, each reactive container can have different shapes and sizes, which makes the task of calculating the aspiration height non trivial. 
 
