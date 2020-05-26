@@ -29,11 +29,15 @@ while True:
             print('New folder detected: ' + run)
             #os.system(script_path + ' '+ run + '&')
     for run in watching:
-        for file in os.listdir(target_dir + run + '/results/'):
-            if file.endswith('.csv'):
-                print('Executing rmarkdown for ' + run)
-                os.system(script_path + ' ' + run)
-                watching.remove(run)
-                time.sleep(30)
-                break
+        if os.path.isdir(target_dir + run):
+            for file in os.listdir(target_dir + run + '/results/'):
+                if file.endswith('.csv'):
+                    print('Executing rmarkdown for ' + run)
+                    os.system(script_path + ' ' + run)
+                    watching.remove(run)
+                    time.sleep(30)
+                    break
+        else:
+            watching.remove(run)
+            print('Folder removed: ' + run)
     time.sleep(30)
