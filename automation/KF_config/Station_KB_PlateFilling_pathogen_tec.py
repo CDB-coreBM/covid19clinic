@@ -25,7 +25,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 95
+NUM_SAMPLES = $num_samples
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5
 run_id = $run_id
@@ -51,7 +51,7 @@ def run(ctx: protocol_api.ProtocolContext):
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
             STEPS[s]['wait_time'] = 0
-    folder_path = '/var/lib/jupyter/notebooks/'+run_id'
+    folder_path = '/var/lib/jupyter/notebooks/'+run_id
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
