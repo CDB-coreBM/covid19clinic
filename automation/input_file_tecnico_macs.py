@@ -35,7 +35,7 @@ def rep_data(n, name, f, d, run_name):
     d=d.replace('$num_samples', str(n))
     d=d.replace('$technician', '\'' + str(name) + '\'')
     d=d.replace('$date', '\'' + str(f) + '\'')
-    d=d.replace('$run_id',str(run_name))
+    d=d.replace('$run_id','\'' + str(run_name) + '\'')
     return d
 
 ###############################################################################
