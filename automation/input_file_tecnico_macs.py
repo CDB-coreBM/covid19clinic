@@ -161,7 +161,7 @@ def main():
         print('Volumen y número tubos de MMIX', file=f)
         print('###############################', file=f)
         print('Serán necesarios '+format(round(mmix_vol,2))+' \u03BCl', file=f)
-        print('A dividir en '+format(num_wells_mmix), file=f)
+        print('A dividir en '+format(num_wells_mmix) +' pocillos', file=f)
         print('Volumen por pocillo: '+ format(round(mmix_vol/num_wells_mmix,2)+security_volume)+ ' \u03BCl', file=f)
         f.close()
         print('Revisa los volúmenes y pocillos necesarios en el archivo OT'+str(id)+'volumes.txt dentro de la carpeta '+run_name)
