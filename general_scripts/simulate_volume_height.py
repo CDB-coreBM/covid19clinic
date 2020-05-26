@@ -66,6 +66,8 @@ for simulation in range(total_NUM_SAMPLES):
     # Tune variables
     volume_mmix = 20  # Volume of transfered master mix
     volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
+    num_wells = math.ceil(volume_mmix_available/2000)
+    volume_mmix_available = volume_mmix_available + 50*num_wells
     diameter_screwcap = 8.25  # Diameter of the screwcap
     volume_cone = 50  # Volume in ul that fit in the screwcap cone
     x_offset = [0,0]
