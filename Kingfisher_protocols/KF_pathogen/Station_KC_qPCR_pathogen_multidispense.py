@@ -27,7 +27,7 @@ metadata = {
 NUM_SAMPLES = 10
 air_gap_vol = 5
 air_gap_sample = 2
-run_id = 'test'
+run_id = $run_id
 
 # Tune variables
 size_transfer = 5  # Number of wells the distribute function will fill

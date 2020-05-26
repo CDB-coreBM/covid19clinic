@@ -28,7 +28,7 @@ metadata = {
 NUM_SAMPLES = 95
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5
-run_id = 'test'
+run_id = $run_id
 
 x_offset = [0,0]
 multi_well_rack_area = 8.2 * 71.2  # Cross section of the 12 well reservoir

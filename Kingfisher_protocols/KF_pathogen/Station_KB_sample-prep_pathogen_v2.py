@@ -28,7 +28,7 @@ metadata = {
 ##################
 NUM_SAMPLES = 96
 air_gap_vol = 15
-run_id = 'test'
+run_id = $run_id
 
 MS_vol = 5
 air_gap_vol_MS = 2

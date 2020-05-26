@@ -31,10 +31,11 @@ def select_protocol_type(p1, p2):
             print('Please, try again')
     return pr,p
 
-def rep_data(n, name, f, d):
+def rep_data(n, name, f, d, run_name):
     d=d.replace('$num_samples', str(n))
     d=d.replace('$technician', '\'' + str(name) + '\'')
     d=d.replace('$date', '\'' + str(f) + '\'')
+    d=d.replace('$run_id',str(run_name))
     return d
 
 ###############################################################################
@@ -117,7 +118,7 @@ def main():
             fin = open(protocol_path+file, "rt") # open file and copy protocol
             data = fin.read()
             fin.close()
-            final_protocol=rep_data(num_samples, tec_name, t_registro, data) #replace data
+            final_protocol=rep_data(num_samples, tec_name, t_registro, data, run_name) #replace data
             position=file.find('_',12) # find _ position after the name and get value
             filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.py' # assign a filename date + station name + id
             fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
