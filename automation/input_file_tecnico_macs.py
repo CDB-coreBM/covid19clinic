@@ -163,7 +163,10 @@ def main():
 
         mmix_vol = (num_samples * 1.1 * mmix_volume)
         num_wells_mmix = math.ceil(mmix_vol/2000) #Number of wells needed
-        mmix_vol = mmix_vol + (security_volume_mmix/mmix_volume) * num_wells_mmix #Add security volume in each well
+        mmix_vol = mmix_vol + (security_volume_mmix) * num_wells_mmix #Add security volume in each well
+        reac1_vol = mmix_vol / 20 * 6.25
+        reac2_vol = mmix_vol / 20 * 1.25
+        nfree_vol = mmix_vol / 20 * 12.5
 
         #Print the information to a txt file
         f = open(final_path + '/OT' + str(id) + "volumes.txt", "wt")
@@ -171,7 +174,7 @@ def main():
         print('Volumen y localización de beads', file=f)
         print('##############################', file=f)
         print('Es necesario un volumen de beads total de ' + format(round(total_bead,2))' \u03BCl', file=f)
-        print('La proporción de reactivos es: ', bead_vol,'\u03BCl beads y',isoprop_vol, '\u03BCl de isopropanol', file=f)
+        print('La proporción de reactivos es: ', bead_vol,'\u03BCl beads \n',isoprop_vol, '\u03BCl de isopropanol\n', file=f)
         print('A dividir en ' + format(num_wells) +' pocillos', file=f)
         print('Volumen por pocillo: ' + format(round(total_bead/num_wells,2)) + ' \u03BCl', file=f)
         print('',file=f)
@@ -179,6 +182,7 @@ def main():
         print('Volumen y número tubos de MMIX', file=f)
         print('###############################', file=f)
         print('Serán necesarios ' + format(round(mmix_vol,2)) + ' \u03BCl', file=f)
+        print('La proporción de reactivos es:\n', reac1_vol,'\u03BCl de 1-Step Multiplex Master Mix (No ROX, 4X)\n',reac2_vol, '\u03BCl de COVID-19 Assay Multiplex \n', nfree_vol,'\u03BCl de Nuclease-free water\n',file=f)
         print('A dividir en ' + format(num_wells_mmix) + ' pocillos', file=f)
         print('Volumen por pocillo: ' + format(round(mmix_vol/num_wells_mmix,2) + security_volume_mmix) + ' \u03BCl', file=f)
         f.close()
