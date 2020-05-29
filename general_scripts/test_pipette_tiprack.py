@@ -21,12 +21,13 @@ REAGENT SETUP:
 
 """
 
-NUM_SAMPLES = 8
-transfer_volume = 15
+NUM_SAMPLES = 24
+transfer_volume = 195
 air_gap = 5
-pipette = 'p300_single_gen2'
+pipette = 'p300_multi_gen2'
 position = 'right' # 'left'
-tip_model = 'tipone_96_tiprack_200ul'
+tip_model = 'biotix_96_tiprack_300ul_flat'
+num_cols = math.ceil(NUM_SAMPLES/8)
 
 def run(ctx: protocol_api.ProtocolContext):
 
@@ -50,8 +51,13 @@ def run(ctx: protocol_api.ProtocolContext):
     ethanol = reagent_res.wells('A6')
     beads = reagent_res.wells('A7')
     destinations = deepwell.wells()[:NUM_SAMPLES]
+    destinations_multi = deepwell.rows()[0][:num_cols]
 
-    for dest in destinations:
+    if 'multi' in pipette:
+        dests=destinations_multi
+    else:
+        dests=destinations
+    for dest in dests:
         pip.pick_up_tip()
         pip.transfer(transfer_volume, water, dest.top(), new_tip='never', air_gap = air_gap)
         pip.touch_tip(speed=20, v_offset=-5, radius=0.9)
