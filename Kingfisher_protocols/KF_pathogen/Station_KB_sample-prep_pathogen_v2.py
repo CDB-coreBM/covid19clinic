@@ -326,7 +326,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #Source samples
             move_vol_multichannel(m20, reagent = MS, source = ms_origins, dest = d,
             vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = x_offset,
-                   pickup_height = 0.2, disp_height = -35, rinse = False,
+                   pickup_height = 0.5, disp_height = -35, rinse = False,
                    blow_out=True, touch_tip=True)
             m20.drop_tip()
             tip_track['counts'][m20]+=8
