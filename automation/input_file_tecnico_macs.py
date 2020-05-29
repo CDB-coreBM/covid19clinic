@@ -1,4 +1,4 @@
-# This file will aim to update and customize the protocol for each sample
+# This script aims to update and customize the protocol for each sample
 # run. Set the number of samples, date, register technician name and create
 # the directories to run
 from datetime import datetime
@@ -8,14 +8,14 @@ import pandas as pd
 import string
 import math
 import time
-homedir=os.path.expanduser("~")
+homedir = os.path.expanduser("~")
 main_path = '/Volumes/opentrons/'
 code_path = main_path + 'code/covid19clinic/automation/'
 KF_path = code_path + 'KF_config/'
 HC_path = code_path + 'HC_config/'
 excel = main_path + 'barcode_template/muestras.xlsx'
 
-#Volumes for KF pathogen stations
+# Volumes for KF pathogen stations
 security_volume_mmix = 50
 security_volume_beads = 800
 mmix_volume = 20
@@ -67,7 +67,7 @@ def main():
             num_samples_control += 1
 
     # Get sample data from user
-    control=False
+    control = False
     while control==False:
         num_samples = int(input('Número de muestras a procesar (incluidos PC + NC): '))
         if (num_samples>0 and num_samples<=96):
@@ -82,7 +82,7 @@ def main():
         print('El número de muestras coincide')
 
     # Get technician name
-    control=False
+    control = False
     while control==False:
         tec_name = (input('Nombre del técnico (usuario HCP): '))
         if isinstance(tec_name, str):
@@ -100,9 +100,9 @@ def main():
             print('Por favor, assigna un ID numérico para éste RUN')
 
     # Get date
-    fecha=datetime.now()
-    t_registro=fecha.strftime("%m/%d/%Y, %H:%M:%S")
-    dia_registro=fecha.strftime("%Y_%m_%d")
+    fecha = datetime.now()
+    t_registro = fecha.strftime("%m/%d/%Y, %H:%M:%S")
+    dia_registro = fecha.strftime("%Y_%m_%d")
 
     # select the type of protocol to be run
     [protocol,protocol_path]=select_protocol_type(KF_path, HC_path)
@@ -187,7 +187,9 @@ def main():
         print('Volumen por pocillo: ' + format(round(mmix_vol/num_wells_mmix,2) + security_volume_mmix) + ' \u03BCl', file=f)
         f.close()
         print('Revisa los volúmenes y pocillos necesarios en el archivo OT' + str(id) + 'volumes.txt dentro de la carpeta '+run_name)
-
+        f2 = open(main_path + 'summary/run_history.txt','a')
+        print(run_name, num_samples, tec_name, t_registro, data, file=f2)
+        f2.close()
 if __name__ == '__main__':
     main()
     print('Success!')
