@@ -7,6 +7,7 @@ import os.path
 import pandas as pd
 import string
 import math
+import time
 homedir=os.path.expanduser("~")
 main_path = '/Volumes/opentrons/'
 code_path = main_path + 'code/covid19clinic/automation/'
@@ -15,9 +16,11 @@ HC_path = code_path + 'HC_config/'
 excel = main_path + 'barcode_template/muestras.xlsx'
 
 #Volumes for KF pathogen stations
-security_volume = 50
+security_volume_mmix = 50
+security_volume_beads = 800
 mmix_volume = 20
-beads_volume = 260
+beads_volume = 10
+isoprop_volume = 250
 
 # Function to distinguish between HC and KF protocols
 def select_protocol_type(p1, p2):
@@ -126,9 +129,17 @@ def main():
             final_protocol=rep_data(num_samples, tec_name, t_registro, data, run_name) #replace data
             position=file.find('_',12) # find _ position after the name and get value
             filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.py' # assign a filename date + station name + id
-            fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
-            fout.write(final_protocol)
-            fout.close()
+            for i in range(0,5): #Try up to 5 times with 1 sec delay
+                while True:
+                    try:
+                        fout = open(os.path.join(final_path+'/scripts/',filename), "wt")
+                        fout.write(final_protocol)
+                        fout.close()
+                    except SomeSpecificException:
+                        time.sleep(1)
+                        continue
+                    break
+
         if file.endswith('.Rmd'):
             fin = open(protocol_path+file, "rt") # open file and copy protocol
             data = fin.read()
@@ -141,28 +152,35 @@ def main():
 
     if protocol=='KF':
         #Calculate needed volumes and wells in stations B and C
-        bead_volume = beads_volume * 8 * math.ceil(num_samples/8) * 1.1
+        bead_vol = beads_volume * 8 * math.ceil(num_samples/8) * 1.1
+        isoprop_vol = isoprop_volume * 8 * math.ceil(num_samples/8) * 1.1
         num_wells = math.ceil(num_samples / 32) #Number of wells needed
-        bead_volume = bead_volume + security_volume * num_wells #Add security volume in each well
+
+        #Add security volume according to proportion
+        bead_vol = bead_vol + (security_volume_beads/(beads_volume + isoprop_volume)) * beads_volume * num_wells #Add security volume in each well
+        isoprop_vol = isoprop_vol + (security_volume_beads/(beads_volume + isoprop_volume)) * isoprop_volume * num_wells #Add security volume in each well
+        total_bead = bead_vol + isoprop_vol
 
         mmix_vol = (num_samples * 1.1 * mmix_volume)
         num_wells_mmix = math.ceil(mmix_vol/2000) #Number of wells needed
-        mmix_vol = mmix_vol + security_volume * num_wells_mmix #Add security volume in each well
+        mmix_vol = mmix_vol + (security_volume_mmix/mmix_volume) * num_wells_mmix #Add security volume in each well
 
         #Print the information to a txt file
         f = open(final_path + '/OT' + str(id) + "volumes.txt", "wt")
         print('######### Station B ##########', file=f)
         print('Volumen y localización de beads', file=f)
         print('##############################', file=f)
-        print('Es necesario un volumen de beads total de ' + format(round(bead_volume,2)) + security_volume * num_wells' \u03BCl', file=f)
+        print('Es necesario un volumen de beads total de ' + format(round(total_bead,2))' \u03BCl', file=f)
+        print('La proporción de reactivos es: ', bead_vol,'\u03BCl beads y',isoprop_vol, '\u03BCl de isopropanol', file=f)
         print('A dividir en ' + format(num_wells) +' pocillos', file=f)
-        print('Volumen por pocillo: ' + format(round(bead_volume/num_wells,2)) + security_volume + ' \u03BCl', file=f)
+        print('Volumen por pocillo: ' + format(round(total_bead/num_wells,2)) + ' \u03BCl', file=f)
+        print('',file=f)
         print('######### Station C ##########', file=f)
         print('Volumen y número tubos de MMIX', file=f)
         print('###############################', file=f)
         print('Serán necesarios ' + format(round(mmix_vol,2)) + ' \u03BCl', file=f)
         print('A dividir en ' + format(num_wells_mmix) + ' pocillos', file=f)
-        print('Volumen por pocillo: ' + format(round(mmix_vol/num_wells_mmix,2) + security_volume) + ' \u03BCl', file=f)
+        print('Volumen por pocillo: ' + format(round(mmix_vol/num_wells_mmix,2) + security_volume_mmix) + ' \u03BCl', file=f)
         f.close()
         print('Revisa los volúmenes y pocillos necesarios en el archivo OT' + str(id) + 'volumes.txt dentro de la carpeta '+run_name)
 
