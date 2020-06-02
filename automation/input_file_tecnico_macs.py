@@ -188,7 +188,7 @@ def main():
         f.close()
         print('Revisa los volúmenes y pocillos necesarios en el archivo OT' + str(id) + 'volumes.txt dentro de la carpeta '+run_name)
         f2 = open(main_path + 'summary/run_history.txt','a')
-        print(run_name, num_samples, tec_name, t_registro, file=f2)
+        print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f2)
         f2.close()
 if __name__ == '__main__':
     main()
