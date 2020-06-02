@@ -127,7 +127,7 @@ def run(ctx: protocol_api.ProtocolContext):
                        x_offset = x_offset)
         # SOURCE
         s = source.bottom(pickup_height).move(Point(x = x_offset[0]))
-        pipet.aspirate(vol, s)  # aspirate liquid
+        pipet.aspirate(vol, s, rate = reagent.flow_rate_aspirate)  # aspirate liquid
         if air_gap_vol != 0:  # If there is air_gap_vol, switch pipette to slow speed
             pipet.aspirate(air_gap_vol, source.top(z = -2),
                            rate = reagent.flow_rate_aspirate)  # air gap
