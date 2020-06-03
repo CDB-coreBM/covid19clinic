@@ -120,7 +120,7 @@ def main():
 
     if protocol=='KF':
         file_name = 'qpcr_template_OT'+str(id)+'_'+protocol+'.txt'
-        os.system('python3 '+code_path+'thermoqpcr_generate_template.py "' + final_path + '/'+ file_name+'"')
+        os.system('python3 '+code_path+'thermoqpcr_generate_template.py "' + final_path + '/'+ file_name+'" "'+ final_path+'/OT'+str(id)+'_samples.xlsx"')
     for file in os.listdir(protocol_path): # look for all protocols in folder
         if file.endswith('.py') and 'rmarkdown' not in file:
             fin = open(protocol_path+file, "rt") # open file and copy protocol
