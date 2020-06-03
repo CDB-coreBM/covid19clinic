@@ -26,7 +26,9 @@ metadata = {
 
 # Defined variables
 ##################
-NUM_SAMPLES = $num_samples
+NUM_SAMPLES = 96
+NUM_SAMPLES = NUM_SAMPLES - 1 # PC is in last well (no sample)
+
 air_gap_vol = 15
 run_id = $run_id
 
@@ -326,7 +328,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #Source samples
             move_vol_multichannel(m20, reagent = MS, source = ms_origins, dest = d,
             vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = x_offset,
-                   pickup_height = 0.2, disp_height = -35, rinse = False,
+                   pickup_height = 0.5, disp_height = -35, rinse = False,
                    blow_out=True, touch_tip=True)
             m20.drop_tip()
             tip_track['counts'][m20]+=8
@@ -385,18 +387,15 @@ def run(ctx: protocol_api.ProtocolContext):
                 [pickup_height, change_col] = calc_height(
                     reagent = Beads, cross_section_area = multi_well_rack_area,
                     aspirate_volume = transfer_vol * 8, min_height=1)
-
                 if change_col == True:  # If we switch column because there is not enough volume left in current reservoir column we mix new column
                     ctx.comment(
                         'Mixing new reservoir column: ' + str(Beads.col))
                     custom_mix(m300, Beads, Beads.reagent_reservoir[Beads.col],
                                vol=180, rounds=10, blow_out=True, mix_height=0,
                                x_offset = x_offset)
-                ctx.comment(
-                    'Aspirate from reservoir column: ' + str(Beads.col))
+                ctx.comment('Aspirate from reservoir column: ' + str(Beads.col))
                 ctx.comment('Pickup height is ' + str(pickup_height))
-
-                if j != 0:
+                if j != 0: #Rinse only the first round
                     rinse = False
                 move_vol_multichannel(m300, reagent=Beads, source=Beads.reagent_reservoir[Beads.col],
                                       dest=work_destinations_cols[i], vol=transfer_vol,
