@@ -34,13 +34,20 @@ run_id = 'test'
 # Tune variables
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
+<<<<<<< HEAD
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix) # Total volume needed
+=======
+>>>>>>> dca3002088982ece9b5266c363fdc37d433aec4d
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
+extra_volume_mmix = 50 #default in calc_height
 
 # Calculated variables
+volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
+num_wells_mmix = math.ceil(volume_mmix_available/2000) #Number of wells needed
+volume_mmix_available += extra_volume_mmix * num_wells_mmix # Add security volume in each well
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
@@ -94,21 +101,21 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume = volume_mmix_available,
-                      num_wells = math.ceil(volume_mmix_available/2000), #change with num samples
+                      num_wells = num_wells_mmix, #changes with num samples
                       delay = 0,
                       h_cono = h_cone,
                       v_fondo = volume_cone  # V cono
                       )
 
-    Samples = Reagent(name='Samples',
-                      rinse=False,
+    Samples = Reagent(name = 'Samples',
+                      rinse = False,
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
-                      reagent_reservoir_volume=50,
-                      delay=0,
-                      num_wells=num_cols,  # num_cols comes from available columns
-                      h_cono=0,
-                      v_fondo=0
+                      reagent_reservoir_volume = 50,
+                      delay = 0,
+                      num_wells = num_cols,  # num_cols comes from available columns
+                      h_cono = 0,
+                      v_fondo = 0
                       )
 
     MMIX.vol_well = MMIX.vol_well_original
@@ -299,7 +306,7 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multichannel(m20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_sample, x_offset = x_offset,
                    pickup_height = 0.2, disp_height = -10, rinse = False,
-                   blow_out=True, touch_tip=False)
+                   blow_out = True, touch_tip = True)
             m20.drop_tip()
             tip_track['counts'][m20]+=8
 

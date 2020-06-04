@@ -26,6 +26,8 @@ metadata = {
 #Defined variables
 ##################
 NUM_SAMPLES = $num_samples
+NUM_SAMPLES = NUM_SAMPLES - 1 # PC is in last well (no sample)
+
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5
 run_id = $run_id
@@ -76,7 +78,6 @@ def run(ctx: protocol_api.ProtocolContext):
             self.unused=[]
             self.tip_recycling = tip_recycling
             self.vol_well_original = reagent_reservoir_volume / num_wells
-
 
     # Reagents and their characteristics
     WashBuffer1 = Reagent(name='Wash Buffer 1',

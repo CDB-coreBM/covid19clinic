@@ -79,7 +79,6 @@ def run(ctx: protocol_api.ProtocolContext):
             self.tip_recycling = tip_recycling
             self.vol_well_original = reagent_reservoir_volume / num_wells
 
-
     # Reagents and their characteristics
     WashBuffer1 = Reagent(name='Wash Buffer 1',
                           flow_rate_aspirate=0.75,

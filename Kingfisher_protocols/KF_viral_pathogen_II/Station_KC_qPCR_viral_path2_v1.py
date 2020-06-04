@@ -24,22 +24,26 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 10
+NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
+
 air_gap_vol = 5
 air_gap_sample = 2
+run_id = $run_id
 
 # Tune variables
-size_transfer = 7  # Number of wells the distribute function will fill
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume of first screwcap
-extra_dispensal = 5  # Extra volume for master mix in each distribute transfer
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
+extra_volume_mmix = 50 #default in calc_height
 
 # Calculated variables
+volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
+num_wells_mmix = math.ceil(volume_mmix_available/2000) #Number of wells needed
+volume_mmix_available += security_volume_mmix * num_wells_mmix #Add security volume in each well
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
@@ -94,7 +98,7 @@ def run(ctx: protocol_api.ProtocolContext):
                       flow_rate_aspirate = 0.75,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume = volume_mmix_available,
-                      num_wells = math.ceil(volume_mmix_available/2000), #change with num samples
+                      num_wells = num_wells_mmix, #change with num samples
                       delay = 0,
                       h_cono = h_cone,
                       v_fondo = volume_cone  # V cono

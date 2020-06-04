@@ -4,12 +4,12 @@ import os
 import os.path
 import sys
 
-homedir=os.path.expanduser("~")
+#homedir = os.path.expanduser("~")
 out_file = sys.argv[1]
 main_path = '/Volumes/opentrons/'
 code_path = main_path + '/code/covid19clinic/automation/'
 input_file = code_path + 'qpcr_kf_template.txt'
-excel = main_path + '/barcode_template/muestras.xlsx'
+excel = sys.argv[2]
 
 #Read the excel file from the run and obtain the dictionary of samples
 df = pd.read_excel (excel, sheet_name='Deepwell layout', header = None, index_col = 0)
