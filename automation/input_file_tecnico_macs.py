@@ -171,7 +171,7 @@ def main():
         #Print the information to a txt file
         f = open(final_path + '/OT' + str(id) + "volumes.txt", "wt")
         print('######### Station B ##########', file=f)
-        print('Volumen y localización de beads para',num_samples, file=f)
+        print('Volumen y localización de beads para',num_samples,'muestras', file=f)
         print('##############################', file=f)
         print('Es necesario un volumen de beads total de',format(round(total_bead)),' \u03BCl', file=f)
         print('La proporción de reactivos es:\n', round(bead_vol),'\u03BCl de beads \n',round(isoprop_vol), '\u03BCl de isopropanol\n', file=f)
@@ -179,7 +179,7 @@ def main():
         print('Volumen por pocillo:',format(round(total_bead/num_wells)),'\u03BCl', file=f)
         print('',file=f)
         print('######### Station C ##########', file=f)
-        print('Volumen y número tubos de MMIX para',num_samples, file=f)
+        print('Volumen y número tubos de MMIX para',num_samples,'muestras', file=f)
         print('###############################', file=f)
         print('Serán necesarios',format(round(mmix_vol)),'\u03BCl', file=f)
         print('La proporción de reactivos es:\n', round(reac1_vol),'\u03BCl de 1-Step Multiplex Master Mix (No ROX, 4X)\n',round(reac2_vol), '\u03BCl de COVID-19 Assay Multiplex \n', round(nfree_vol),'\u03BCl de Nuclease-free water\n',file=f)
