@@ -24,17 +24,17 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 10
+NUM_SAMPLES = 95
 NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
 
 air_gap_vol = 5
 air_gap_sample = 2
-run_id = $run_id
+run_id = 'test'
 
 # Tune variables
 volume_mmix = 20  # Volume of transfered master mix
 volume_sample = 5  # Volume of the sample
-volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
+volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix) # Total volume needed
 diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
