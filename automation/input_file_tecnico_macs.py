@@ -162,8 +162,8 @@ def main():
         total_bead = bead_vol + isoprop_vol
 
         mmix_vol = (num_samples * 1.1 * mmix_volume)
-        num_wells_mmix = math.ceil(mmix_vol/2000) #Number of wells needed
-        mmix_vol = mmix_vol + (security_volume_mmix) * num_wells_mmix #Add security volume in each well
+        num_wells_mmix = math.ceil(mmix_vol/2000) # Number of wells needed
+        mmix_vol = mmix_vol + (security_volume_mmix) * num_wells_mmix # Add security volume in each well
         reac1_vol = mmix_vol / 20 * 6.25
         reac2_vol = mmix_vol / 20 * 1.25
         nfree_vol = mmix_vol / 20 * 12.5
