@@ -25,7 +25,7 @@ metadata = {
 #Defined variables
 ##################
 NUM_SAMPLES = $num_samples
-NUM_SAMPLES = NUM_SAMPLES - 1 # Remove last sample (PC), done manually
+NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
 
 air_gap_vol = 5
 air_gap_sample = 2
@@ -38,12 +38,10 @@ diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
-extra_volume_mmix = 50 #default in calc_height
 
 # Calculated variables
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
-num_wells_mmix = math.ceil((volume_mmix_available+extra_volume_mmix)/2000) #Number of wells needed
-volume_mmix_available += extra_volume_mmix * num_wells_mmix #Add security volume in each well
+num_wells_mmix = math.ceil(volume_mmix_available/2000) #Number of wells needed
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
@@ -174,11 +172,11 @@ def run(ctx: protocol_api.ProtocolContext):
         if blow_out == True:
             pipet.blow_out(location.top(z=-2))  # Blow out
 
-    def calc_height(reagent, cross_section_area, aspirate_volume, min_height = 0.5, extra_volume = 50):
+    def calc_height(reagent, cross_section_area, aspirate_volume, min_height = 0.5):
         nonlocal ctx
         ctx.comment('Remaining volume ' + str(reagent.vol_well) +
                     '< needed volume ' + str(aspirate_volume) + '?')
-        if reagent.vol_well < aspirate_volume + extra_volume:
+        if reagent.vol_well < aspirate_volume:
             reagent.unused.append(reagent.vol_well)
             ctx.comment('Next column should be picked')
             ctx.comment('Previous to change: ' + str(reagent.col))
@@ -301,8 +299,8 @@ def run(ctx: protocol_api.ProtocolContext):
             #Source samples
             move_vol_multichannel(m20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_sample, x_offset = x_offset,
-                   pickup_height = 1, disp_height = -12, rinse = False,
-                   blow_out = False, touch_tip = False)
+                   pickup_height = 0.2, disp_height = -10, rinse = False,
+                   blow_out = True, touch_tip = True)
             m20.drop_tip()
             tip_track['counts'][m20]+=8
 
