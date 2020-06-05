@@ -38,7 +38,6 @@ diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
-extra_volume_mmix = 50 # default in calc_height is 50
 
 # Calculated variables
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
