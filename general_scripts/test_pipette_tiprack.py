@@ -22,11 +22,11 @@ REAGENT SETUP:
 """
 
 NUM_SAMPLES = 24
-transfer_volume = 195
-air_gap = 5
-pipette = 'p300_multi_gen2'
-position = 'right' # 'left'
-tip_model = 'biotix_96_tiprack_300ul_flat'
+transfer_volume = 185
+air_gap = 15
+pipette = 'p300_single_gen2'
+position = 'left' # 'right'
+tip_model = 'tipone_96_tiprack_200ul'
 num_cols = math.ceil(NUM_SAMPLES/8)
 
 def run(ctx: protocol_api.ProtocolContext):
