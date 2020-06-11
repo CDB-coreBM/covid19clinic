@@ -24,12 +24,12 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 95
+NUM_SAMPLES = 10
 NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
 
 air_gap_vol = 5
 air_gap_sample = 2
-run_id = 'test'
+run_id = $run_id
 
 # Tune variables
 volume_mmix = 20  # Volume of transfered master mix
@@ -41,7 +41,7 @@ x_offset = [0,0]
 
 # Calculated variables
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
-num_wells_mmix = math.ceil(volume_mmix_available / 2000) # Number of wells needed
+num_wells_mmix = math.ceil(volume_mmix_available/2000) #Number of wells needed
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
@@ -270,8 +270,7 @@ def run(ctx: protocol_api.ProtocolContext):
         p300.pick_up_tip()
 
         for dest in pcr_wells:
-            [pickup_height, col_change] = calc_height(MMIX, area_section_screwcap,
-            volume_mmix)
+            [pickup_height, col_change] = calc_height(MMIX, area_section_screwcap, volume_mmix)
             move_vol_multichannel(p300, reagent = MMIX, source = MMIX.reagent_reservoir[MMIX.col],
             dest = dest, vol = volume_mmix, air_gap_vol = air_gap_vol, x_offset = x_offset,
                    pickup_height = pickup_height, disp_height = -10, rinse = False,
