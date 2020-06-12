@@ -224,7 +224,7 @@ def run(ctx: protocol_api.ProtocolContext):
 ####################################
     # load labware and modules
 
-    # 12 well rack
+    # 12 well reservoir
     ####################################
     reagent_res = ctx.load_labware(
         'nest_12_reservoir_15ml', '3', 'Reservoir 12 channel, column 1')
@@ -234,7 +234,7 @@ def run(ctx: protocol_api.ProtocolContext):
     WashBuffer_reservoir = ctx.load_labware(
         'nalgene_1_reservoir_300000ul', '2', 'WashBuffer')
 
-    # WashBuffer2 reservoir
+    # Ethanol80 reservoir
     ####################################
     Ethanol80_reservoir = ctx.load_labware(
         'nalgene_1_reservoir_300000ul', '5', 'EtOH 80%')
@@ -244,7 +244,7 @@ def run(ctx: protocol_api.ProtocolContext):
     WashBuffer_1000ul_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul', '1', 'Wash Buffer Deepwell plate')
 
-    # Wash Buffer 1 300ul Deepwell plate
+    # Ethanol 80 Deepwell plate
     ############################################
     Ethanol80_1000ul_plate = ctx.load_labware(
         'kf_96_wellplate_2400ul', '4', 'EtOH 80% Deepwell plate')
