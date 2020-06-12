@@ -15,12 +15,7 @@ KF_path = code_path + 'KF_config/'
 KFVP_path = code_path + 'KFVP_config/'
 excel = main_path + 'barcode_template/muestras.xlsx'
 
-# Volumes for KF pathogen stations
-security_volume_mmix = 50
-security_volume_beads = 800
-mmix_volume = 20
-beads_volume = 10
-isoprop_volume = 250
+
 
 # Function to distinguish between KF protocols
 def select_protocol_type(p1, p2):
@@ -150,6 +145,13 @@ def main():
             fout.close()
 
     if protocol=='KF':
+        # Volumes for KF pathogen stations
+        security_volume_mmix = 50
+        security_volume_beads = 800
+        mmix_volume = 20
+        beads_volume = 10
+        isoprop_volume = 250
+
         #Calculate needed volumes and wells in stations B and C
         bead_vol = beads_volume * 8 * math.ceil(num_samples/8) * 1.1
         isoprop_vol = isoprop_volume * 8 * math.ceil(num_samples/8) * 1.1
@@ -190,6 +192,12 @@ def main():
         print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f2)
         f2.close()
     elif protocol=='KFVP':
+        # Volumes for KFVP pathogen stations
+        security_volume_mmix = 50
+        security_volume_beads = 800
+        mmix_volume = 20
+        beads_volume = 20
+        isoprop_volume = 530 #It's actually a buffer, not isoprop
         #Calculate needed volumes and wells in stations B and C
         bead_vol = beads_volume * 8 * math.ceil(num_samples/8) * 1.1
         isoprop_vol = isoprop_volume * 8 * math.ceil(num_samples/8) * 1.1
@@ -212,8 +220,9 @@ def main():
         print('######### Station B ##########', file=f)
         print('Volumen y localización de beads para',num_samples,'muestras', file=f)
         print('##############################', file=f)
+        print('Nota: Es importante no vortear la mezcla de beads + buffer', file=f)
         print('Es necesario un volumen de beads total de',format(round(total_bead)),' \u03BCl', file=f)
-        print('La proporción de reactivos es:\n', round(bead_vol),'\u03BCl de beads \n',round(isoprop_vol), '\u03BCl de isopropanol\n', file=f)
+        print('La proporción de reactivos es:\n', round(bead_vol),'\u03BCl de beads \n',round(isoprop_vol), '\u03BCl de buffer\n', file=f)
         print('A dividir en',format(num_wells),'pocillos', file=f)
         print('Volumen por pocillo:',format(round(total_bead/num_wells)),'\u03BCl', file=f)
         print('',file=f)
