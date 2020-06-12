@@ -24,7 +24,9 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 16
+NUM_SAMPLES = 96
+NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
+
 air_gap_vol = 15
 
 volume_sample = 400

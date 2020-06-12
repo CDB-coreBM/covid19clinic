@@ -339,9 +339,6 @@ def run(ctx: protocol_api.ProtocolContext):
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
 
-
-
-
     ############################################################################
     # STEP 2: PREMIX BEADS
     ############################################################################
