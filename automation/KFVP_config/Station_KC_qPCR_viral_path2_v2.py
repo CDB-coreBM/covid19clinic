@@ -12,7 +12,7 @@ import csv
 # metadata
 metadata = {
     'protocolName': 'Station C Kingfisher Pathogen qPCR setup Version 2',
-    'author': 'Eva González & José Luis Villanueva (jlvillanueva@clinic.cat)',
+    'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
     'apiLevel': '2.0',
     'description': 'Protocol for Kingfisher sample setup (C) - Pathogen Kit (ref 4462359)'
@@ -24,7 +24,7 @@ metadata = {
 '''
 #Defined variables
 ##################
-NUM_SAMPLES = 96
+NUM_SAMPLES = $num_samples
 NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
 
 air_gap_vol = 5
@@ -38,16 +38,13 @@ diameter_screwcap = 8.25  # Diameter of the screwcap
 temperature = 10  # Temperature of temp module
 volume_cone = 50  # Volume in ul that fit in the screwcap cone
 x_offset = [0,0]
-extra_volume_mmix = 50 #default in calc_height
 
 # Calculated variables
 volume_mmix_available = (NUM_SAMPLES * 1.1 * volume_mmix)  # Total volume needed
 num_wells_mmix = math.ceil(volume_mmix_available/2000) #Number of wells needed
-volume_mmix_available += security_volume_mmix * num_wells_mmix #Add security volume in each well
 area_section_screwcap = (np.pi * diameter_screwcap**2) / 4
 h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
-
 
 def run(ctx: protocol_api.ProtocolContext):
     from opentrons.drivers.rpi_drivers import gpio
@@ -66,11 +63,11 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/var/lib/jupyter/notebooks'
+    folder_path = '/var/lib/jupyter/notebooks/'+run_id
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
-        file_path = folder_path + '/KC_qPCR_viral_path2_time_log.txt'
+        file_path = folder_path + '/KC_qPCR_time_log.txt'
 
     # Define Reagents as objects with their properties
     class Reagent:
@@ -95,24 +92,24 @@ def run(ctx: protocol_api.ProtocolContext):
     # Reagents and their characteristics
     MMIX = Reagent(name = 'Master Mix',
                       rinse = False,
-                      flow_rate_aspirate = 0.75,
+                      flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
                       reagent_reservoir_volume = volume_mmix_available,
-                      num_wells = num_wells_mmix, #change with num samples
+                      num_wells = num_wells_mmix, #changes with num samples
                       delay = 0,
                       h_cono = h_cone,
                       v_fondo = volume_cone  # V cono
                       )
 
-    Samples = Reagent(name='Samples',
-                      rinse=False,
+    Samples = Reagent(name = 'Samples',
+                      rinse = False,
                       flow_rate_aspirate = 1,
                       flow_rate_dispense = 1,
-                      reagent_reservoir_volume=50,
-                      delay=0,
-                      num_wells=num_cols,  # num_cols comes from available columns
-                      h_cono=0,
-                      v_fondo=0
+                      reagent_reservoir_volume = 50,
+                      delay = 0,
+                      num_wells = num_cols,  # num_cols comes from available columns
+                      h_cono = 0,
+                      v_fondo = 0
                       )
 
     MMIX.vol_well = MMIX.vol_well_original
@@ -149,7 +146,7 @@ def run(ctx: protocol_api.ProtocolContext):
         if blow_out == True:
             pipet.blow_out(dest.top(z = -2))
         if touch_tip == True:
-            pipet.touch_tip(speed = 20, v_offset = -5)
+            pipet.touch_tip(speed = 20, v_offset = -5, radius = 0.9)
 
 
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
@@ -227,7 +224,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Sample plate - comes from B
     source_plate = ctx.load_labware(
         "kingfisher_std_96_wellplate_550ul", '1',
-        'chilled KF plate with eluates')
+        'chilled KF plate with elutions (alum opentrons)')
     samples = source_plate.wells()[:NUM_SAMPLES]
 
     ##################################
@@ -273,7 +270,7 @@ def run(ctx: protocol_api.ProtocolContext):
         p300.pick_up_tip()
 
         for dest in pcr_wells:
-            [pickup_height,col_change]=calc_height(MMIX, area_section_screwcap, volume_mmix)
+            [pickup_height, col_change] = calc_height(MMIX, area_section_screwcap, volume_mmix)
             move_vol_multichannel(p300, reagent = MMIX, source = MMIX.reagent_reservoir[MMIX.col],
             dest = dest, vol = volume_mmix, air_gap_vol = air_gap_vol, x_offset = x_offset,
                    pickup_height = pickup_height, disp_height = -10, rinse = False,
@@ -287,7 +284,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-
 
     ############################################################################
     # STEP 2: TRANSFER Samples
@@ -304,7 +300,7 @@ def run(ctx: protocol_api.ProtocolContext):
             move_vol_multichannel(m20, reagent = Samples, source = s, dest = d,
             vol = volume_sample, air_gap_vol = air_gap_sample, x_offset = x_offset,
                    pickup_height = 0.5, disp_height = -10, rinse = False,
-                   blow_out=True, touch_tip=True)
+                   blow_out = True, touch_tip = True)
             m20.drop_tip()
             tip_track['counts'][m20]+=8
 
