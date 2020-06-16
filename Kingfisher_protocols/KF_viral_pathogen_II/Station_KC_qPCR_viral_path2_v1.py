@@ -342,20 +342,9 @@ def run(ctx: protocol_api.ProtocolContext):
     ctx.comment('Finished! \nMove plate to PCR')
 
     if STEPS[1]['Execute'] == True:
-        total_used_vol = np.sum(used_vol)
-        total_needed_volume = total_used_vol
-        ctx.comment('Total Master Mix used volume is: ' + str(total_used_vol) + '\u03BCl.')
-        ctx.comment('Needed Master Mix volume is ' +
-                    str(total_needed_volume + extra_dispensal*len(dests)) +'\u03BCl')
-        ctx.comment('Used Master Mix volumes per run are: ' + str(used_vol) + '\u03BCl.')
-        ctx.comment('Master Mix Volume remaining in tubes is: ' +
-                    format(np.sum(MMIX.unused)+extra_dispensal*len(dests)+MMIX.vol_well) + '\u03BCl.')
         ctx.comment('200 ul Used tips in total: ' + str(tip_track['counts'][p300]))
         ctx.comment('200 ul Used racks in total: ' + str(tip_track['counts'][p300] / 96))
 
     if STEPS[2]['Execute'] == True:
-        ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][p20]))
-        ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][p20] / 96))
-
-    if ctx.is_simulating():
-        os.system('afplay -v 2 /Users/covid19warriors/Downloads/lionking.mp3 &')
+        ctx.comment('20 ul Used tips in total: ' + str(tip_track['counts'][m20]))
+        ctx.comment('20 ul Used racks in total: ' + str(tip_track['counts'][m20] / 96))
