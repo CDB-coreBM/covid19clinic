@@ -30,7 +30,7 @@ NUM_SAMPLES = $num_samples
 NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
 
 air_gap_vol = 15
-MS_vol = 5
+MS_vol = 10
 air_gap_vol_MS = 2
 height_MS = -35
 temperature = 25
