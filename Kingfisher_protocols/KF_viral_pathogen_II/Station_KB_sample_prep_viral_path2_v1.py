@@ -30,7 +30,7 @@ NUM_SAMPLES = 96
 NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
 
 air_gap_vol = 15
-MS_vol = 5
+MS_vol = 10
 air_gap_vol_MS = 2
 height_MS = -35
 temperature = 25
@@ -300,7 +300,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #Source samples
             move_vol_multichannel(m20, reagent = MS, source = ms_origins, dest = d,
             vol = MS_vol, air_gap_vol = air_gap_vol_MS, x_offset = x_offset,
-                   pickup_height = 0.2, disp_height = -35, rinse = False,
+                   pickup_height = 1, disp_height = -35, rinse = False,
                    blow_out=True, touch_tip=True)
             m20.drop_tip()
             tip_track['counts'][m20]+=8
@@ -310,17 +310,6 @@ def run(ctx: protocol_api.ProtocolContext):
         ctx.comment('Step ' + str(STEP) + ': ' +
                     STEPS[STEP]['description'] + ' took ' + str(time_taken))
         STEPS[STEP]['Time:'] = str(time_taken)
-
-    # Export the time log to a tsv file
-    if not ctx.is_simulating():
-        with open(file_path, 'w') as f:
-            f.write('STEP\texecution\tdescription\twait_time\texecution_time\n')
-            for key in STEPS.keys():
-                row = str(key)
-                for key2 in STEPS[key].keys():
-                    row += '\t' + format(STEPS[key][key2])
-                f.write(row + '\n')
-        f.close()
 
     ############################################################################
     # STEP 2: TRANSFER BEADS
@@ -355,7 +344,7 @@ def run(ctx: protocol_api.ProtocolContext):
                                       dest=work_destinations_cols[i], vol=transfer_vol,
                                       air_gap_vol=air_gap_vol, x_offset=x_offset,
                                       pickup_height=pickup_height, disp_height = -2,
-                                      rinse=rinse, blow_out = False, touch_tip=False)
+                                      rinse=rinse, blow_out = False, touch_tip = False)
 
         m300.drop_tip(home_after=False)
         tip_track['counts'][m300] += 8

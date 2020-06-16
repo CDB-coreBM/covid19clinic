@@ -250,7 +250,7 @@ def run(ctx: protocol_api.ProtocolContext):
         'kf_96_wellplate_2400ul', '4', 'EtOH 80% Deepwell plate')
 
     ############################################
-    ElutionBuffer_1000ul_plate = ctx.load_labware(
+    ElutionBuffer_50ul_plate = ctx.load_labware(
         'kingfisher_std_96_wellplate_550ul', '6', 'Elution Buffer 550 ul STD plate')
 
 
