@@ -111,7 +111,7 @@ def main():
         os.mkdir(final_path+'/scripts')
         os.mkdir(final_path+'/results')
         os.mkdir(final_path+'/logs')
-        os.system('cp ' + excel +' '+ final_path+'/OT'+str(id)+'_samples.xlsx')
+    os.system('cp ' + excel +' '+ final_path+'/OT'+str(id)+'_samples.xlsx')
 
     file_name = 'qpcr_template_OT'+str(id)+'_'+protocol+'.txt'
     os.system('python3 '+code_path+'thermoqpcr_generate_template.py "' + final_path + '/'+ file_name+'" "'+ final_path+'/OT'+str(id)+'_samples.xlsx"')
