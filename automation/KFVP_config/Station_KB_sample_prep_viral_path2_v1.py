@@ -33,7 +33,7 @@ air_gap_vol = 15
 MS_vol = 10
 air_gap_vol_MS = 2
 height_MS = -35
-temperature = 25
+temperature = 10
 
 x_offset = [0, 0]
 
