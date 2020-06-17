@@ -24,7 +24,7 @@ TEST_LABWARE_SLOT = '3'
 RATE = 0.25  # % of default speeds
 SLOWER_RATE = 0.1
 
-PIPETTE_MOUNT = 'right'
+PIPETTE_MOUNT = 'left'
 PIPETTE_NAME = 'p1000_single_gen2'
 
 TIPRACK_SLOT = '5'
