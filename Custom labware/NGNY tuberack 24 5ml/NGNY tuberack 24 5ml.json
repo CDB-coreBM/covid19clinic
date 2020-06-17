@@ -44,13 +44,13 @@
         ]
     },
     "metadata": {
-        "displayName": "NGNY 24 Tube Rack 5000 µL",
-        "displayCategory": "tubeRack",
+        "displayName": "NGNY tuberack 24 5ml",
+        "displayCategory": "wellPlate",
         "displayVolumeUnits": "µL",
         "tags": []
     },
     "dimensions": {
-        "xDimension": 127.75,
+        "xDimension": 128,
         "yDimension": 85.5,
         "zDimension": 77
     },
@@ -60,8 +60,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 18.21,
-            "y": 75.43,
+            "x": 10,
+            "y": 75.5,
             "z": 4
         },
         "B1": {
@@ -69,8 +69,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 18.21,
-            "y": 56.15,
+            "x": 10,
+            "y": 53.67,
             "z": 4
         },
         "C1": {
@@ -78,8 +78,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 18.21,
-            "y": 36.87,
+            "x": 10,
+            "y": 31.84,
             "z": 4
         },
         "D1": {
@@ -87,8 +87,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 18.21,
-            "y": 17.59,
+            "x": 10,
+            "y": 10.01,
             "z": 4
         },
         "A2": {
@@ -96,8 +96,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 38.1,
-            "y": 75.43,
+            "x": 31.6,
+            "y": 75.5,
             "z": 4
         },
         "B2": {
@@ -105,8 +105,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 38.1,
-            "y": 56.15,
+            "x": 31.6,
+            "y": 53.67,
             "z": 4
         },
         "C2": {
@@ -114,8 +114,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 38.1,
-            "y": 36.87,
+            "x": 31.6,
+            "y": 31.84,
             "z": 4
         },
         "D2": {
@@ -123,8 +123,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 38.1,
-            "y": 17.59,
+            "x": 31.6,
+            "y": 10.01,
             "z": 4
         },
         "A3": {
@@ -132,8 +132,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 57.99,
-            "y": 75.43,
+            "x": 53.2,
+            "y": 75.5,
             "z": 4
         },
         "B3": {
@@ -141,8 +141,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 57.99,
-            "y": 56.15,
+            "x": 53.2,
+            "y": 53.67,
             "z": 4
         },
         "C3": {
@@ -150,8 +150,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 57.99,
-            "y": 36.87,
+            "x": 53.2,
+            "y": 31.84,
             "z": 4
         },
         "D3": {
@@ -159,8 +159,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 57.99,
-            "y": 17.59,
+            "x": 53.2,
+            "y": 10.01,
             "z": 4
         },
         "A4": {
@@ -168,8 +168,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 77.88,
-            "y": 75.43,
+            "x": 74.8,
+            "y": 75.5,
             "z": 4
         },
         "B4": {
@@ -177,8 +177,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 77.88,
-            "y": 56.15,
+            "x": 74.8,
+            "y": 53.67,
             "z": 4
         },
         "C4": {
@@ -186,8 +186,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 77.88,
-            "y": 36.87,
+            "x": 74.8,
+            "y": 31.84,
             "z": 4
         },
         "D4": {
@@ -195,8 +195,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 77.88,
-            "y": 17.59,
+            "x": 74.8,
+            "y": 10.01,
             "z": 4
         },
         "A5": {
@@ -204,8 +204,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 97.77,
-            "y": 75.43,
+            "x": 96.4,
+            "y": 75.5,
             "z": 4
         },
         "B5": {
@@ -213,8 +213,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 97.77,
-            "y": 56.15,
+            "x": 96.4,
+            "y": 53.67,
             "z": 4
         },
         "C5": {
@@ -222,8 +222,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 97.77,
-            "y": 36.87,
+            "x": 96.4,
+            "y": 31.84,
             "z": 4
         },
         "D5": {
@@ -231,8 +231,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 97.77,
-            "y": 17.59,
+            "x": 96.4,
+            "y": 10.01,
             "z": 4
         },
         "A6": {
@@ -240,8 +240,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 117.66,
-            "y": 75.43,
+            "x": 118,
+            "y": 75.5,
             "z": 4
         },
         "B6": {
@@ -249,8 +249,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 117.66,
-            "y": 56.15,
+            "x": 118,
+            "y": 53.67,
             "z": 4
         },
         "C6": {
@@ -258,8 +258,8 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 117.66,
-            "y": 36.87,
+            "x": 118,
+            "y": 31.84,
             "z": 4
         },
         "D6": {
@@ -267,16 +267,16 @@
             "totalLiquidVolume": 5000,
             "shape": "circular",
             "diameter": 10,
-            "x": 117.66,
-            "y": 17.59,
+            "x": 118,
+            "y": 10.01,
             "z": 4
         }
     },
     "groups": [
         {
             "metadata": {
-                "displayName": "NGNY 24 Tube Rack 5000 µL",
-                "displayCategory": "tubeRack",
+                "displayName": "NGNY tuberack 24 5ml",
+                "displayCategory": "wellPlate",
                 "wellBottomShape": "u"
             },
             "brand": {
@@ -318,7 +318,7 @@
         "quirks": [],
         "isTiprack": false,
         "isMagneticModuleCompatible": false,
-        "loadName": "ngny_24_tuberack_5000ul"
+        "loadName": "ngny_tuberack_24_5ml"
     },
     "namespace": "custom_beta",
     "version": 1,
