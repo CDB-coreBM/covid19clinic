@@ -103,14 +103,15 @@ def main():
     # Select the sample tube type
     control=False
     while control==False:
-        five_ml_rack = int(input('Selecciona el tipo de tubo para las muestras: 5ml (5) o 2ml (2)'))
+        five_ml_rack = int(input('Selecciona el tipo de tubo para las muestras: 5ml (5) o 2ml (2): '))
         if five_ml_rack==5:
-            five_ml_rack=True
+            five_ml_rack='True'
             control=True
         elif five_ml_rack==2:
+            five_ml_rack='False'
             control=True
         else:
-            print('Por favor, elije un valor numérico: 5 o 2')
+            print('Por favor, elije un valor numérico: 5 o 2: ')
 
     #determine output path
     run_name = str(dia_registro)+'_OT'+str(id)+'_'+protocol
@@ -131,7 +132,7 @@ def main():
             fin = open(protocol_path+file, "rt") # open file and copy protocol
             data = fin.read()
             fin.close()
-            final_protocol=rep_data(num_samples, tec_name, t_registro, data, run_name) #replace data
+            final_protocol=rep_data(num_samples, tec_name, t_registro, data, run_name, five_ml_rack) #replace data
             position=file.find('_',12) # find _ position after the name and get value
             filename=str(dia_registro)+'_'+file[:position]+'_OT'+str(id)+'.py' # assign a filename date + station name + id
             for i in range(0,5): #Try up to 5 times with 1 sec delay
