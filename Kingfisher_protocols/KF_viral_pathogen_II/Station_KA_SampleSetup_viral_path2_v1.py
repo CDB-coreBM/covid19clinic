@@ -26,6 +26,7 @@ metadata = {
 ##################
 NUM_SAMPLES = 96
 NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
+five_ml_rack = $five_ml_rack
 
 air_gap_vol = 15
 
@@ -215,8 +216,13 @@ def run(ctx: protocol_api.ProtocolContext):
         samples_last_rack = NUM_SAMPLES - rack_num * 24
     else:
         rack_num = 4
+
+    if five_ml_rack == True:
+        rack='ngny_tuberack_24_5ml'
+    else:
+        rack='opentrons_24_tuberack_generic_2ml_screwcap'
     source_racks = [ctx.load_labware(
-        'opentrons_24_tuberack_generic_2ml_screwcap', slot,
+        rack, slot,
         'source tuberack with screwcap' + str(i + 1)) for i, slot in enumerate(['4', '1', '6', '3'][:rack_num])
     ]
 

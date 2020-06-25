@@ -15,8 +15,6 @@ KF_path = code_path + 'KF_config/'
 KFVP_path = code_path + 'KFVP_config/'
 excel = main_path + 'barcode_template/muestras.xlsx'
 
-
-
 # Function to distinguish between KF protocols
 def select_protocol_type(p1, p2):
     ff=False
@@ -34,11 +32,12 @@ def select_protocol_type(p1, p2):
             print('Please, try again')
     return pr,p
 
-def rep_data(n, name, f, d, run_name):
+def rep_data(n, name, f, d, run_name, five_ml_rack):
     d=d.replace('$num_samples', str(n))
     d=d.replace('$technician', '\'' + str(name) + '\'')
     d=d.replace('$date', '\'' + str(f) + '\'')
     d=d.replace('$run_id','\'' + str(run_name) + '\'')
+    d=d.replace('$five_ml_rack', str(five_ml_rack))
     return d
 
 ###############################################################################
@@ -101,6 +100,18 @@ def main():
 
     # select the type of protocol to be run
     [protocol, protocol_path]=select_protocol_type(KF_path, KFVP_path)
+    # Select the sample tube type
+    control=False
+    while control==False:
+        five_ml_rack = int(input('Selecciona el tipo de tubo para las muestras: 5ml (5) o 2ml (2)'))
+        if five_ml_rack==5:
+            five_ml_rack=True
+            control=True
+        elif five_ml_rack==2:
+            control=True
+        else:
+            print('Por favor, elije un valor numérico: 5 o 2')
+
     #determine output path
     run_name = str(dia_registro)+'_OT'+str(id)+'_'+protocol
     final_path=os.path.join(main_path+'RUNS/',run_name)
