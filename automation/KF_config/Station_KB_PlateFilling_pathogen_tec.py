@@ -25,8 +25,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = $num_samples
-NUM_SAMPLES = NUM_SAMPLES - 1 # PC is in last well (no sample)
+NUM_SAMPLES = $num_samples #last sample (PC), has been removed (done manually)
 
 air_gap_vol = 15
 air_gap_vol_elutionbuffer = 5

@@ -24,8 +24,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = $num_samples
-NUM_SAMPLES = NUM_SAMPLES - 1 #Remove last sample (PC), done manually
+NUM_SAMPLES = $num_samples #last sample (PC), has been removed (done manually)
 five_ml_rack = $five_ml_rack
 
 air_gap_vol = 15

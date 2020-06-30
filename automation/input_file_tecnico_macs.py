@@ -76,6 +76,8 @@ def main():
     else:
         print('El número de muestras coincide')
 
+
+    num_samples = num_samples - 1
     # Get technician name
     control = False
     while control==False:
