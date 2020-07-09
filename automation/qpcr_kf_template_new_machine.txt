@@ -1,0 +1,404 @@
+* Block Type = 96-Well 0.2-mL Block
+* Chemistry = TAQMAN
+* Date Created = 2020-07-09 14:03:06 PM CEST
+* Experiment Barcode = NA
+* Experiment Comment = NA
+* Experiment File Name = C:\Users\alma.sotillo\Desktop\Clinic    TaqPath COVID-19 Kit Template QS5 0_2ml_da1_5_1   v2-1.edt
+* Experiment Name = covid QS5 standard template 20200323
+* Experiment Run End Time = Not Started
+* Experiment Type = Standard Curve
+* Instrument Type = QuantStudio™ 5 System
+* Passive Reference = 
+* Post-read Stage/Step = 
+* Pre-read Stage/Step = 
+* Quantification Cycle Method = Ct
+* Signal Smoothing On = true
+* Stage/ Cycle where Ct Analysis is performed = Stage2, Step2
+* User Name = NA
+
+[Sample Setup]
+Well	Well Position	Sample Name	Sample Color	Biogroup Name	Biogroup Color	Target Name	Target Color	Task	Reporter	Quencher	Quantity	Comments
+1	A1	NC	"RGB(255,0,0)"			MS2	"RGB(0,0,0)"	NTC	JUN	None		
+1	A1	NC	"RGB(255,0,0)"			N gene	"RGB(0,139,69)"	NTC	VIC	None		
+1	A1	NC	"RGB(255,0,0)"			ORF1ab	"RGB(176,23,31)"	NTC	FAM	None		
+1	A1	NC	"RGB(255,0,0)"			S gene	"RGB(0,0,255)"	NTC	ABY	None		
+2	A2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+2	A2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+2	A2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+2	A2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+3	A3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+3	A3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+3	A3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+3	A3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+4	A4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+4	A4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+4	A4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+4	A4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+5	A5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+5	A5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+5	A5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+5	A5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+6	A6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+6	A6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+6	A6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+6	A6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+7	A7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+7	A7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+7	A7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+7	A7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+8	A8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+8	A8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+8	A8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+8	A8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+9	A9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+9	A9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+9	A9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+9	A9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+10	A10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+10	A10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+10	A10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+10	A10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+11	A11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+11	A11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+11	A11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+11	A11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+12	A12					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+12	A12					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+12	A12					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+12	A12					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+13	B1					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+13	B1					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+13	B1					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+13	B1					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+14	B2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+14	B2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+14	B2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+14	B2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+15	B3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+15	B3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+15	B3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+15	B3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+16	B4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+16	B4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+16	B4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+16	B4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+17	B5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+17	B5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+17	B5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+17	B5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+18	B6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+18	B6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+18	B6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+18	B6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+19	B7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+19	B7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+19	B7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+19	B7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+20	B8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+20	B8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+20	B8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+20	B8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+21	B9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+21	B9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+21	B9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+21	B9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+22	B10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+22	B10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+22	B10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+22	B10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+23	B11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+23	B11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+23	B11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+23	B11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+24	B12					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+24	B12					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+24	B12					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+24	B12					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+25	C1					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+25	C1					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+25	C1					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+25	C1					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+26	C2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+26	C2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+26	C2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+26	C2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+27	C3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+27	C3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+27	C3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+27	C3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+28	C4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+28	C4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+28	C4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+28	C4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+29	C5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+29	C5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+29	C5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+29	C5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+30	C6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+30	C6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+30	C6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+30	C6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+31	C7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+31	C7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+31	C7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+31	C7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+32	C8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+32	C8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+32	C8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+32	C8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+33	C9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+33	C9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+33	C9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+33	C9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+34	C10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+34	C10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+34	C10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+34	C10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+35	C11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+35	C11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+35	C11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+35	C11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+36	C12					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+36	C12					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+36	C12					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+36	C12					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+37	D1					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+37	D1					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+37	D1					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+37	D1					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+38	D2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+38	D2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+38	D2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+38	D2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+39	D3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+39	D3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+39	D3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+39	D3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+40	D4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+40	D4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+40	D4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+40	D4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+41	D5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+41	D5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+41	D5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+41	D5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+42	D6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+42	D6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+42	D6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+42	D6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+43	D7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+43	D7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+43	D7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+43	D7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+44	D8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+44	D8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+44	D8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+44	D8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+45	D9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+45	D9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+45	D9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+45	D9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+46	D10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+46	D10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+46	D10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+46	D10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+47	D11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+47	D11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+47	D11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+47	D11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+48	D12					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+48	D12					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+48	D12					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+48	D12					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+49	E1					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+49	E1					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+49	E1					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+49	E1					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+50	E2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+50	E2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+50	E2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+50	E2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+51	E3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+51	E3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+51	E3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+51	E3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+52	E4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+52	E4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+52	E4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+52	E4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+53	E5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+53	E5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+53	E5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+53	E5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+54	E6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+54	E6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+54	E6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+54	E6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+55	E7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+55	E7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+55	E7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+55	E7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+56	E8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+56	E8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+56	E8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+56	E8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+57	E9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+57	E9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+57	E9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+57	E9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+58	E10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+58	E10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+58	E10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+58	E10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+59	E11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+59	E11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+59	E11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+59	E11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+60	E12					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+60	E12					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+60	E12					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+60	E12					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+61	F1					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+61	F1					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+61	F1					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+61	F1					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+62	F2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+62	F2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+62	F2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+62	F2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+63	F3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+63	F3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+63	F3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+63	F3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+64	F4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+64	F4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+64	F4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+64	F4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+65	F5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+65	F5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+65	F5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+65	F5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+66	F6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+66	F6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+66	F6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+66	F6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+67	F7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+67	F7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+67	F7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+67	F7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+68	F8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+68	F8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+68	F8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+68	F8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+69	F9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+69	F9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+69	F9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+69	F9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+70	F10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+70	F10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+70	F10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+70	F10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+71	F11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+71	F11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+71	F11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+71	F11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+72	F12					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+72	F12					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+72	F12					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+72	F12					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+73	G1					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+73	G1					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+73	G1					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+73	G1					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+74	G2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+74	G2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+74	G2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+74	G2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+75	G3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+75	G3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+75	G3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+75	G3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+76	G4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+76	G4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+76	G4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+76	G4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+77	G5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+77	G5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+77	G5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+77	G5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+78	G6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+78	G6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+78	G6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+78	G6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+79	G7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+79	G7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+79	G7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+79	G7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+80	G8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+80	G8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+80	G8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+80	G8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+81	G9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+81	G9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+81	G9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+81	G9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+82	G10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+82	G10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+82	G10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+82	G10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+83	G11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+83	G11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+83	G11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+83	G11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+84	G12					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+84	G12					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+84	G12					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+84	G12					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+85	H1					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+85	H1					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+85	H1					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+85	H1					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+86	H2					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+86	H2					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+86	H2					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+86	H2					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+87	H3					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+87	H3					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+87	H3					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+87	H3					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+88	H4					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+88	H4					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+88	H4					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+88	H4					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+89	H5					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+89	H5					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+89	H5					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+89	H5					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+90	H6					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+90	H6					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+90	H6					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+90	H6					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+91	H7					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+91	H7					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+91	H7					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+91	H7					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+92	H8					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+92	H8					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+92	H8					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+92	H8					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+93	H9					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+93	H9					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+93	H9					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+93	H9					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+94	H10					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+94	H10					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+94	H10					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+94	H10					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+95	H11					MS2	"RGB(0,0,0)"	UNKNOWN	JUN	None		
+95	H11					N gene	"RGB(0,139,69)"	UNKNOWN	VIC	None		
+95	H11					ORF1ab	"RGB(176,23,31)"	UNKNOWN	FAM	None		
+95	H11					S gene	"RGB(0,0,255)"	UNKNOWN	ABY	None		
+96	H12	PC	"RGB(0,0,255)"			MS2	"RGB(0,0,0)"	STANDARD	JUN	None	1.000	
+96	H12	PC	"RGB(0,0,255)"			N gene	"RGB(0,139,69)"	STANDARD	VIC	None	1.000	
+96	H12	PC	"RGB(0,0,255)"			ORF1ab	"RGB(176,23,31)"	STANDARD	FAM	None	1.000	
+96	H12	PC	"RGB(0,0,255)"			S gene	"RGB(0,0,255)"	STANDARD	ABY	None	1.000	
