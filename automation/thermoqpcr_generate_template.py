@@ -28,7 +28,8 @@ fout = open(out_file+'_temp', "wt")
 
 for line in fin:
 	#read replace the string and write to output file
-    if line[0] in list(string.ascii_uppercase[0:8]):
+    if line[0] in list(string.digits[1:]):
+    #if line[0] in list(string.ascii_uppercase[0:8]): #ABI 7500 template
         well = line.rstrip().split('\t')[1] #Was 0 in previous template
         if merged_dict[well] != 0 and well != 'A1' and well != 'H12':
             fout.write(line.replace(well+'\t', well+'\t'+format(merged_dict[well])))
