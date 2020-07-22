@@ -216,7 +216,7 @@ def run(ctx: protocol_api.ProtocolContext):
     ##################################
     # qPCR plate - final plate, goes to PCR
     qpcr_plate = tempdeck.load_labware(
-        'abi_fast_qpcr_96_alum_opentrons_100ul',
+        'abi_96_qpcr_200_alum_opentrons',
         'chilled qPCR final plate')
 
     ##################################
