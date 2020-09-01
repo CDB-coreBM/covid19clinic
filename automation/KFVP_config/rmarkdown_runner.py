@@ -5,7 +5,8 @@ import time
 import shutil
 
 # set path to watch
-target_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/"
+#target_dir="/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/"
+target_dir="/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/OPENTRONS/RUNS"
 #target_dir="/media/jl/DATADRIVE/RUNS_opentrons_backup"
 # set path to the script sh
 script_path="/home/jl/Documentos/code/covid19clinic/automation/KF_config/rmarkdown_runner.sh"
