@@ -2,7 +2,7 @@
 # set path to watch
 run=$1
 #folder='/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/'
-folder="/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/OPENTRONS/RUNS"
+folder="/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/OPENTRONS/RUNS/"
 
 rscript=`find ${folder}${run} -name '*.Rmd' -print0 | xargs -r0 echo | cut -d '/' -f10`
 Rscript -e 'library(rmarkdown);
