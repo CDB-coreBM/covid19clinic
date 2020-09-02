@@ -9,7 +9,7 @@ import shutil
 target_dir="/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/OPENTRONS/RUNS/"
 #target_dir="/media/jl/DATADRIVE/RUNS_opentrons_backup"
 # set path to the script sh
-script_path="/home/jl/Documentos/code/covid19clinic/automation/KF_config/rmarkdown_runner.sh"
+script_path="/home/jl/Documentos/code/covid19clinic/automation/KFVP_config/rmarkdown_runner.sh"
 
 def generate_list_folders(target_dir):
     dirs = os.listdir(target_dir)
