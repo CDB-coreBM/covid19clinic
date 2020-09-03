@@ -15,8 +15,8 @@ library(dplyr)
 library(knitr)
 library(readr)
 library(kableExtra)
-#file_dir=paste0('/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/',params$run,'/results/')
-file_dir=paste0('/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/OPENTRONS/RUNS/',params$run,'/results/')
+file_dir=paste0('/run/user/1003/gvfs/smb-share:server=opn.cdb.nas.csc.es,share=opentrons/RUNS/',params$run,'/results/')
+#file_dir=paste0('/run/user/1003/gvfs/smb-share:server=cscfs2,share=usr2/USERS/OPENTRONS/RUNS/',params$run,'/results/') #backup folder
 
 
 csv_file=Sys.glob(file.path(file_dir, "*.csv"))
