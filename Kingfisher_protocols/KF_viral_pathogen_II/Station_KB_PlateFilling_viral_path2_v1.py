@@ -341,7 +341,7 @@ def run(ctx: protocol_api.ProtocolContext):
                 move_vol_multichannel(m300, reagent = Ethanol80, source = Ethanol80.reagent_reservoir,
                                dest = Ethanol80_destination[i], vol = transfer_vol,
                                air_gap_vol = air_gap_vol, x_offset = x_offset,
-                               pickup_height = 1, rinse = rinse, disp_height = -2,
+                               pickup_height = 3, rinse = rinse, disp_height = -2,
                                blow_out = True, touch_tip = True)
         m300.drop_tip(home_after=True)
         tip_track['counts'][m300] += 8
