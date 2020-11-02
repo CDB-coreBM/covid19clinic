@@ -115,10 +115,10 @@ def main():
             #determine output path
             run_name = str(dia_registro)+'_OT'+str(id)+'_'+protocol
             final_path=os.path.join(main_path+'RUNS/',run_name)
+            control_answer=False
             if os.path.isdir(final_path):
-                control_answer=False
-                while control==False:
-                    answer = input('Éste run ya existe, ¿desea sobreescribir la carpeta? Sí (S), No (N), Cancelar (C) '))
+            	while control_answer==False:
+                    answer = input('Éste run ya existe, ¿desea sobreescribir la carpeta? Sí (S), No (N), Cancelar (C) ')
                     if answer == 'S':
                         control=True
                         control_answer=True
@@ -130,6 +130,8 @@ def main():
                     else:
                         print('Por favor, elija Sí (S), No (N) o Cancelar (C): ')
                         control_answer=False
+            else:
+                control=True
         else:
             print('Por favor, asigna un ID numérico para éste RUN')
 
