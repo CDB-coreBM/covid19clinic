@@ -76,7 +76,6 @@ def main():
     else:
         print('El número de muestras coincide')
 
-
     num_samples = num_samples - 1
     # Get technician name
     control = False
@@ -87,14 +86,6 @@ def main():
         else:
             print('Introduce tu usuario HCP, por favor')
 
-    # Get run session ID
-    control=False
-    while control==False:
-        id = int(input('ID run: '))
-        if isinstance(id,int):
-            control=True
-        else:
-            print('Por favor, assigna un ID numérico para éste RUN')
 
     # Get date
     fecha = datetime.now()
@@ -116,9 +107,31 @@ def main():
         else:
             print('Por favor, elije un valor numérico: 5 o 2: ')
 
-    #determine output path
-    run_name = str(dia_registro)+'_OT'+str(id)+'_'+protocol
-    final_path=os.path.join(main_path+'RUNS/',run_name)
+    # Get run session ID
+    control=False
+    while control==False:
+        id = int(input('ID run: '))
+        if isinstance(id, int):
+            #determine output path
+            run_name = str(dia_registro)+'_OT'+str(id)+'_'+protocol
+            final_path=os.path.join(main_path+'RUNS/',run_name)
+            if os.path.isdir(final_path):
+                control_answer=False
+                while control==False:
+                    answer = input('Éste run ya existe, ¿desea sobreescribir la carpeta? Sí (S), No (N), Cancelar (C) '))
+                    if answer == 'S':
+                        control=True
+                        control_answer=True
+                    elif answer == 'N':
+                        control_answer=True
+                        print('Introduzca un nuevo número ')
+                    elif answer == 'C':
+                        exit()
+                    else:
+                        print('Por favor, elija Sí (S), No (N) o Cancelar (C): ')
+                        control_answer=False
+        else:
+            print('Por favor, asigna un ID numérico para éste RUN')
 
     # create folder in case it doesn't already exist and copy excel registry file there
     if not os.path.isdir(final_path):
