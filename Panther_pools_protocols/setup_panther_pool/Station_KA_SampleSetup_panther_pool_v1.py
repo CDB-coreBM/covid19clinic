@@ -26,10 +26,10 @@ metadata = {
 ##################
 NUM_SAMPLES = 96
 five_ml_rack = $five_ml_rack
-
+pool_size = $pool_size
 air_gap_vol = 15
 
-volume_sample = 400
+volume_sample = (400/pool_size)
 x_offset = [0,0]
 
 # Screwcap variables
@@ -48,7 +48,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
-        1: {'Execute': True, 'description': 'Add samples (400ul)'},
+        1: {'Execute': True, 'description': 'Add ' + str(pool_size) + ' samples into pool tubes ('+str(volume_sample)+'ul)'},
     }
     for s in STEPS:  # Create an empty wait_time
         if 'wait_time' not in STEPS[s]:
@@ -242,7 +242,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # setup samples and destinations
     sample_sources_full = generate_source_table(source_racks)
     sample_sources = sample_sources_full[:NUM_SAMPLES]
-    destinations = dest_rack.wells()[:NUM_SAMPLES]
+    destinations = dest_rack.wells()[:(NUM_SAMPLES/pool_size)]
 
     # p20 = ctx.load_instrument(
     # 'p20_single_gen2', mount='right', tip_racks=tips20)
@@ -265,7 +265,8 @@ def run(ctx: protocol_api.ProtocolContext):
 
         # Transfer parameters
         start = datetime.now()
-        for s, d in zip(sample_sources, destinations):
+        for s in sample_sources:
+            d = destinations[math.ceil(NUM_SAMPLES/float(pool_size))]
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
             # Mix the sample BEFORE dispensing
@@ -310,7 +311,7 @@ def run(ctx: protocol_api.ProtocolContext):
         time.sleep(0.3)
     gpio.set_button_light(0, 1, 0)
     ctx.comment(
-        'Finished! \nMove deepwell plate (slot 5) to Station C for MMIX addition and qPCR preparation.')
+        'Finished! \nMove tube rack (slot 5) to PANTHER station for the rest of the process')
     ctx.comment('Used p1000 tips in total: ' + str(tip_track['counts'][p1000]))
     ctx.comment('Used p1000 racks in total: ' +
                 str(tip_track['counts'][p1000] / 96))
