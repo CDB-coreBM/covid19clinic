@@ -24,9 +24,10 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 24
-five_ml_rack = True
-pool_size = 4
+NUM_SAMPLES = $num_samples #last sample (PC), has been removed (done manually)
+NUM_SAMPLES = NUM_SAMPLES + 1
+five_ml_rack = $five_ml_rack
+pool_size = $pool_size
 air_gap_vol = 15
 
 volume_sample = (400/pool_size)

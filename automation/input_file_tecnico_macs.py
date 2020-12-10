@@ -11,16 +11,17 @@ import time
 homedir = os.path.expanduser("~")
 main_path = '/Volumes/opentrons/'
 code_path = main_path + 'code/covid19clinic/automation/'
-KF_path = code_path + 'KF_config/'
+#KF_path = code_path + 'KF_config/'
 KFVP_path = code_path + 'KFVP_config/'
+panther_path = code_path + 'panther_config/'
 excel = main_path + 'barcode_template/muestras.xlsx'
 
 # Function to distinguish between KF protocols
 def select_protocol_type(p1, p2):
     ff=False
     while ff==False:
-        protocol=input('Introducir protocolo: \nKingfisher Viral Pathogen (KFVP) o Kingfisher Pathogen (KF) \nProtocolo: ')
-        if protocol=='KF':
+        protocol=input('Introducir protocolo: \nKingfisher Viral Pathogen (KFVP) o Panther Pools (PANTHER) \nProtocolo: ')
+        if protocol=='PANTHER':
             pr=protocol
             p=p1
             ff=True
@@ -39,6 +40,8 @@ def rep_data(file, n, name, f, d, run_name, five_ml_rack):
     d=d.replace('$run_id','\'' + str(run_name) + '\'')
     if 'SampleSetup' in file:
         d=d.replace('$five_ml_rack', str(five_ml_rack))
+    if 'pool' in file:
+            d=d.replace('$pool_size', str(pool_size))
     return d
 
 ###############################################################################
@@ -71,7 +74,7 @@ def main():
             print('Número de muestras debe ser un número entre 1 y 96')
     print('El número de muestras registradas en el excel es: '+str(num_samples_control))
     if num_samples_control!=num_samples:
-        print('Error: El número de muestras entre excel y reportado no coincide')
+        print('Error: El número de muestras reportadas NO coincide con plantilla Excel')
         exit()
     else:
         print('El número de muestras coincide')
@@ -93,7 +96,7 @@ def main():
     dia_registro = fecha.strftime("%Y_%m_%d")
 
     # select the type of protocol to be run
-    [protocol, protocol_path]=select_protocol_type(KF_path, KFVP_path)
+    [protocol, protocol_path]=select_protocol_type(panther_path, KFVP_path)
     # Select the sample tube type
     control=False
     while control==False:
@@ -268,6 +271,8 @@ def main():
         f2 = open(main_path + 'summary/run_history.txt','a')
         print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f2)
         f2.close()
+    elif protocol=='panther':
+        pass
 if __name__ == '__main__':
     main()
     print('Success!')
