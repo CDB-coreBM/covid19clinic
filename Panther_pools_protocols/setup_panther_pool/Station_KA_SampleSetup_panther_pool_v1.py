@@ -242,7 +242,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # setup samples and destinations
     sample_sources_full = generate_source_table(source_racks)
     sample_sources = sample_sources_full[:NUM_SAMPLES]
-    destinations = dest_rack.wells()[:(NUM_SAMPLES/pool_size)]
+    destinations = dest_rack.wells()[:NUM_SAMPLES]
 
     # p20 = ctx.load_instrument(
     # 'p20_single_gen2', mount='right', tip_racks=tips20)
