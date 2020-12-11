@@ -264,15 +264,13 @@ def main():
         i=0
         current_pool=merged_dict_pools[key_sorted[n_dest]]
         f3 = open(final_path+'/logs/OT'+ str(id) + "pools.txt", "wt")
-        print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f3)
         for s in range(0, num_samples):
-            i+=1
-            if i > pool_size:
+            if i >= pool_size:
                 i=0
                 n_dest+=1
                 current_pool=merged_dict_pools[key_sorted[n_dest]]
+            i+=1
             print(current_pool,samples[s], sep=',', file=f3)
-            s+=1
         f3.close()
         os.system('cp '+final_path+'/logs/OT'+ str(id) + 'pools.txt '+main_path+'/Pools/')
     f2 = open(main_path + 'summary/run_history.txt','a')
