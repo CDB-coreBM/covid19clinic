@@ -114,14 +114,16 @@ def main():
     elif protocol== 'PANTHER':
         #Always use 5ml tubes
         five_ml_rack=True
-        pool_size = int(input('Selecciona el tamaño del pool: '))
+        answer = input('Selecciona el tamaño del pool: ')
+        pool_size=int(answer)
         if num_samples % pool_size != 0:
             control_answer=False
-            print(' '
-    	while control_answer==False:
+        else:
+            control_answer=True
+        while control_answer==False:
             answer = input('El número de muestras no es divisible por ese tamaño de pool. Indica otro valor numérico o elige Cancelar (C): ')
-            if num_samples % answer == 0:
-                pool_size=answer
+            if num_samples % int(answer) == 0:
+                pool_size=int(answer)
                 control_answer=True
             elif answer == 'C':
                 exit()
@@ -240,9 +242,7 @@ def main():
         print('Volumen por pocillo:',format(round(mmix_vol/num_wells_mmix)),'\u03BCl', file=f)
         f.close()
         print('Revisa los volúmenes y pocillos necesarios en el archivo OT' + str(id) + 'volumes.txt dentro de la carpeta '+run_name)
-        f2 = open(main_path + 'summary/run_history.txt','a')
-        print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f2)
-        f2.close()
+
     elif protocol=='panther':
         # Read the excel file from the run and obtain the dictionary of pools
         df = pd.read_excel (excel, sheet_name='Pool_rack24_layout', header = None, index_col = 0)
@@ -264,8 +264,8 @@ def main():
         n=0
         s=0
         current_pool=merged_dict_pools[key_sorted[n]]
-        f = open(final_path+'/logs/OT'+ str(id) + "pools.txt", "wt")
-        print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f)
+        f3 = open(final_path+'/logs/OT'+ str(id) + "pools.txt", "wt")
+        print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f3)
         for i in range (0, num_samples):
             if s >= pool_size:
                 s=0
@@ -273,9 +273,12 @@ def main():
                 current_pool=merged_dict_pools[key_sorted[n]]
             print(current_pool,samples[i], sep=',', file=f)
             s+=1
-        f.close()
+        f3.close()
         os.system('cp '+final_path+'/logs/OT'+ str(id) + 'pools.txt '+main_path+'/Pools/')
 
+    f2 = open(main_path + 'summary/run_history.txt','a')
+    print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f2)
+    f2.close()
 if __name__ == '__main__':
     main()
     print('Success!')
