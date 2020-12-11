@@ -271,7 +271,7 @@ def main():
                 s=0
                 n+=1
                 current_pool=merged_dict_pools[key_sorted[n]]
-            print(current_pool,samples[i], sep=',', file=f)
+            print(current_pool,samples[i], sep=',', file=f3)
             s+=1
         f3.close()
         os.system('cp '+final_path+'/logs/OT'+ str(id) + 'pools.txt '+main_path+'/Pools/')
