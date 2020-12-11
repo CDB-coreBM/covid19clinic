@@ -242,8 +242,7 @@ def main():
         print('Volumen por pocillo:',format(round(mmix_vol/num_wells_mmix)),'\u03BCl', file=f)
         f.close()
         print('Revisa los volúmenes y pocillos necesarios en el archivo OT' + str(id) + 'volumes.txt dentro de la carpeta '+run_name)
-
-    elif protocol=='panther':
+    elif protocol=='PANTHER':
         # Read the excel file from the run and obtain the dictionary of pools
         df = pd.read_excel (excel, sheet_name='Pool_rack24_layout', header = None, index_col = 0)
         df = df.iloc[1:]
@@ -261,21 +260,21 @@ def main():
         df = pd.read_excel (excel, sheet_name='Input layout', header = None, index_col = 0)
         samples=list(df.iloc[2:][2]) #Samples as a list
         # Assign samples to the pools
-        n=0
-        s=0
-        current_pool=merged_dict_pools[key_sorted[n]]
+        n_dest=0
+        i=0
+        current_pool=merged_dict_pools[key_sorted[n_dest]]
         f3 = open(final_path+'/logs/OT'+ str(id) + "pools.txt", "wt")
         print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f3)
-        for i in range (0, num_samples):
-            if s >= pool_size:
-                s=0
-                n+=1
-                current_pool=merged_dict_pools[key_sorted[n]]
-            print(current_pool,samples[i], sep=',', file=f3)
+        for s in range(0, num_samples):
+            i+=1
+            if i > pool_size:
+                i=0
+                n_dest+=1
+                current_pool=merged_dict_pools[key_sorted[n_dest]]
+            print(current_pool,samples[s], sep=',', file=f3)
             s+=1
         f3.close()
         os.system('cp '+final_path+'/logs/OT'+ str(id) + 'pools.txt '+main_path+'/Pools/')
-
     f2 = open(main_path + 'summary/run_history.txt','a')
     print(run_name, num_samples, protocol, tec_name, t_registro, sep='\t', file=f2)
     f2.close()

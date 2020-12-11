@@ -275,6 +275,7 @@ def run(ctx: protocol_api.ProtocolContext):
             d = destinations[n_dest]
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
+
             # Mix the sample BEFORE dispensing
             #custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
             move_vol_multichannel(p1000, reagent = Samples, source = s, dest = d,
