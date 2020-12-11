@@ -268,11 +268,11 @@ def run(ctx: protocol_api.ProtocolContext):
         i=0
         n_dest=0
         for s in sample_sources:
-            i+=1
-            if i > pool_size:
+            if i >= pool_size:
                 n_dest+=1
                 i=0
             d = destinations[n_dest]
+            i+=1
             if not p1000.hw_pipette['has_tip']:
                 pick_up(p1000)
 
