@@ -402,17 +402,3 @@ def run(ctx: protocol_api.ProtocolContext):
         'Finished! \nMove deepwell plates to KingFisher extractor.')
     ctx.comment('Used tips in total: ' + str(tip_track['counts'][m300]))
     ctx.comment('Used racks in total: ' + str(tip_track['counts'][m300] / 96))
-
-'''
-    ############################################################################
-    # Light flash end of program
-    from opentrons.drivers.rpi_drivers import gpio
-    for i in range(3):
-        gpio.set_rail_lights(False)
-        gpio.set_button_light(1, 0, 0)
-        time.sleep(0.3)
-        gpio.set_rail_lights(True)
-        gpio.set_button_light(0, 0, 1)
-        time.sleep(0.3)
-    gpio.set_button_light(0, 1, 0)
-'''

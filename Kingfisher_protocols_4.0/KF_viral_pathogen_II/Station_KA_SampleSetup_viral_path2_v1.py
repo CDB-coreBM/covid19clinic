@@ -44,7 +44,6 @@ screwcap_cross_section_area = math.pi * \
 
 
 def run(ctx: protocol_api.ProtocolContext):
-
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
