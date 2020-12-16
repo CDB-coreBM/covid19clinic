@@ -24,9 +24,9 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = 24
-five_ml_rack = False
-pool_size = 4
+NUM_SAMPLES = 5
+five_ml_rack = True
+pool_size = 5
 air_gap_vol = 15
 
 volume_sample = (400/pool_size)
