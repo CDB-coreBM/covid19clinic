@@ -112,8 +112,8 @@ def main():
                 print('Por favor, elije un valor numérico: 5 o 2: ')
         num_samples = num_samples - 1 #Substract PC
     elif protocol== 'PANTHER':
-        #Always use 5ml tubes
-        five_ml_rack=True
+        #Always use 2ml tubes
+        five_ml_rack=False
         answer = input('Selecciona el tamaño del pool: ')
         pool_size=int(answer)
         if num_samples % pool_size != 0:
