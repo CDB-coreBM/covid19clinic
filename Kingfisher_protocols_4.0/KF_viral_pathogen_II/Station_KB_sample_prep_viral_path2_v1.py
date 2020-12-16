@@ -14,7 +14,7 @@ metadata = {
     'protocolName': 'Kingfisher Pathogen Station B2 v2',
     'author': 'Eva Gonzalez, José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
-    'apiLevel': '2.0',
+    'apiLevel': '2.8',
     'description': 'Protocol for RNA extraction preparation for ThermoFisher Pathogen kit (ref 4462359) \
     setup - sample + beads + buffer preparation'
 }

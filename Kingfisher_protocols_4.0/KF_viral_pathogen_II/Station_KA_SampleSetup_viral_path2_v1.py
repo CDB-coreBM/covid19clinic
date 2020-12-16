@@ -13,7 +13,7 @@ metadata = {
     'protocolName': 'S2 Station A Kingfisher Version 2',
     'author': 'Eva González & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
-    'apiLevel': '2.0',
+    'apiLevel': '2.8',
     'description': 'Protocol for Kingfisher sample setup (A) - Viral/Pathogen II Kit (ref A48383)'
 }
 
