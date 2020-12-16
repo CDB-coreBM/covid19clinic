@@ -298,18 +298,6 @@ def run(ctx: protocol_api.ProtocolContext):
                     row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
-
-    ############################################################################
-    # Light flash end of program
-    from opentrons.drivers.rpi_drivers import gpio
-    for i in range(3):
-        gpio.set_rail_lights(False)
-        gpio.set_button_light(1, 0, 0)
-        time.sleep(0.3)
-        gpio.set_rail_lights(True)
-        gpio.set_button_light(0, 0, 1)
-        time.sleep(0.3)
-    gpio.set_button_light(0, 1, 0)
     ctx.comment(
         'Finished! \nMove deepwell plate (slot 5) to Station C for MMIX addition and qPCR preparation.')
     ctx.comment('Used p1000 tips in total: ' + str(tip_track['counts'][p1000]))
