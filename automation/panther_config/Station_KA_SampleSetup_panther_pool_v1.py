@@ -25,27 +25,25 @@ metadata = {
 #Defined variables
 ##################
 NUM_SAMPLES = $NUM_SAMPLES
-five_ml_rack = $five_ml_rack
 run_id=$run_id
-pool_size = 4
+five_ml_rack = $five_ml_rack
+pool_size = $pool_size
 air_gap_vol = 15
 
-volume_sample = (400/pool_size)
+volume_sample = (1500/pool_size)
 x_offset = [0,0]
 
 # Screwcap variables
-diameter_screwcap = 8.25  # Diameter of the screwcap
-volume_cone = 50  # Volume in ul that fit in the screwcap cone
+#diameter_screwcap = 8.25  # Diameter of the screwcap
+#volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
 # Calculated variables
-area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
-h_cone = (volume_cone * 3 / area_section_screwcap)
-screwcap_cross_section_area = math.pi * \
-    diameter_screwcap**2 / 4  # screwcap cross section area
-
+#area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
+#h_cone = (volume_cone * 3 / area_section_screwcap)
+#screwcap_cross_section_area = math.pi * \
+    #diameter_screwcap**2 / 4  # screwcap cross section area
 
 def run(ctx: protocol_api.ProtocolContext):
-
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
@@ -57,7 +55,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     if not ctx.is_simulating():
         # Folder and file_path for log time
-        folder_path = '/var/lib/jupyter/notebooks/'+run_id
+        folder_path = '/var/lib/jupyter/notebooks'
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
         file_path = folder_path + '/KA_SampleSetup_panther_pool_time_log.txt'
@@ -234,7 +232,7 @@ def run(ctx: protocol_api.ProtocolContext):
     # Load tip_racks
     # tips20 = [ctx.load_labware('opentrons_96_filtertiprack_20ul', slot, '20µl filter tiprack')
     # for slot in ['2', '8']]
-    tips300 = [ctx.load_labware('opentrons_96_tiprack_300ul', slot, '300µl filter tiprack')
+    tips1000 = [ctx.load_labware('opentrons_96_tiprack_1000ul', slot, '1000µl filter tiprack')
                 for slot in ['7', '10']]
 
     ################################################################################
@@ -247,13 +245,13 @@ def run(ctx: protocol_api.ProtocolContext):
 
     # p20 = ctx.load_instrument(
     # 'p20_single_gen2', mount='right', tip_racks=tips20)
-    p300 = ctx.load_instrument(
-        'p300_single_gen2', 'left', tip_racks=tips300)  # load p300 pipette
+    p1000 = ctx.load_instrument(
+        'p1000_single_gen2', 'right', tip_racks=tips1000)  # load p1000 pipette
 
     # used tip counter and set maximum tips available
     tip_track = {
-        'counts': {p300: 0},  # p300: 0},
-        'maxes': {p300: len(tips300) * 96}  # ,p20: len(tips20)*96,
+        'counts': {p1000: 0},  # p1000: 0},
+        'maxes': {p1000: len(tips1000) * 96}  # ,p20: len(tips20)*96,
     }
 
     ############################################################################
@@ -274,20 +272,20 @@ def run(ctx: protocol_api.ProtocolContext):
                 i=0
             d = destinations[n_dest]
             i+=1
-            if not p300.hw_pipette['has_tip']:
-                pick_up(p300)
+            if not p1000.hw_pipette['has_tip']:
+                pick_up(p1000)
 
             # Mix the sample BEFORE dispensing
-            #custom_mix(p300, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
-            move_vol_multichannel(p300, reagent = Samples, source = s, dest = d,
+            #custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            move_vol_multichannel(p1000, reagent = Samples, source = s, dest = d,
             vol=volume_sample, air_gap_vol = air_gap_vol, x_offset = x_offset,
                                pickup_height = 2, rinse = Samples.rinse, disp_height = -10,
                                blow_out = True, touch_tip = True)
             # Mix the sample AFTER dispensing
-            #custom_mix(p300, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
+            #custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
             # Drop tip and update counter
-            p300.drop_tip()
-            tip_track['counts'][p300] += 1
+            p1000.drop_tip()
+            tip_track['counts'][p1000] += 1
 
         # Time statistics
         end = datetime.now()
@@ -309,8 +307,8 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ctx.comment(
         'Finished! \nMove tube rack (slot 5) to PANTHER station for the rest of the process')
-    ctx.comment('Used p300 tips in total: ' + str(tip_track['counts'][p300]))
-    ctx.comment('Used p300 racks in total: ' +
-                str(tip_track['counts'][p300] / 96))
+    ctx.comment('Used p1000 tips in total: ' + str(tip_track['counts'][p1000]))
+    ctx.comment('Used p1000 racks in total: ' +
+                str(tip_track['counts'][p1000] / 96))
     #ctx.comment('Used p20 tips in total: ' + str(tip_track['counts'][p20]))
     #ctx.comment('Used p20 racks in total: ' + str(tip_track['counts'][p20] / 96))
