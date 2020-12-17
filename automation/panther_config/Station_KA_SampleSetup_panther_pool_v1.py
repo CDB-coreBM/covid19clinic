@@ -24,7 +24,7 @@ metadata = {
 
 #Defined variables
 ##################
-NUM_SAMPLES = $NUM_SAMPLES
+NUM_SAMPLES = $num_samples
 run_id=$run_id
 five_ml_rack = $five_ml_rack
 pool_size = $pool_size
