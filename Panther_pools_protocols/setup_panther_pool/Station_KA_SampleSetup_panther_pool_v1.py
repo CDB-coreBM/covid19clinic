@@ -33,18 +33,16 @@ volume_sample = (1500/pool_size)
 x_offset = [0,0]
 
 # Screwcap variables
-diameter_screwcap = 8.25  # Diameter of the screwcap
-volume_cone = 50  # Volume in ul that fit in the screwcap cone
+#diameter_screwcap = 8.25  # Diameter of the screwcap
+#volume_cone = 50  # Volume in ul that fit in the screwcap cone
 
 # Calculated variables
-area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
-h_cone = (volume_cone * 3 / area_section_screwcap)
-screwcap_cross_section_area = math.pi * \
-    diameter_screwcap**2 / 4  # screwcap cross section area
-
+#area_section_screwcap = (math.pi * diameter_screwcap**2) / 4
+#h_cone = (volume_cone * 3 / area_section_screwcap)
+#screwcap_cross_section_area = math.pi * \
+    #diameter_screwcap**2 / 4  # screwcap cross section area
 
 def run(ctx: protocol_api.ProtocolContext):
-
     # Define the STEPS of the protocol
     STEP = 0
     STEPS = {  # Dictionary with STEP activation, description, and times
