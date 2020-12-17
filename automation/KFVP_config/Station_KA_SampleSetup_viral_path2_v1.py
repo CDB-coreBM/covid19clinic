@@ -26,6 +26,7 @@ metadata = {
 ##################
 NUM_SAMPLES = $num_samples #last sample (PC), has been removed (done manually)
 five_ml_rack = $five_ml_rack
+run_id=$run_id
 
 air_gap_vol = 15
 
@@ -56,7 +57,7 @@ def run(ctx: protocol_api.ProtocolContext):
 
     if not ctx.is_simulating():
         # Folder and file_path for log time
-        folder_path = '/var/lib/jupyter/notebooks'
+        folder_path = '/var/lib/jupyter/notebooks'+run_id
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
         file_path = folder_path + '/KA_SampleSetup_pathogen_time_log.txt'
