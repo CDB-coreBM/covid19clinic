@@ -305,7 +305,13 @@ def run(ctx: protocol_api.ProtocolContext):
                     row += '\t' + format(STEPS[key][key2])
                 f.write(row + '\n')
         f.close()
-
+    ############################################################################
+    # Light flash end of program
+    for i in range(3):
+        ctx.set_rail_lights(False)
+        time.sleep(0.3)
+        ctx.set_rail_lights(True)
+        time.sleep(0.3)
     ctx.comment(
         'Finished! \nMove tube rack (slot 5) to PANTHER station for the rest of the process')
     ctx.comment('Used p1000 tips in total: ' + str(tip_track['counts'][p1000]))

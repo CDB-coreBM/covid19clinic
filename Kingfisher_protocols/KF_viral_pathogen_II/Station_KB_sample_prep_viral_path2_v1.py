@@ -366,15 +366,9 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ############################################################################
     # Light flash end of program
-    gpio.set_rail_lights(False)
-    time.sleep(2)
-    #os.system('mpg123 -f -8000 /var/lib/jupyter/notebooks/toreador.mp3 &')
     for i in range(3):
-        gpio.set_rail_lights(False)
-        gpio.set_button_light(1, 0, 0)
+        ctx.set_rail_lights(False)
         time.sleep(0.3)
-        gpio.set_rail_lights(True)
-        gpio.set_button_light(0, 0, 1)
+        ctx.set_rail_lights(True)
         time.sleep(0.3)
-    gpio.set_button_light(0, 1, 0)
     ctx.comment('Finished! \nMove plate to KingFisher')

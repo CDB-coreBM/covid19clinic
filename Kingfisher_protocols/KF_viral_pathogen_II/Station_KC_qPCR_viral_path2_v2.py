@@ -28,7 +28,6 @@ NUM_SAMPLES = 10
 
 air_gap_vol = 5
 air_gap_sample = 2
-run_id = $run_id
 
 # Tune variables
 volume_mmix = 20  # Volume of transfered master mix
@@ -62,7 +61,7 @@ def run(ctx: protocol_api.ProtocolContext):
             STEPS[s]['wait_time'] = 0
 
     #Folder and file_path for log time
-    folder_path = '/var/lib/jupyter/notebooks/'+run_id
+    folder_path = '/var/lib/jupyter/notebooks/'
     if not ctx.is_simulating():
         if not os.path.isdir(folder_path):
             os.mkdir(folder_path)
@@ -322,18 +321,11 @@ def run(ctx: protocol_api.ProtocolContext):
 
     ############################################################################
     # Light flash end of program
-    gpio.set_rail_lights(False)
-    time.sleep(2)
-    #os.system('mpg123 -f -8000 /var/lib/jupyter/notebooks/toreador.mp3 &')
     for i in range(3):
-        gpio.set_rail_lights(False)
-        gpio.set_button_light(1, 0, 0)
+        ctx.set_rail_lights(False)
         time.sleep(0.3)
-        gpio.set_rail_lights(True)
-        gpio.set_button_light(0, 0, 1)
+        ctx.set_rail_lights(True)
         time.sleep(0.3)
-        gpio.set_rail_lights(False)
-    gpio.set_button_light(0, 1, 0)
     ctx.comment('Finished! \nMove plate to PCR')
 
     if STEPS[1]['Execute'] == True:
