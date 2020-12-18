@@ -13,7 +13,7 @@ metadata = {
     'protocolName': 'Station A Pooling for Panther Version 1',
     'author': 'José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
-    'apiLevel': '2.0',
+    'apiLevel': '2.8',
     'description': 'Protocol for sample setup (A) using pools for Panther'
 }
 
@@ -29,6 +29,7 @@ run_id=$run_id
 five_ml_rack = $five_ml_rack
 pool_size = $pool_size
 air_gap_vol = 15
+p_height = 15 #Sample pickup height
 
 volume_sample = (1500/pool_size)
 x_offset = [0,0]
@@ -279,7 +280,7 @@ def run(ctx: protocol_api.ProtocolContext):
             #custom_mix(p1000, reagent = Samples, location = s, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
             move_vol_multichannel(p1000, reagent = Samples, source = s, dest = d,
             vol=volume_sample, air_gap_vol = air_gap_vol, x_offset = x_offset,
-                               pickup_height = 12, rinse = Samples.rinse, disp_height = -10,
+                               pickup_height = p_height, rinse = Samples.rinse, disp_height = -10,
                                blow_out = True, touch_tip = True)
             # Mix the sample AFTER dispensing
             #custom_mix(p1000, reagent = Samples, location = d, vol = volume_sample, rounds = 2, blow_out = True, mix_height = 15)
