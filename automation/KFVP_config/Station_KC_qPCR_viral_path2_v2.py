@@ -14,7 +14,7 @@ metadata = {
     'protocolName': 'Station C Kingfisher Pathogen qPCR setup Version 2',
     'author': 'Aitor Gastaminza & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
-    'apiLevel': '2.0',
+    'apiLevel': '2.7',
     'description': 'Protocol for Kingfisher sample setup (C) - Pathogen Kit (ref 4462359)'
 
 }

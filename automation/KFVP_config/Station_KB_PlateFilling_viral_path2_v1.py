@@ -14,7 +14,7 @@ metadata = {
     'protocolName': 'Kingfisher Pathogen Station B1 v2',
     'author': 'Eva González & José Luis Villanueva (jlvillanueva@clinic.cat)',
     'source': 'Hospital Clínic Barcelona',
-    'apiLevel': '2.0',
+    'apiLevel': '2.7',
     'description': 'Protocol to fill KingFisher Deepwell plates with reagents - Pathogen Kit (ref 4462359)'
 }
 '''
