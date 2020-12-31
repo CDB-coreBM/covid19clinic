@@ -145,7 +145,7 @@ def run(ctx: protocol_api.ProtocolContext):
         if blow_out == True:
             pipet.blow_out(dest.top(z = -2))
         if touch_tip == True:
-            pipet.touch_tip(speed = 20, v_offset = -5, radius = 0.9)
+            pipet.touch_tip(speed = 20, v_offset = -5, radius = 0.8)
 
 
     def custom_mix(pipet, reagent, location, vol, rounds, blow_out, mix_height,
