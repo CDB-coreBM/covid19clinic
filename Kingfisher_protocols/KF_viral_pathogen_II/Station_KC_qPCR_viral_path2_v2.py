@@ -325,6 +325,7 @@ def run(ctx: protocol_api.ProtocolContext):
         time.sleep(0.3)
         ctx.set_rail_lights(True)
         time.sleep(0.3)
+    ctx.set_rail_lights(False) #End with lights off (thermosensitive)
     ctx.comment('Finished! \nMove plate to PCR')
 
     if STEPS[1]['Execute'] == True:
