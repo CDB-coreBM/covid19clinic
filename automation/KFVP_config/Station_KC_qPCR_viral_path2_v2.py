@@ -46,8 +46,7 @@ h_cone = (volume_cone * 3 / area_section_screwcap)
 num_cols = math.ceil(NUM_SAMPLES / 8)  # Columns we are working on
 
 def run(ctx: protocol_api.ProtocolContext):
-    from opentrons.drivers.rpi_drivers import gpio
-    gpio.set_rail_lights(False) #Turn off lights (termosensible reagents)
+    ctx.set_rail_lights(False) #Turn off lights (termosensible reagents)
     ctx.comment('Actual used columns: ' + str(num_cols))
 
     # Define the STEPS of the protocol
