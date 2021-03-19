@@ -8,6 +8,12 @@ params:
       run: '$THERUN'
 ---
 
+```{css, echo = FALSE}
+.main-container {
+    max-width: 100%;
+}
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyr)
