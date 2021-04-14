@@ -35,7 +35,7 @@ raw_data[raw_data$Cq != "Undetermined",]$Cq <- format(round(as.numeric(raw_data[
 table1 <- raw_data %>%
   select(`Well Position`, Sample,Target,Cq, pos) %>%
   spread(key=Target, value=Cq) %>%
-  mutate(Sample=ifelse(nchar(Sample)>3,substr(Sample, 4, 12),Sample)) %>%
+  mutate(Sample=ifelse(nchar(Sample)>5,substr(Sample, 4, 12),Sample)) %>%
   mutate(pos=ifelse(Sample=='PC', 0, pos)) %>%
   arrange(pos) %>%
   select(-pos)
