@@ -7,6 +7,8 @@ Here, at the [CORE biologia molecular](http://cdb.hospitalclinic.org/laboratorio
 
 Most importantly, we have created a framework by providing a template, custom functions, and other support code to help others implement similar systems faster than we did. With it, is relatively easy to create a new station from scratch, adapt an existing one to a change in the experimental protocol or perform fine adjustements.
 
+Check the [wiki](https://github.com/CDB-coreBM/covid19clinic/wiki) for documentation 
+
 We demonstrate its use by providing fully functional and tested code for Thermo-KingFisher, using this robot for the extraction step.
 
 We are currently developing more automated protocols, including a homebrew protocol. The extraction step does not rely on the use of any commercial kits, as it implements a custom protocol using commonly available reactives. [cite original protocol here].
