@@ -1,4 +1,4 @@
-*See wiki[https://github.com/CDB-coreBM/covid19clinic/wiki/Template-for-building-stations] for a more detailed description with examples*
+*See [https://github.com/CDB-coreBM/covid19clinic/wiki/Template-for-building-stations](wiki) for a more detailed description with examples*
 
 The developed code has been structured as a step by step process, using a python dictionary, and relies on previously defined custom functions (see functions.py). They include multiple parameters in order to customise the pipetting action, as each reactive has different physical properties. Coping with different physical properties has been achieved with the definition of a general class where parameters are defined in order to modify the pipetting action. At the same time, a template has been generated according to the defined structure in order to ease the protocol writing.
 Currently, custom functions need to be defined inside the "run" function in each protocol. This is a limitation from the OT2 core code. 
